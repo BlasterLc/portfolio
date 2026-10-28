@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spike · Calle de noche</title>
+<style>
+  :root {
+    --ink: #05070d;
+    --amber: #ffb347;
+    --teal: #1c4a52;
+    --paper: #d9cfb8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--ink); overflow: hidden; }
+  body { font-family: "Courier New", ui-monospace, monospace; color: var(--paper); touch-action: none; user-select: none; -webkit-user-select: none; }
+
+  #viewport { position: fixed; inset: 0; overflow: hidden; background: var(--ink); }
+
+  /* Escenario de 1024x576 escalado para cubrir la pantalla */
+  #stage { position: absolute; left: 0; top: 0; width: 1024px; height: 576px; transform-origin: 0 0; will-change: transform; }
+  #camera { position: absolute; inset: 0; transform-origin: 514px 358px; transition: transform 1.5s cubic-bezier(.65,.02,.2,1); }
+  #camera.push { transform: scale(3.6); }
+  .layer { position: absolute; will-change: transform; pointer-events: none; }
+  .layer img { display: block; width: 100%; height: 100%; }
+
+  #sky      { left: -12px; top: -8px; width: 1048px; height: 592px; }
+  .bld      { top: 77px; width: 514px; height: 213px; }
+  #street   { left: -6px; top: 282px; width: 1036px; height: 298px; }
+  #facade   { left: 67px; top: 96px; width: 618px; height: 469px; }
+  #lamp     { left: 30px; top: 108px; width: 66px; height: 464px; }
+  #trash    { left: 690px; top: 372px; width: 318px; height: 197px; }
+
+  /* Brillos que se encienden por encima de las capas */
+  .glow { position: absolute; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
+          background: radial-gradient(circle, rgba(255,176,70,.85) 0%, rgba(255,140,40,.35) 35%, rgba(255,120,30,0) 70%); }
+  #glow-lamp    { left: -10px; top: 100px; width: 150px; height: 150px; }
+  #glow-lantern { left: 590px; top: 245px; width: 110px; height: 110px; }
+  #glow-door    { left: 440px; top: 300px; width: 150px; height: 120px; opacity: .55; }
+
+  /* Zona clicable de la puerta (botón real, accesible con teclado) */
+  #door { position: absolute; left: 454px; top: 228px; width: 141px; height: 273px; background: transparent; border: 0;
+          cursor: pointer; border-radius: 3px; outline: none; pointer-events: auto; }
+  #door::before { content: ""; position: absolute; inset: -6px; border-radius: 6px; border: 2px solid rgba(255,179,71,.0);
+                  box-shadow: 0 0 0 rgba(255,179,71,0); animation: pulse 2.4s ease-in-out infinite; }
+  #door:hover::before, #door:focus-visible::before { border-color: rgba(255,179,71,.95); box-shadow: 0 0 40px rgba(255,179,71,.65); animation: none; }
+  @keyframes pulse {
+    0%, 100% { border-color: rgba(255,179,71,.15); box-shadow: 0 0 6px rgba(255,179,71,.15); }
+    50%      { border-color: rgba(255,179,71,.85); box-shadow: 0 0 34px rgba(255,179,71,.55); }
+  }
+  #hint { position: absolute; left: 454px; top: 196px; width: 141px; text-align: center; pointer-events: none;
+          font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--amber); text-shadow: 0 0 8px rgba(255,179,71,.8);
+          animation: bob 2.4s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0); opacity: .55 } 50% { transform: translateY(-4px); opacity: 1 } }
+
+  /* Linterna: oscuridad con un hueco que sigue al puntero */
+  #dark { position: absolute; inset: 0; pointer-events: none; }
+  canvas#rain { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #grain { position: absolute; inset: -50%; pointer-events: none; opacity: .09; mix-blend-mode: overlay;
+           background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+           animation: grain 0.9s steps(6) infinite; }
+  @keyframes grain { 0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)} 40%{transform:translate(2%,-3%)} 60%{transform:translate(-2%,-1%)} 80%{transform:translate(3%,3%)} 100%{transform:translate(0,0)} }
+  #vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.65) 100%); }
+
+  /* Interfaz */
+  #topbar { position: absolute; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; align-items: center;
+            padding: max(14px, env(safe-area-inset-top)) 18px 14px; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; z-index: 5; pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,.55), transparent); }
+  #topbar b { color: var(--amber); font-weight: normal; }
+  #caption { position: absolute; left: 0; right: 0; bottom: max(18px, env(safe-area-inset-bottom)); text-align: center; z-index: 5; pointer-events: none;
+             font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: rgba(217,207,184,.85); text-shadow: 0 1px 6px #000; padding: 0 16px; }
+  #caption span { color: var(--amber); }
+  #sound { position: absolute; right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 6; background: rgba(0,0,0,.55); color: var(--paper);
+           border: 1px solid rgba(217,207,184,.3); border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 11px; letter-spacing: .14em; cursor: pointer; }
+
+  /* Ambientes: ajustes de color sobre las mismas capas */
+  #stage { transition: filter .8s ease; }
+  #tint { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .8s ease, background .8s ease; z-index: 1; }
+  body[data-grade="azul"]     #stage { filter: brightness(1.55) saturate(1.2) hue-rotate(12deg) contrast(1.02); }
+  body[data-grade="azul"]     #tint  { opacity: 1; mix-blend-mode: soft-light; background: linear-gradient(to bottom, rgba(120,90,230,.75), rgba(255,130,100,.45) 62%, rgba(255,190,120,.25)); }
+  body[data-grade="ocaso"]    #stage { filter: brightness(1.7) sepia(.5) saturate(1.55) hue-rotate(-20deg); }
+  body[data-grade="ocaso"]    #tint  { opacity: 1; mix-blend-mode: soft-light; background: linear-gradient(to bottom, rgba(255,110,50,.85), rgba(255,170,90,.5) 60%, rgba(255,210,140,.3)); }
+  body[data-grade="dia"]      #stage { filter: grayscale(.6) sepia(.28) brightness(2.05) contrast(.88); }
+  body[data-grade="dia"]      #tint  { opacity: 1; mix-blend-mode: screen; background: linear-gradient(to bottom, rgba(190,205,212,.45), rgba(150,170,178,.2)); }
+  body[data-grade="dia"] #vignette, body[data-grade="ocaso"] #vignette, body[data-grade="azul"] #vignette { opacity: .45; }
+  #grades { position: absolute; left: 14px; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 6; display: flex; gap: 4px; }
+  #grades button { background: rgba(0,0,0,.55); color: var(--paper); border: 1px solid rgba(217,207,184,.3); padding: 8px 10px; font: inherit; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+  #grades button[aria-pressed="true"] { color: #1a1208; background: var(--amber); border-color: var(--amber); }
+  #fade { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .7s ease; z-index: 8; }
+  #fade.on { opacity: 1; }
+
+  /* Interior (placeholder hasta tener arte propio) */
+  #office { position: absolute; inset: 0; z-index: 7; display: none; background:
+              radial-gradient(ellipse 60% 45% at 68% 62%, rgba(255,170,70,.28), transparent 70%),
+              linear-gradient(#0c1016, #07090d); overflow: hidden; }
+  #office.on { display: block; }
+  #office .desk { position: absolute; left: 8%; right: 8%; bottom: 0; height: 34%; background: linear-gradient(#2a1c12, #130c07); border-top: 3px solid #3b2818; }
+  #office .window { position: absolute; left: 10%; top: 14%; width: 26%; height: 42%; border: 6px solid #1a1f2a; background: linear-gradient(#0c2229, #09151a); }
+  #office .window::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(0,0,0,.55) 18px 22px); }
+  #office .file { position: absolute; right: 14%; bottom: 20%; width: min(46vw, 420px); padding: 20px 22px; background: var(--paper); color: #231a10; transform: rotate(-2deg);
+                  box-shadow: 0 18px 40px rgba(0,0,0,.6); font-size: 13px; line-height: 1.55; }
+  #office .file h2 { font-size: 15px; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 10px; border-bottom: 2px solid #231a10; padding-bottom: 8px; }
+  #office .file p + p { margin-top: 8px; }
+  #office .stamp { position: absolute; right: 12px; top: -14px; transform: rotate(8deg); border: 3px solid #8a1f1f; color: #8a1f1f; padding: 2px 10px; font-weight: bold; letter-spacing: .2em; }
+  #back { position: absolute; left: 18px; top: max(54px, calc(env(safe-area-inset-top) + 40px)); z-index: 9; background: rgba(0,0,0,.6); color: var(--amber);
+          border: 1px solid rgba(255,179,71,.5); padding: 9px 14px; font: inherit; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; display: none; }
+  #office.on ~ #back { display: block; }
+  #office .note { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; font-size: 11px; letter-spacing: .14em; color: rgba(217,207,184,.5); }
+
+  @media (max-width: 640px) {
+    #caption { bottom: max(64px, calc(env(safe-area-inset-bottom) + 52px)); font-size: 11px; }
+    #sound { bottom: max(58px, calc(env(safe-area-inset-bottom) + 46px)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #grain, #hint, #door::before { animation: none; }
+    #camera { transition-duration: .01s; }
+  }
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <div id="camera">
+      <div class="layer" id="sky"      data-depth="0.12"><img src="assets/capa1-cielo.webp" alt="" draggable="false"></div>
+      <div class="layer bld" data-depth="0.25" style="left:-30px"><img src="assets/capa2-edificios.webp" alt="" draggable="false"></div>
+      <div class="layer bld" data-depth="0.25" style="left:480px"><img src="assets/capa2-edificios.webp" alt="" draggable="false"></div>
+      <div class="layer bld" data-depth="0.25" style="left:990px"><img src="assets/capa2-edificios.webp" alt="" draggable="false"></div>
+      <div class="layer" id="street"   data-depth="0.4"><img src="assets/capa3-calle.webp" alt="" draggable="false"></div>
+      <div class="layer" id="facade"   data-depth="0.6"><img src="assets/capa5-fachada.webp" alt="" draggable="false"></div>
+      <div class="layer glow" id="glow-lantern" data-depth="0.6"></div>
+      <div class="layer glow" id="glow-door"    data-depth="0.6"></div>
+      <div class="layer" id="lamp"     data-depth="1"><img src="assets/capa4a-farola.webp" alt="" draggable="false"></div>
+      <div class="layer glow" id="glow-lamp" data-depth="1"></div>
+      <div class="layer" id="trash"    data-depth="1"><img src="assets/capa4b-basura.webp" alt="" draggable="false"></div>
+      <div class="layer" id="hint" data-depth="0.6">▼ entra</div>
+      <button id="door" class="layer" data-depth="0.6" type="button" aria-label="Entrar a la agencia (abre el expediente)"></button>
+    </div>
+  </div>
+
+  <div id="tint"></div>
+  <canvas id="dark"></canvas>
+  <canvas id="rain"></canvas>
+  <div id="vignette"></div>
+  <div id="grain"></div>
+
+  <div id="topbar"><span><b>◆</b> Agencia Matías · est. 2027</span><span id="clock">23:47</span></div>
+  <div id="caption">Mueve la linterna · <span>toca la puerta que brilla</span></div>
+  <div id="grades" role="group" aria-label="Ambiente">
+    <button type="button" data-grade="noche" aria-pressed="true">Noche</button>
+    <button type="button" data-grade="azul" aria-pressed="false">Azul</button>
+    <button type="button" data-grade="ocaso" aria-pressed="false">Ocaso</button>
+    <button type="button" data-grade="dia" aria-pressed="false">Día</button>
+  </div>
+  <button id="sound" type="button" aria-pressed="false">sonido: off</button>
+
+  <div id="office" aria-hidden="true">
+    <div class="window"></div>
+    <div class="desk"></div>
+    <div class="file">
+      <div class="stamp">ABIERTO</div>
+      <h2>Expediente · Matías</h2>
+      <p>Aquí vivirá la sección About me, como un caso sobre la persona detrás del código.</p>
+      <p>Interior de prueba: el arte final llegará desde Gemini.</p>
+    </div>
+    <div class="note">spike descartable · esc para volver a la calle</div>
+  </div>
+  <button id="back" type="button">← volver a la calle</button>
+  <div id="fade"></div>
+</div>
+
+<script>
+(() => {
+  const STAGE_W = 1024, STAGE_H = 576;
+  const $ = (s) => document.querySelector(s);
+  const viewport = $('#viewport'), stage = $('#stage'), camera = $('#camera');
+  const layers = [...document.querySelectorAll('.layer')];
+  const darkC = $('#dark'), rainC = $('#rain');
+  const dctx = darkC.getContext('2d'), rctx = rainC.getContext('2d');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isTouch = matchMedia('(pointer: coarse)').matches;
+
+  let vw = 0, vh = 0, scale = 1, dpr = 1;
+  const pointer = { x: 0.62, y: 0.55, tx: 0.62, ty: 0.55 };   // 0..1 en pantalla
+  let entering = false;
+  const DARK_SCALE = { noche: 1, azul: 0.45, ocaso: 0.3, dia: 0.18 };
+  let darkScale = 1;
+
+  function resize() {
+    vw = innerWidth; vh = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
+    scale = Math.max(vw / STAGE_W, vh / STAGE_H);
+    stage.style.transform = `translate(${(vw - STAGE_W * scale) / 2}px, ${(vh - STAGE_H * scale) / 2}px) scale(${scale})`;
+    for (const c of [darkC, rainC]) { c.width = vw * dpr; c.height = vh * dpr; c.style.width = vw + 'px'; c.style.height = vh + 'px'; }
+    initRain();
+  }
+
+  /* ---------- Parallax ---------- */
+  const PARALLAX = isTouch ? 14 : 26;
+  function applyParallax() {
+    const nx = (pointer.x - 0.5) * 2, ny = (pointer.y - 0.5) * 2;
+    for (const el of layers) {
+      const d = parseFloat(el.dataset.depth);
+      el.style.transform = `translate3d(${(-nx * d * PARALLAX).toFixed(2)}px, ${(-ny * d * PARALLAX * 0.4).toFixed(2)}px, 0)`;
+    }
+  }
+
+  /* ---------- Lluvia y vapor ---------- */
+  let drops = [], splashes = [], steam = [];
+  function initRain() {
+    const n = reduceMotion ? 0 : Math.round(Math.min(380, vw * vh / 4200));
+    drops = Array.from({ length: n }, () => newDrop(true));
+    steam = [];
+  }
+  function newDrop(anywhere) {
+    const near = Math.random() < 0.35;
+    return { x: Math.random() * (vw + 200) - 100, y: anywhere ? Math.random() * vh : -20,
+             len: near ? 16 + Math.random() * 14 : 7 + Math.random() * 8,
+             v: near ? 1100 + Math.random() * 400 : 650 + Math.random() * 250,
+             a: near ? 0.38 : 0.2, w: near ? 1.3 : 0.8 };
+  }
+  const WIND = 0.16;   // desplazamiento horizontal por unidad vertical
+  function drawRain(dt) {
+    rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    rctx.clearRect(0, 0, vw, vh);
+    rctx.lineCap = 'round';
+    const groundY = vh * 0.78;
+    for (const d of drops) {
+      d.y += d.v * dt; d.x -= d.v * dt * WIND;
+      if (d.y > vh + 20 || d.x < -120) { Object.assign(d, newDrop(false)); continue; }
+      rctx.strokeStyle = `rgba(170,205,215,${d.a})`;
+      rctx.lineWidth = d.w;
+      rctx.beginPath(); rctx.moveTo(d.x, d.y); rctx.lineTo(d.x + d.len * WIND, d.y - d.len); rctx.stroke();
+      if (d.y > groundY && Math.random() < 0.012) splashes.push({ x: d.x, y: d.y, t: 0 });
+    }
+    for (let i = splashes.length - 1; i >= 0; i--) {
+      const s = splashes[i]; s.t += dt;
+      if (s.t > 0.35) { splashes.splice(i, 1); continue; }
+      const k = s.t / 0.35;
+      rctx.strokeStyle = `rgba(190,220,230,${0.35 * (1 - k)})`; rctx.lineWidth = 1;
+      rctx.beginPath(); rctx.ellipse(s.x, s.y, 2 + 9 * k, 1 + 3 * k, 0, 0, Math.PI * 2); rctx.stroke();
+    }
+    // vapor de la alcantarilla (posición del escenario → pantalla)
+    if (!reduceMotion && Math.random() < 0.18) steam.push({ x: 0, y: 0, t: 0, dx: (Math.random() - 0.5) * 8 });
+    const ox = (vw - STAGE_W * scale) / 2, oy = (vh - STAGE_H * scale) / 2;
+    const mx = ox + 842 * scale, my = oy + 338 * scale;
+    for (let i = steam.length - 1; i >= 0; i--) {
+      const p = steam[i]; p.t += dt;
+      if (p.t > 2.6) { steam.splice(i, 1); continue; }
+      const k = p.t / 2.6, r = (10 + 46 * k) * scale / 1.6;
+      const x = mx + p.dx * k * 6 * scale, y = my - k * 120 * scale;
+      const g = rctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(150,190,195,${0.16 * (1 - k)})`); g.addColorStop(1, 'rgba(150,190,195,0)');
+      rctx.fillStyle = g; rctx.beginPath(); rctx.arc(x, y, r, 0, Math.PI * 2); rctx.fill();
+    }
+  }
+
+  /* ---------- Linterna (la oscuridad nunca es total: es un portafolio) ---------- */
+  function drawDark(time) {
+    dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dctx.clearRect(0, 0, vw, vh);
+    const px = pointer.x * vw, py = pointer.y * vh;
+    const R = Math.max(240, Math.min(vw, vh) * 0.42);
+    const flick = 1 + Math.sin(time * 0.013) * 0.015 + (Math.random() - 0.5) * 0.02;
+    const g = dctx.createRadialGradient(px, py, R * 0.12, px, py, R * flick * 1.7);
+    g.addColorStop(0, 'rgba(3,6,12,0)');
+    g.addColorStop(0.5, `rgba(3,6,12,${0.42 * darkScale})`);
+    g.addColorStop(1, `rgba(3,6,12,${0.84 * darkScale})`);
+    dctx.fillStyle = g; dctx.fillRect(0, 0, vw, vh);
+  }
+
+  /* ---------- Parpadeo de las luces ---------- */
+  const glows = { lamp: $('#glow-lamp'), lantern: $('#glow-lantern'), door: $('#glow-door') };
+  function flicker(time) {
+    const f = (seed, amp) => 1 - amp + (Math.sin(time * 0.0031 * seed) * 0.5 + 0.5) * amp + (Math.random() < 0.015 ? -amp : 0);
+    glows.lamp.style.opacity = Math.max(0.3, f(1.3, 0.35)).toFixed(3);
+    glows.lantern.style.opacity = Math.max(0.35, f(0.9, 0.28)).toFixed(3);
+    glows.door.style.opacity = (0.45 * f(0.7, 0.25)).toFixed(3);
+  }
+
+  /* ---------- Bucle principal ---------- */
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    pointer.x += (pointer.tx - pointer.x) * 0.09;
+    pointer.y += (pointer.ty - pointer.y) * 0.09;
+    if (!entering) applyParallax();
+    drawRain(dt); drawDark(now); flicker(now);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Entrada y salida de la puerta ---------- */
+  const door = $('#door'), office = $('#office'), fade = $('#fade'), back = $('#back'), caption = $('#caption');
+  function enter() {
+    if (entering) return; entering = true;
+    pointer.tx = pointer.x = 0.5; pointer.ty = pointer.y = 0.5; applyParallax();
+    camera.classList.add('push');
+    setTimeout(() => fade.classList.add('on'), 1050);
+    setTimeout(() => { office.classList.add('on'); office.setAttribute('aria-hidden', 'false'); caption.style.display = 'none'; fade.classList.remove('on'); back.focus(); }, 1750);
+  }
+  function leave() {
+    if (!entering) return;
+    fade.classList.add('on');
+    setTimeout(() => {
+      office.classList.remove('on'); office.setAttribute('aria-hidden', 'true');
+      camera.style.transition = 'none'; camera.classList.remove('push'); void camera.offsetWidth; camera.style.transition = '';
+      caption.style.display = ''; fade.classList.remove('on'); entering = false; door.focus({ preventScroll: true });
+    }, 750);
+  }
+  door.addEventListener('click', enter);
+  back.addEventListener('click', leave);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') leave(); });
+
+  /* ---------- Puntero (ratón y táctil) ---------- */
+  function setPointer(e) { pointer.tx = e.clientX / vw; pointer.ty = e.clientY / vh; }
+  viewport.addEventListener('pointermove', setPointer, { passive: true });
+  viewport.addEventListener('pointerdown', setPointer, { passive: true });
+
+  /* ---------- Reloj de ambiente y sonido opcional ---------- */
+  const clock = $('#clock');
+  setInterval(() => { const d = new Date(); clock.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }, 20000);
+  const sound = $('#sound'); let audio = null, on = false;
+  sound.addEventListener('click', () => {
+    on = !on; sound.textContent = 'sonido: ' + (on ? 'on' : 'off'); sound.setAttribute('aria-pressed', on);
+    if (on && !audio) {
+      // lluvia sintética con Web Audio (ruido filtrado); sin archivos externos
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), ch = buf.getChannelData(0);
+      for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000;
+      const gain = ctx.createGain(); gain.gain.value = 0.0;
+      src.connect(hp).connect(lp).connect(gain).connect(ctx.destination); src.start();
+      audio = { ctx, gain };
+    }
+    if (audio) { audio.ctx.resume(); audio.gain.gain.linearRampToValueAtTime(on ? 0.18 : 0, audio.ctx.currentTime + 0.6); }
+  });
+
+  /* ---------- Ambientes ---------- */
+  const gradeBtns = [...document.querySelectorAll('#grades button')];
+  function setGrade(name) {
+    if (!(name in DARK_SCALE)) name = 'noche';
+    document.body.dataset.grade = name; darkScale = DARK_SCALE[name];
+    gradeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.grade === name)));
+    try { history.replaceState(null, '', name === 'noche' ? location.pathname : '?grade=' + name); } catch (_) {}
+  }
+  gradeBtns.forEach((b) => b.addEventListener('click', () => setGrade(b.dataset.grade)));
+  setGrade(new URLSearchParams(location.search).get('grade') || 'noche');
+
+  addEventListener('resize', resize);
+  resize(); applyParallax();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

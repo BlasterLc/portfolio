@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matias Rodriguez · Portfolio (mock)</title>
+<style>
+  :root { --bg:#0b0a1d; --bg2:#12102c; --txt:#eaf0ff; --mut:#a9b0d6; --cy:#35f0ff; --mg:#ff3fd0; --am:#ffb35c; --gr:#6dff8f; --line:rgba(160,170,255,.22); --card:rgba(20,17,52,.72); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 70px; }
+  body { background: var(--bg); color: var(--txt); font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; }
+  a { color: inherit; }
+  h1, h2, h3 { font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif; letter-spacing: .01em; }
+  .wrap { width: min(1120px, 100% - 40px); margin: 0 auto; }
+  section { padding: 96px 0 24px; }
+  .eyebrow { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--cy); margin-bottom: 10px; }
+  h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.15; margin-bottom: 18px; }
+  .lead { color: var(--mut); max-width: 640px; }
+
+  /* nav */
+  nav.top { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; gap: 18px; padding: 12px max(20px, calc((100% - 1120px) / 2)); background: rgba(10,9,30,.62); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  nav.top .logo { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 14px; text-decoration: none; margin-right: auto; }
+  nav.top a.l { text-decoration: none; font-size: 14px; color: var(--mut); padding: 6px 2px; border-bottom: 2px solid transparent; }
+  nav.top a.l:hover { color: #fff; border-color: var(--cy); }
+  .navbtn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--gr); color: var(--gr); padding: 7px 14px; border-radius: 999px; font: inherit; font-size: 13px; cursor: pointer; }
+  .navbtn:hover { background: rgba(109,255,143,.12); }
+
+  /* hero */
+  #hero { position: relative; min-height: 100vh; padding: 0; display: flex; align-items: flex-end; overflow: hidden; }
+  #hero .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 48% 40%; }
+  #hero::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(11,10,29,.86) 0%, rgba(11,10,29,.55) 38%, rgba(11,10,29,0) 70%), linear-gradient(to top, var(--bg) 0%, rgba(11,10,29,0) 38%); }
+  #hero .in { position: relative; z-index: 2; padding: 0 0 12vh; }
+  #hero h1 { font-size: clamp(44px, 8vw, 96px); line-height: .98; text-transform: uppercase; text-shadow: 0 0 26px rgba(255,63,208,.55); }
+  #hero .role { margin-top: 18px; font-size: clamp(17px, 2.2vw, 22px); max-width: 560px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  .btn { display: inline-block; padding: 12px 22px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 15px; border: 1px solid transparent; cursor: pointer; font-family: inherit; }
+  .btn.pri { background: var(--cy); color: #06142b; } .btn.pri:hover { box-shadow: 0 0 24px rgba(53,240,255,.6); }
+  .btn.sec { border-color: rgba(255,255,255,.4); color: #fff; background: rgba(255,255,255,.06); } .btn.sec:hover { border-color: var(--mg); }
+  .tip { margin-top: 20px; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--gr); background: rgba(8,20,16,.55); border: 1px dashed rgba(109,255,143,.55); padding: 8px 14px; border-radius: 999px; cursor: pointer; font-family: inherit; }
+  .tip:hover { background: rgba(109,255,143,.12); }
+  #andes { position: absolute; z-index: 2; border: 0; background: transparent; cursor: default; }
+
+  /* about */
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: start; }
+  .about p + p { margin-top: 14px; }
+  .facts { list-style: none; display: grid; gap: 10px; }
+  .facts li { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .facts b { display: block; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--cy); font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { display: inline-block; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; background: rgba(255,255,255,.04); }
+
+  /* skills */
+  .skillgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .skillbox { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .skillbox h3 { font-size: 15px; margin-bottom: 10px; color: var(--am); letter-spacing: .08em; text-transform: uppercase; }
+  .skillbox .chip { cursor: default; } .skillbox .chip:hover { border-color: var(--cy); }
+
+  /* projects */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: transform .2s, border-color .2s; }
+  .card:hover { transform: translateY(-4px); border-color: var(--cy); }
+  .card .img { height: 170px; background-image: url(assets/santiago.webp); background-size: 520%; position: relative; }
+  .card .img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14,12,40,.95), rgba(14,12,40,.05) 70%); }
+  .card .img span { position: absolute; left: 16px; bottom: 12px; z-index: 1; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #fff; text-shadow: 0 0 12px #000; }
+  .card .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .card h3 { font-size: 20px; }
+  .card .res { color: var(--am); font-size: 14px; }
+  .card .links { margin-top: auto; display: flex; gap: 14px; font-size: 14px; }
+  .card .links a { color: var(--cy); text-decoration: none; } .card .links a:hover { text-decoration: underline; } .card .links i { color: var(--mut); font-style: normal; }
+  .awards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 26px; }
+  .award { border: 1px solid rgba(255,179,92,.5); background: linear-gradient(135deg, rgba(255,179,92,.12), rgba(255,63,208,.08)); border-radius: 14px; padding: 16px 18px; }
+  .award b { color: var(--am); display: block; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+
+  /* journey */
+  .bars { display: flex; align-items: flex-end; gap: 10px; height: 190px; margin: 18px 0 6px; }
+  .bars div { flex: 1; background: linear-gradient(var(--cy), #6a3cff); border-radius: 6px 6px 0 0; position: relative; min-height: 3px; }
+  .bars div span { position: absolute; top: -20px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--mut); }
+  .lab { display: flex; gap: 10px; text-align: center; font-size: 12px; color: var(--mut); } .lab span { flex: 1; }
+  .tl { margin-top: 28px; border-left: 2px solid var(--cy); padding-left: 20px; display: grid; gap: 14px; }
+  .tl div { position: relative; } .tl div::before { content: ""; position: absolute; left: -27px; top: 8px; width: 11px; height: 11px; border-radius: 50%; background: var(--cy); box-shadow: 0 0 12px var(--cy); } .tl b { color: #fff; }
+
+  /* contact */
+  form.contact { display: grid; gap: 10px; max-width: 520px; }
+  .contact input, .contact textarea { font: inherit; padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,.06); border: 1px solid var(--line); color: #fff; }
+  .contact input:focus, .contact textarea:focus { outline: none; border-color: var(--cy); }
+  .social { display: flex; gap: 14px; margin-top: 18px; flex-wrap: wrap; } .social a { color: var(--cy); }
+  footer { padding: 60px 0 40px; color: var(--mut); font-size: 13px; text-align: center; }
+
+  /* ---------------- SCOUTER ---------------- */
+  #sc-btn { position: fixed; right: 18px; bottom: max(18px, env(safe-area-inset-bottom)); z-index: 90; display: flex; align-items: center; gap: 10px; background: rgba(8,22,16,.92); color: var(--gr); border: 1px solid var(--gr); border-radius: 999px; padding: 10px 18px 10px 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 0 24px rgba(109,255,143,.35); }
+  #sc-btn svg { width: 28px; height: 28px; } #sc-btn::before { content: ""; position: absolute; inset: -6px; border-radius: 999px; border: 2px solid var(--gr); animation: ringp 2.2s ease-out infinite; pointer-events: none; }
+  body.scouting #sc-btn::before { display: none; } body.scouting #sc-btn { background: var(--gr); color: #05140a; }
+  @keyframes ringp { 0% { transform: scale(.9); opacity: .9; } 100% { transform: scale(1.18); opacity: 0; } }
+
+  #sc-overlay { position: fixed; inset: 0; z-index: 80; pointer-events: none; display: none; }
+  body.scouting #sc-overlay { display: block; }
+  #sc-overlay .tint { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(40,255,120,.05) 40%, rgba(10,80,40,.42) 100%), linear-gradient(rgba(60,255,140,.06), rgba(60,255,140,.06)); mix-blend-mode: screen; }
+  #sc-overlay .scan { position: absolute; inset: 0; background: repeating-linear-gradient(transparent 0 3px, rgba(60,255,140,.05) 3px 4px); animation: drift 6s linear infinite; }
+  @keyframes drift { to { background-position-y: 80px; } }
+  #sc-overlay .corner { position: absolute; width: 56px; height: 56px; border: 3px solid var(--gr); filter: drop-shadow(0 0 8px var(--gr)); }
+  .c1 { left: 14px; top: 64px; border-right: 0; border-bottom: 0; } .c2 { right: 14px; top: 64px; border-left: 0; border-bottom: 0; } .c3 { left: 14px; bottom: 14px; border-right: 0; border-top: 0; } .c4 { right: 14px; bottom: 14px; border-left: 0; border-top: 0; }
+  #sc-overlay .tag { position: absolute; left: 50%; top: 74px; transform: translateX(-50%); font-size: 12px; letter-spacing: .3em; color: var(--gr); text-shadow: 0 0 10px var(--gr); animation: blk 1.6s steps(1) infinite; white-space: nowrap; }
+  @keyframes blk { 50% { opacity: .35; } }
+  #sc-hud { position: fixed; left: 26px; bottom: max(22px, env(safe-area-inset-bottom)); z-index: 91; display: none; gap: 10px; align-items: center; font-size: 12px; color: var(--gr); letter-spacing: .12em; text-transform: uppercase; }
+  body.scouting #sc-hud { display: flex; }
+  #sc-hud button { background: rgba(8,22,16,.85); color: var(--gr); border: 1px solid var(--gr); padding: 6px 10px; font: inherit; letter-spacing: .12em; cursor: pointer; border-radius: 6px; }
+  #sc-ret { position: fixed; z-index: 85; left: 0; top: 0; width: 64px; height: 64px; pointer-events: none; display: none; transform: translate(-100px,-100px); }
+  body.scouting #sc-ret { display: block; }
+  #sc-ret i { position: absolute; width: 16px; height: 16px; border: 2px solid var(--gr); filter: drop-shadow(0 0 6px var(--gr)); transition: border-color .2s; }
+  #sc-ret i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; } #sc-ret i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; }
+  #sc-ret i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; } #sc-ret i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+  #sc-ret b { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--gr); box-shadow: 0 0 10px var(--gr); transition: opacity .2s; }
+  #sc-ret.lock { transition: transform .22s cubic-bezier(.2,.8,.2,1), width .22s, height .22s; } #sc-ret.lock i { border-color: #fff; } #sc-ret.lock b { opacity: 0; }
+  #sc-read { position: fixed; z-index: 86; width: 290px; padding: 14px 16px 14px; background: rgba(6,24,16,.94); border: 1px solid var(--gr); border-radius: 12px; color: #d8ffe3; pointer-events: none; opacity: 0; transform: translateY(6px); transition: opacity .18s, transform .18s; box-shadow: 0 0 30px rgba(109,255,143,.35); font-family: "Courier New", ui-monospace, monospace; }
+  #sc-read.on { opacity: 1; transform: none; }
+  #sc-read .nm { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--gr); }
+  #sc-read .pl { font-size: 11px; letter-spacing: .2em; opacity: .7; margin-top: 8px; } #sc-read .pv { font-size: 38px; line-height: 1.1; font-weight: 700; color: #fff; text-shadow: 0 0 14px var(--gr); }
+  #sc-read .ex { font-size: 12px; opacity: .8; margin-bottom: 8px; line-height: 1.4; }
+  #sc-read .st { display: grid; grid-template-columns: 74px 1fr 38px; gap: 8px; align-items: center; font-size: 11px; margin-top: 4px; } #sc-read .bar { height: 6px; background: rgba(109,255,143,.18); border-radius: 3px; overflow: hidden; } #sc-read .bar i { display: block; height: 100%; width: 0; background: var(--gr); box-shadow: 0 0 8px var(--gr); transition: width .7s ease-out; }
+  #sc-read .nt { font-size: 12px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(109,255,143,.4); line-height: 1.4; } #sc-read .cn { font-size: 11px; opacity: .65; margin-top: 6px; }
+  body.scouting [data-scan] { cursor: crosshair; }
+  body.scouting [data-scan].locked { outline: 1px solid rgba(255,255,255,.5); }
+
+  #sc-overload { position: fixed; inset: 0; z-index: 95; display: none; pointer-events: none; }
+  #sc-overload.on { display: block; animation: shake .12s linear 12; }
+  #sc-overload .flash { position: absolute; inset: 0; background: rgba(255,60,60,.28); animation: flash .3s steps(1) infinite; }
+  #sc-overload svg { position: absolute; inset: 0; width: 100%; height: 100%; } #sc-overload svg path { stroke: #fff; stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; fill: none; filter: drop-shadow(0 0 6px #f55); }
+  #sc-overload .msg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: clamp(18px, 4vw, 34px); letter-spacing: .3em; color: #ff5b5b; text-shadow: 0 0 14px #f33; text-align: center; font-family: "Courier New", monospace; }
+  @keyframes shake { 0% { transform: translate(0,0); } 25% { transform: translate(-6px,3px); } 50% { transform: translate(5px,-4px); } 75% { transform: translate(-3px,-3px); } 100% { transform: translate(0,0); } }
+  @keyframes flash { 50% { opacity: .3; } }
+
+  @media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } nav.top a.l { display: none; } section { padding-top: 72px; } #sc-read { width: auto; left: 10px !important; right: 10px; top: auto !important; bottom: 76px; } #sc-hud { display: none !important; } #hero .in { padding-bottom: 14vh; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } #sc-btn::before, #sc-overlay .scan, #sc-overlay .tag, #sc-overload.on, #sc-overload .flash { animation: none !important; } }
+</style>
+</head>
+<body>
+<nav class="top" aria-label="Main">
+  <a class="logo" href="#hero">Matias Rodriguez</a>
+  <a class="l" href="#about">About</a><a class="l" href="#skills">Skills</a><a class="l" href="#projects">Projects</a><a class="l" href="#journey">Journey</a><a class="l" href="#contact">Contact</a>
+  <button class="navbtn" id="nav-sc" type="button" aria-pressed="false">◉ Scouter</button>
+</nav>
+
+<header id="hero">
+  <img class="bg" id="herobg" src="assets/santiago.webp" alt="Illustration of a cyberpunk Santiago at dusk with the Andes behind the skyline">
+  <button id="andes" type="button" tabindex="-1" aria-hidden="true" data-scan="andes"></button>
+  <div class="wrap in">
+    <div class="eyebrow">Santiago, Chile · Computer Science Engineering student</div>
+    <h1 data-scan="me">Matias<br>Rodriguez</h1>
+    <p class="role">I build real systems end to end: backend, cloud and automation. <span style="opacity:.6">(draft headline)</span></p>
+    <div class="btns"><a class="btn pri" href="#projects">View projects</a><a class="btn sec" href="#contact">Get in touch</a></div>
+    <button class="tip" id="hero-sc" type="button">◉ New: activate the scouter and measure anything on this page</button>
+  </div>
+</header>
+
+<main>
+<section id="about"><div class="wrap grid2">
+  <div class="about"><div class="eyebrow">About me</div><h2>Fourth-year engineer who ships.</h2>
+    <p>I'm a fourth-year Computer Science Engineering student (Ingeniería Civil en Informática) at Universidad San Sebastián in Santiago, graduating in 2027. I like building complete products: a management system for Chilean corner stores, an agent that judges whether a discount is real, and a fitness tracking app for iOS, Android and web.</p>
+    <p>I mostly work with Python, TypeScript, FastAPI, Supabase and AWS, and I'm interested in backend, cloud and automation. <span style="opacity:.6">(draft: add what kind of opportunity you are looking for)</span></p>
+    <div class="eyebrow" style="margin-top:26px">Outside the code</div>
+    <div class="chips"><span class="chip" data-scan="hobby-db">Dragon Ball modding</span><span class="chip" data-scan="hobby-aoe">Age of Empires II</span><span class="chip" data-scan="hobby-host">Self-hosting</span><span class="chip" data-scan="hobby-gym">Gym, 5 days a week</span></div>
+  </div>
+  <ul class="facts">
+    <li data-scan="edu"><b>Education</b>Computer Science Engineering · USS, Santiago · 2027</li>
+    <li data-scan="award-rally"><b>1st place · Social Impact</b>Innovation Rally 2026, USS campus (Helix)</li>
+    <li data-scan="award-aws"><b>AWS Zero to Shipped</b>One of the 5 winners (Rumbo a Casa)</li>
+  </ul>
+</div></section>
+
+<section id="skills"><div class="wrap"><div class="eyebrow">Skills</div><h2>Tools I use to ship.</h2><p class="lead" style="margin-bottom:26px">Each one is tied to real projects. Try the scouter to see how much work is behind each skill.</p>
+  <div class="skillgrid">
+    <div class="skillbox"><h3>Languages</h3><div class="chips"><span class="chip" data-scan="sk-Python">Python</span><span class="chip" data-scan="sk-TypeScript">TypeScript</span></div></div>
+    <div class="skillbox"><h3>Backend &amp; data</h3><div class="chips"><span class="chip" data-scan="sk-FastAPI">FastAPI</span><span class="chip" data-scan="sk-Supabase">Supabase</span></div></div>
+    <div class="skillbox"><h3>Cloud &amp; AI</h3><div class="chips"><span class="chip" data-scan="sk-AWS">AWS</span><span class="chip" data-scan="sk-Lambda">AWS Lambda</span><span class="chip" data-scan="sk-Bedrock">Amazon Bedrock</span></div></div>
+    <div class="skillbox"><h3>Apps</h3><div class="chips"><span class="chip" data-scan="sk-RN">React Native</span></div></div>
+  </div>
+</div></section>
+
+<section id="projects"><div class="wrap"><div class="eyebrow">Projects &amp; achievements</div><h2>Things I've built.</h2>
+  <div class="cards">
+    <article class="card" data-scan="pj-rumbo"><div class="img" style="background-position: 5% 35%"><span>Hackathon · AWS</span></div><div class="body"><h3>Rumbo a Casa</h3><p>Entry to the AWS Zero to Shipped hackathon.</p><p class="res">★ One of the 5 winners</p><div class="chip" style="align-self:flex-start">TypeScript · AWS</div><div class="links"><a href="https://github.com/BlasterLc/rumbo-a-casa">Repository ↗</a></div></div></article>
+    <article class="card" data-scan="pj-helix"><div class="img" style="background-position: 78% 38%"><span>Team project</span></div><div class="body"><h3>Helix</h3><p>Management system for Chilean corner stores, built with a team.</p><p class="res">★ 1st place, Social Impact · Innovation Rally 2026</p><div class="chip" style="align-self:flex-start">TypeScript · FastAPI</div><div class="links"><i>Private repository</i></div></div></article>
+    <article class="card" data-scan="pj-deal"><div class="img" style="background-position: 91% 42%"><span>AI agent</span></div><div class="body"><h3>DealJudge</h3><p>An agent that judges whether a discount is real: a model measures, plain Python decides and Amazon Bedrock writes the alert.</p><div class="chip" style="align-self:flex-start">Python · Amazon Bedrock · Strands</div><div class="links"><a href="https://github.com/BlasterLc/dealjudge">Repository ↗</a></div></div></article>
+    <article class="card" data-scan="pj-fit"><div class="img" style="background-position: 99% 55%"><span>Mobile + web</span></div><div class="body"><h3>FitTrack</h3><p>Gym and nutrition tracking for iOS, Android and web from a single codebase, with AI-based calorie estimation.</p><div class="chip" style="align-self:flex-start">React Native · FastAPI · Supabase</div><div class="links"><a href="https://github.com/BlasterLc/fittrack">Repository ↗</a></div></div></article>
+  </div>
+  <p style="margin-top:14px;font-size:13px;color:var(--mut)">Card images are placeholders (crops of the hero art). Real screenshots go here.</p>
+</div></section>
+
+<section id="journey"><div class="wrap"><div class="eyebrow">Journey</div><h2>Activity and milestones.</h2><p class="lead">Contributions per month on GitHub, 2026 (real data).</p>
+  <div class="bars" id="bars"></div><div class="lab" id="lab"></div>
+  <div class="tl">
+    <div data-scan="m-may"><b>May 2026</b> · Started JequeBot, a music bot for Discord.</div>
+    <div data-scan="m-jun"><b>Jun 2026</b> · Started Helix, a management system for corner stores.</div>
+    <div data-scan="m-sep"><b>Sep 2026</b> · Rumbo a Casa selected as one of 5 winners at AWS Zero to Shipped.</div>
+    <div data-scan="m-oct"><b>Oct 2026</b> · 1st place, Social Impact at the Innovation Rally (USS campus).</div>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap grid2"><div><div class="eyebrow">Contact</div><h2>Let's talk.</h2><p class="lead">Send me a message and I'll reply by email.</p>
+  <div class="social"><a href="https://github.com/BlasterLc">GitHub</a><a href="#">LinkedIn</a><a href="#">Email</a></div></div>
+  <form class="contact" id="form"><input placeholder="Your name" autocomplete="name" required><input type="email" placeholder="Your email" autocomplete="email" required><textarea rows="4" placeholder="Your message" required></textarea><button class="btn pri" type="submit">Send message</button><p id="fst" style="font-size:12px;color:var(--mut)">Mock: the real form uses API Gateway, Lambda and SES.</p></form>
+</div></section>
+</main>
+<footer><div class="wrap">Hero illustration generated with AI · Mock with draft content · Built for the AWS Student Builder Challenge</div></footer>
+
+<!-- SCOUTER -->
+<button id="sc-btn" type="button" aria-pressed="false" aria-label="Activate scouter. Measures any element on the page">
+  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h13a7 7 0 0 1 0 14H9a4 4 0 0 1-4-4z"/><circle cx="19" cy="17" r="3"/><path d="M5 10l-2-3M26 17h3M19 24v3"/></svg>
+  <span id="sc-btn-t">Activate scouter</span>
+</button>
+<div id="sc-overlay" aria-hidden="true"><div class="tint"></div><div class="scan"></div><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i><div class="tag">SCOUTER ONLINE</div></div>
+<div id="sc-hud"><span>Esc to exit</span><button id="sc-snd" type="button" aria-pressed="false">sound: off</button></div>
+<div id="sc-ret"><i></i><i></i><i></i><i></i><b></b></div>
+<div id="sc-read" role="status" aria-live="polite"></div>
+<div id="sc-overload"><div class="flash"></div><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 0 L46 18 L54 30 L44 46 L56 60 L48 78 L52 100"/><path d="M0 40 L20 44 L34 38 L50 46"/><path d="M100 30 L80 36 L70 32 L56 44"/><path d="M30 100 L36 82 L28 70 L40 58"/><path d="M70 100 L64 84 L72 72 L60 60"/></svg><div class="msg">POWER LEVEL OVERLOAD<br>REBOOTING…</div></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fmt = (n) => n.toLocaleString('en-US');
+
+  /* ---------- Data (from GitHub; confirm before publishing) ---------- */
+  const COMMITS = { rumbo: 205, helix: 70, deal: 43, fit: 244, jeque: 154, alexa: 57, asist: 116 };
+  const sum = (...k) => k.reduce((a, x) => a + COMMITS[x], 0);
+  const MONTHS = [['Mar', 17], ['Apr', 9], ['May', 106], ['Jun', 382], ['Jul', 408], ['Aug', 404], ['Sep', 308], ['Oct*', 151]];
+  const YEAR = 1785;
+  const MAXC = 500;
+
+  const T = {
+    me:        { name: 'Matias Rodriguez', power: YEAR, expl: 'GitHub contributions in the last 12 months', stats: [['commits', 638, 700], ['projects', 7, 10], ['months', 8, 12]], note: 'Went from ~0 to ~400 contributions a month since May 2026.' },
+    andes:     { name: 'The Andes', egg: true },
+    'pj-rumbo':{ name: 'Rumbo a Casa', power: COMMITS.rumbo, expl: 'commits', stats: [['commits', COMMITS.rumbo, MAXC], ['team', 1, 5], ['AWS', 9, 10]], note: 'One of 5 winners at AWS Zero to Shipped.' },
+    'pj-helix':{ name: 'Helix', power: COMMITS.helix, expl: 'commits (private repo)', stats: [['commits', COMMITS.helix, MAXC], ['team', 3, 5], ['impact', 9, 10]], note: '1st place, Social Impact at the 2026 Innovation Rally.' },
+    'pj-deal': { name: 'DealJudge', power: COMMITS.deal, expl: 'commits', stats: [['commits', COMMITS.deal, MAXC], ['AI', 8, 10], ['age', 1, 12]], note: 'The newest project: a model measures, Python decides, Bedrock writes.' },
+    'pj-fit':  { name: 'FitTrack', power: COMMITS.fit, expl: 'commits', stats: [['commits', COMMITS.fit, MAXC], ['platforms', 3, 3], ['months', 4, 12]], note: 'The biggest project by commits. One codebase for iOS, Android and web.' },
+    'sk-Python':     { name: 'Python', power: sum('jeque', 'deal', 'alexa', 'fit'), expl: 'commits across projects that use it', stats: [['projects', 4, 7], ['commits', sum('jeque', 'deal', 'alexa', 'fit'), 700], ['since', 2026, 2026]], note: 'Used in 4 of 7 projects.' },
+    'sk-TypeScript': { name: 'TypeScript', power: sum('rumbo', 'helix', 'asist'), expl: 'commits across projects that use it', stats: [['projects', 3, 7], ['commits', sum('rumbo', 'helix', 'asist'), 700], ['since', 2026, 2026]], note: 'Behind Rumbo a Casa, Helix and Asistente.' },
+    'sk-FastAPI':    { name: 'FastAPI', power: sum('fit', 'alexa'), expl: 'commits across projects that use it', stats: [['projects', 2, 7], ['commits', sum('fit', 'alexa'), 700], ['since', 2026, 2026]], note: 'The backend of FitTrack and Alexa-PC.' },
+    'sk-Supabase':   { name: 'Supabase', power: COMMITS.fit, expl: 'commits across projects that use it', stats: [['projects', 1, 7], ['commits', COMMITS.fit, 700], ['since', 2026, 2026]], note: 'Auth and data for FitTrack.' },
+    'sk-AWS':        { name: 'AWS', power: sum('rumbo', 'deal', 'alexa'), expl: 'commits across projects that use it', stats: [['projects', 3, 7], ['commits', sum('rumbo', 'deal', 'alexa'), 700], ['wins', 1, 3]], note: 'From a hackathon win to agents on Bedrock.' },
+    'sk-Lambda':     { name: 'AWS Lambda', power: COMMITS.alexa, expl: 'commits across projects that use it', stats: [['projects', 1, 7], ['commits', COMMITS.alexa, 700], ['since', 2026, 2026]], note: 'Voice commands from Alexa to a PC.' },
+    'sk-Bedrock':    { name: 'Amazon Bedrock', power: COMMITS.deal, expl: 'commits across projects that use it', stats: [['projects', 1, 7], ['commits', COMMITS.deal, 700], ['since', 2026, 2026]], note: 'Writes the alerts in DealJudge.' },
+    'sk-RN':         { name: 'React Native', power: sum('fit', 'asist'), expl: 'commits across projects that use it', stats: [['projects', 2, 7], ['commits', sum('fit', 'asist'), 700], ['platforms', 3, 3]], note: 'FitTrack and the Asistente mobile app.' },
+    edu:        { name: 'Education', power: 4, expl: 'years of study completed', stats: [['year', 4, 5], ['degree', 8, 10], ['grad.', 2027, 2027]], note: 'Computer Science Engineering at USS.' },
+    'award-rally': { name: '1st place · Social Impact', power: 1, expl: 'place', stats: [['teams', 1, 1], ['year', 2026, 2026]], note: 'Innovation Rally 2026, USS campus.' },
+    'award-aws':   { name: 'AWS Zero to Shipped', power: 5, expl: 'winners selected', stats: [['rank', 1, 1], ['AWS', 10, 10]], note: 'Rumbo a Casa was one of the 5.' },
+    'hobby-db':  { name: 'Dragon Ball modding', power: null, note: 'Skins, stages and music for Dragon Ball: Sparking! Zero. Power level: classified.' },
+    'hobby-aoe': { name: 'Age of Empires II', power: null, note: 'Strategy classic. Still researching techs.' },
+    'hobby-host':{ name: 'Self-hosting', power: null, note: 'Own server, monitoring with Uptime Kuma and way too many experiments.' },
+    'hobby-gym': { name: 'Gym', power: 5, expl: 'sessions per week', stats: [['sessions', 5, 7], ['minutes', 90, 120]], note: 'Compound lifts first. Strong opinions about exercise order.' },
+    'm-may': { name: 'May 2026', power: 106, expl: 'contributions that month', stats: [['vs Apr', 106, 400]], note: 'JequeBot starts. The curve changes.' },
+    'm-jun': { name: 'Jun 2026', power: 382, expl: 'contributions that month', stats: [['vs May', 382, 400]], note: 'Helix starts.' },
+    'm-sep': { name: 'Sep 2026', power: 308, expl: 'contributions that month', stats: [['vs Jul', 308, 410]], note: 'Rumbo a Casa.' },
+    'm-oct': { name: 'Oct 2026', power: 151, expl: 'contributions so far this month', stats: [['so far', 151, 410]], note: 'Innovation Rally win.' },
+  };
+
+  /* ---------- Journey chart ---------- */
+  $('#bars').innerHTML = MONTHS.map(([, v]) => `<div style="height:${Math.max(2, v / 410 * 100)}%"><span>${v}</span></div>`).join('');
+  $('#lab').innerHTML = MONTHS.map(([m]) => `<span>${m}</span>`).join('');
+  $('#form').addEventListener('submit', (e) => { e.preventDefault(); $('#fst').textContent = '✔ Message sent (mock). Thank you!'; });
+
+  /* ---------- Hero: place the "Andes" hotspot over the mountains (object-fit: cover math) ---------- */
+  const bg = $('#herobg'), andes = $('#andes'), hero = $('#hero');
+  function placeAndes() {
+    const W = hero.clientWidth, H = hero.clientHeight, iw = 2000, ih = 1116, s = Math.max(W / iw, H / ih), rw = iw * s, rh = ih * s;
+    const ox = (W - rw) * 0.48, oy = (H - rh) * 0.40; // matches object-position 48% 40%
+    const x = ox + 880 * s, y = oy + 190 * s, w = 940 * s, h = 150 * s;
+    Object.assign(andes.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+  }
+  addEventListener('resize', placeAndes); bg.addEventListener('load', placeAndes); placeAndes();
+
+  /* ---------- Scouter ---------- */
+  const ret = $('#sc-ret'), read = $('#sc-read'), btn = $('#sc-btn'), navbtn = $('#nav-sc'), overload = $('#sc-overload');
+  let on = false, sound = false, cur = null, timer = null, mx = -100, my = -100, rx = -100, ry = -100, locked = false, busy = false, ac = null;
+  const counts = (() => { try { return JSON.parse(localStorage.getItem('scancounts') || '{}'); } catch (_) { return {}; } })();
+  const baseCount = (k) => 11 + ([...k].reduce((a, c) => a + c.charCodeAt(0), 0) % 53);
+  function setOn(v) {
+    on = v; document.body.classList.toggle('scouting', on); [btn, navbtn].forEach((b) => b.setAttribute('aria-pressed', String(on)));
+    $('#sc-btn-t').textContent = on ? 'Scouter on · tap to exit' : 'Activate scouter'; navbtn.textContent = on ? '◉ Scouter: on' : '◉ Scouter';
+    if (!on) unlock(true);
+  }
+  const toggle = () => setOn(!on);
+  btn.addEventListener('click', toggle); navbtn.addEventListener('click', toggle); $('#hero-sc').addEventListener('click', () => setOn(true));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && on) setOn(false); else if ((e.key === 's' || e.key === 'S') && !/input|textarea/i.test(e.target.tagName)) toggle(); });
+  $('#sc-snd').addEventListener('click', (e) => { sound = !sound; e.currentTarget.textContent = 'sound: ' + (sound ? 'on' : 'off'); e.currentTarget.setAttribute('aria-pressed', String(sound)); if (sound) beep(880, .08); });
+  function beep(f = 1040, d = .06) { if (!sound) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type = 'square'; o.frequency.value = f; g.gain.value = .04; o.connect(g).connect(ac.destination); o.start(); g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + d); o.stop(ac.currentTime + d); } catch (_) {} }
+
+  addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; if (!on) return; const t = e.target.closest?.('[data-scan]'); if (t !== cur) { unlock(); cur = t; if (t) timer = setTimeout(() => lock(t), reduce ? 0 : 380); } }, { passive: true });
+  addEventListener('pointerdown', (e) => { if (!on) return; const t = e.target.closest?.('[data-scan]'); if (e.pointerType === 'touch' || e.pointerType === 'pen') { mx = e.clientX; my = e.clientY; unlock(); cur = t; if (t) lock(t); } }, { passive: true });
+  function unlock(hard) { clearTimeout(timer); timer = null; if (locked || hard) { $$('.locked').forEach((x) => x.classList.remove('locked')); ret.classList.remove('lock'); read.classList.remove('on'); locked = false; } cur = hard ? null : cur; }
+  function lock(el) {
+    if (!on || busy) return; const key = el.dataset.scan, d = T[key]; if (!d) return; locked = true; el.classList.add('locked'); ret.classList.add('lock'); beep();
+    if (d.egg) { eggRun(); return; }
+    counts[key] = (counts[key] || 0) + 1; try { localStorage.setItem('scancounts', JSON.stringify(counts)); } catch (_) {}
+    const total = baseCount(key) + counts[key];
+    read.innerHTML = `<div class="nm">${d.name}</div>${d.power != null ? `<div class="pl">POWER LEVEL</div><div class="pv" id="pv">0</div><div class="ex">${d.expl || ''}</div>` : '<div class="pl">POWER LEVEL</div><div class="pv" style="font-size:22px">CLASSIFIED</div>'}
+      ${(d.stats || []).map(([l, v, m]) => `<div class="st"><span>${l}</span><div class="bar"><i data-w="${Math.min(100, v / m * 100)}"></i></div><span>${typeof v === 'number' && v > 999 && v < 3000 && /year|grad|since/.test(l) ? v : fmt(v)}</span></div>`).join('')}
+      <div class="nt">${d.note || ''}</div><div class="cn">scanned ${fmt(total)} times by visitors</div>`;
+    placeRead(el); read.classList.add('on'); requestAnimationFrame(() => $$('#sc-read .bar i').forEach((i) => (i.style.width = i.dataset.w + '%')));
+    if (d.power != null) countUp($('#pv'), d.power);
+  }
+  function countUp(el, to) { if (!el) return; const t0 = performance.now(), dur = reduce ? 1 : 700; (function f(t) { const k = Math.min(1, (t - t0) / dur); el.textContent = fmt(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(f); })(t0); }
+  function placeRead(el) { const r = el.getBoundingClientRect(), w = 290, h = read.offsetHeight || 250; let x = r.right + 16; if (x + w > innerWidth - 10) x = r.left - w - 16; if (x < 10) x = Math.max(10, Math.min(innerWidth - w - 10, mx + 24));
+    let y = r.top + r.height / 2 - h / 2; y = Math.max(70, Math.min(innerHeight - h - 10, y)); read.style.left = x + 'px'; read.style.top = y + 'px'; }
+
+  async function eggRun() {
+    busy = true; read.innerHTML = '<div class="nm">The Andes</div><div class="pl">POWER LEVEL</div><div class="pv" id="pv">0</div><div class="ex">Reading…</div>'; read.classList.add('on'); placeRead(andes);
+    let n = 0; const iv = setInterval(() => { n += 1800 + Math.floor(Math.random() * 1500); $('#pv').textContent = fmt(n); beep(300 + (n % 900), .03); if (n > 9000) { clearInterval(iv); setTimeout(boom, 250); } }, 60);
+  }
+  function boom() {
+    beep(120, .4); overload.classList.add('on'); read.classList.remove('on'); setTimeout(() => { overload.classList.remove('on'); setTimeout(() => { busy = false; unlock(true); if (on) { read.innerHTML = '<div class="nm">Scouter</div><div class="nt" style="border:0;margin:0;padding:0">It is over 9000. Systems restored.</div>'; read.style.left = Math.max(10, mx - 150) + 'px'; read.style.top = Math.max(70, my + 30) + 'px'; read.classList.add('on'); setTimeout(() => read.classList.remove('on'), 2600); } }, 400); }, reduce ? 600 : 1500);
+  }
+
+  (function loop() { rx += (mx - rx) * 0.22; ry += (my - ry) * 0.22;
+    if (on) { if (locked && cur) { const r = cur.getBoundingClientRect(); ret.style.width = r.width + 12 + 'px'; ret.style.height = r.height + 12 + 'px'; ret.style.transform = `translate(${r.left - 6}px, ${r.top - 6}px)`; }
+      else { ret.style.width = '64px'; ret.style.height = '64px'; ret.style.transform = `translate(${rx - 32}px, ${ry - 32}px)`; } }
+    requestAnimationFrame(loop); })();
+  let sraf = 0;
+  addEventListener('scroll', () => { if (!on || sraf) return; sraf = requestAnimationFrame(() => { sraf = 0; if (busy) return;
+    const t = document.elementFromPoint(mx, my)?.closest?.('[data-scan]') || null; if (t !== cur) { unlock(); cur = t; if (t) timer = setTimeout(() => lock(t), reduce ? 0 : 380); } else if (locked && cur) placeRead(cur); }); }, { passive: true });
+})();
+</script>
+</body>
+</html>

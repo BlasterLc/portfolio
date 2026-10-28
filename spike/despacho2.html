@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mock v2 · El caso de Matías</title>
+<style>
+  :root { --ink:#1b140c; --paper:#efe7d3; --amber:#ffc66b; --red:#b3301f; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #07090d; overflow: hidden; }
+  body { font-family: "Courier New", ui-monospace, monospace; color: var(--paper); touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  button { font-family: inherit; }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #world { transition: transform .25s ease-out; transform-origin: 1000px 558px; }
+
+  .flick { animation: flick 3.4s ease-in-out infinite; }
+  @keyframes flick { 0%,100% { opacity: .9 } 42% { opacity: .78 } 47% { opacity: .95 } 70% { opacity: .84 } }
+  .rain line { stroke: rgba(190,215,235,.55); stroke-width: 1.4; animation: fall linear infinite; }
+  @keyframes fall { from { transform: translate(0,-260px); } to { transform: translate(-40px, 520px); } }
+  .dust circle { fill: rgba(255,214,150,.85); animation: drift ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translate(0,0); opacity: .15 } 50% { opacity: .85 } to { transform: translate(var(--dx), var(--dy)); opacity: .2 } }
+
+  .hs { fill: transparent; stroke: transparent; stroke-width: 3; cursor: pointer; pointer-events: all; transition: fill .2s, stroke .2s; }
+  .hs:hover, .hs:focus-visible, .hs.pulse { fill: rgba(255,198,107,.14); stroke: rgba(255,214,150,.95); outline: none; filter: drop-shadow(0 0 14px rgba(255,198,107,.9)); }
+  .dot { fill: rgba(255,214,150,.95); pointer-events: none; animation: ping 2.2s ease-in-out infinite; }
+  .ring { fill: none; stroke: rgba(255,214,150,.9); stroke-width: 3; pointer-events: none; transform-box: fill-box; transform-origin: center; animation: ring 2.2s ease-out infinite; }
+  @keyframes ping { 0%,100% { opacity: .9; } 50% { opacity: .55; } }
+  @keyframes ring { 0% { transform: scale(.5); opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
+  .found .dot, .found .ring { display: none; }
+  g.amb .dot, g.amb .ring { display: none; }
+
+  #tip { position: fixed; z-index: 20; pointer-events: none; padding: 7px 11px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); background: var(--paper);
+         box-shadow: 0 6px 18px rgba(0,0,0,.5); opacity: 0; transform: translate(-50%, -140%); transition: opacity .15s; white-space: nowrap; }
+  #tip.on { opacity: 1; }
+
+  /* barra superior = navegación del portafolio */
+  #bar { position: fixed; left: 0; right: 0; top: 0; z-index: 12; display: flex; align-items: center; gap: 18px; padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+         background: linear-gradient(to bottom, rgba(6,8,12,.88), rgba(6,8,12,0)); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+  #bar .brand { white-space: nowrap; } #bar .brand b { color: var(--amber); font-weight: normal; }
+  #nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+  #nav::-webkit-scrollbar { display: none; }
+  #nav button { background: transparent; border: 0; color: var(--paper); padding: 8px 10px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; opacity: .85; }
+  #nav button:hover, #nav button:focus-visible { opacity: 1; border-color: var(--amber); outline: none; }
+  #nav button.done::before { content: "● "; color: var(--amber); }
+  #bar .right { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+  #prog { display: flex; gap: 4px; } #prog i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(239,231,211,.6); } #prog i.on { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  #simple { background: rgba(0,0,0,.4); border: 1px solid rgba(239,231,211,.4); color: var(--paper); padding: 7px 10px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+  #simple:hover { border-color: var(--amber); }
+
+  /* narrador */
+  #narr { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translate(-50%, 12px); z-index: 11; width: min(760px, calc(100% - 28px)); padding: 14px 18px 14px 20px;
+          background: rgba(8,10,15,.78); border-left: 3px solid var(--amber); backdrop-filter: blur(6px); font-size: 14px; line-height: 1.55; letter-spacing: .02em; opacity: 0; transition: opacity .35s, transform .35s; cursor: pointer; }
+  #narr.on { opacity: 1; transform: translate(-50%, 0); }
+  #narr small { display: block; margin-bottom: 4px; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+  #narr .caret { display: inline-block; width: 7px; height: 13px; background: var(--amber); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  #hintbar { position: fixed; left: 0; right: 0; bottom: max(16px, env(safe-area-inset-bottom)); text-align: center; z-index: 9; pointer-events: none; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; text-shadow: 0 1px 8px #000; transition: opacity .3s; }
+  #hintbar span { color: var(--amber); }
+  body.narrating #hintbar { opacity: 0; }
+
+  /* apertura */
+  #intro { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(ellipse at 50% 40%, #16232b, #05070b 75%); transition: opacity .9s; }
+  #intro.hide { opacity: 0; pointer-events: none; }
+  #intro .card { width: min(640px, 100%); background: var(--paper); color: var(--ink); padding: 34px 34px 28px; transform: rotate(-1deg); box-shadow: 0 30px 80px rgba(0,0,0,.7);
+                 background-image: repeating-linear-gradient(transparent 0 27px, rgba(70,50,20,.07) 27px 28px); }
+  #intro .tag { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--red); border: 2px solid var(--red); display: inline-block; padding: 3px 10px; transform: rotate(-2deg); }
+  #intro h1 { font-size: 30px; line-height: 1.15; margin: 18px 0 6px; letter-spacing: .02em; }
+  #intro .role { font-size: 13px; letter-spacing: .08em; opacity: .75; margin-bottom: 18px; }
+  #intro p.line { min-height: 70px; font-size: 14px; line-height: 1.65; }
+  #intro button { margin-top: 16px; background: var(--ink); color: var(--paper); border: 0; padding: 13px 18px; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; cursor: pointer; }
+  #intro button:hover { background: #3a2a14; }
+
+  /* panel */
+  #veil { position: fixed; inset: 0; z-index: 30; background: rgba(4,6,10,.72); display: none; align-items: center; justify-content: center; padding: 14px; }
+  #veil.on { display: flex; }
+  #panel { position: relative; width: min(780px, 100%); max-height: calc(100vh - 28px); overflow: auto; background: var(--paper); color: var(--ink); padding: 26px 28px 24px; box-shadow: 0 30px 80px rgba(0,0,0,.7);
+           transform: rotate(-.3deg); animation: pop .35s cubic-bezier(.2,.8,.2,1); font-size: 14px; line-height: 1.65; background-image: repeating-linear-gradient(transparent 0 27px, rgba(70,50,20,.07) 27px 28px); }
+  @keyframes pop { from { transform: translateY(24px) rotate(-2deg) scale(.96); opacity: 0; } to { transform: rotate(-.3deg); opacity: 1; } }
+  #panel h2 { font-size: 14px; letter-spacing: .22em; text-transform: uppercase; border-bottom: 2px solid var(--ink); padding-bottom: 9px; margin-bottom: 14px; padding-right: 36px; }
+  #panel h2 em { font-style: normal; color: var(--red); margin-right: 8px; }
+  #panel .x { position: absolute; right: 12px; top: 10px; width: 32px; height: 32px; border: 1px solid var(--ink); background: transparent; font-size: 16px; cursor: pointer; color: var(--ink); }
+  #panel .hand { font-family: "Segoe Print","Bradley Hand","Comic Sans MS",cursive; color: #7a1f14; font-size: 13px; }
+  #panel .small { font-size: 11px; opacity: .6; margin-top: 12px; }
+  #panel .btn { display: inline-block; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; padding: 10px 14px; background: var(--ink); color: var(--paper); border: 0; cursor: pointer; margin-top: 12px; text-decoration: none; }
+  #panel .btn:hover { background: #3a2a14; }
+  #panel input, #panel textarea { width: 100%; font: inherit; font-size: 13px; padding: 9px 10px; background: rgba(255,255,255,.55); border: 1px solid rgba(27,20,12,.5); margin-bottom: 8px; color: var(--ink); user-select: text; -webkit-user-select: text; }
+  #panel p + p { margin-top: 10px; }
+  #panel .letter { font-size: 14px; line-height: 1.8; }
+  #panel .letter .sig { margin-top: 16px; font-family: "Segoe Print","Bradley Hand",cursive; font-size: 18px; }
+
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 150px; margin: 10px 0 4px; }
+  .bars div { flex: 1; background: linear-gradient(#c0392b, #7a1f14); position: relative; min-height: 3px; transform-origin: bottom; animation: grow .8s cubic-bezier(.2,.8,.2,1) backwards; }
+  .bars div span { position: absolute; top: -17px; left: 0; right: 0; text-align: center; font-size: 10px; }
+  .bars div.may { background: linear-gradient(#e0a43c, #9a6a14); }
+  @keyframes grow { from { transform: scaleY(0); } }
+  .lab { display: flex; gap: 8px; font-size: 10px; letter-spacing: .1em; text-align: center; } .lab span { flex: 1; }
+  .tl { margin-top: 18px; border-left: 2px solid var(--red); padding-left: 14px; }
+  .tl div { position: relative; margin-bottom: 11px; font-size: 13px; }
+  .tl div::before { content: ""; position: absolute; left: -20px; top: 7px; width: 9px; height: 9px; background: var(--red); border-radius: 50%; }
+  .tl b { letter-spacing: .08em; }
+
+  .drawer { border: 1px solid rgba(27,20,12,.5); margin-bottom: 8px; background: rgba(255,255,255,.35); }
+  .drawer > button { width: 100%; text-align: left; font-size: 13px; padding: 10px 12px; background: transparent; border: 0; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; color: var(--ink); }
+  .drawer > button:hover { background: rgba(192,57,43,.1); }
+  .drawer .body { display: none; padding: 4px 12px 12px; font-size: 13px; }
+  .drawer.open .body { display: block; }
+  .chip { font-size: 10px; letter-spacing: .08em; padding: 2px 7px; border: 1px solid rgba(27,20,12,.5); margin-right: 4px; display: inline-block; }
+
+  .skills { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+  .skills button { font-size: 12px; padding: 8px 12px; background: #e7d9b4; border: 1px solid rgba(27,20,12,.55); cursor: pointer; color: var(--ink); transition: transform .15s; }
+  .skills button:hover { transform: translateY(-2px); }
+  .skills button.on { background: #f0c35a; box-shadow: 0 0 0 2px var(--red); }
+  #skinfo { min-height: 120px; padding: 12px 14px; background: rgba(255,255,255,.45); border: 1px dashed rgba(27,20,12,.4); }
+  #skinfo .pj { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px dotted rgba(27,20,12,.3); font-size: 13px; animation: grow2 .4s ease backwards; }
+  @keyframes grow2 { from { opacity: 0; transform: translateX(-8px); } }
+
+  #case { position: fixed; inset: 0; z-index: 35; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(4,6,10,.78); }
+  #case.on { display: flex; }
+  #case .card { width: min(560px, 100%); background: var(--paper); color: var(--ink); padding: 36px 30px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,.7); transform: rotate(-.8deg); }
+  #case .stamp { display: inline-block; font-size: 28px; letter-spacing: .24em; color: var(--red); border: 4px solid var(--red); padding: 6px 18px; transform: rotate(-6deg); animation: stamp .5s cubic-bezier(.2,.9,.3,1.4) .2s backwards; }
+  @keyframes stamp { from { transform: rotate(-6deg) scale(2.6); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
+  #case p { margin: 18px 0 6px; line-height: 1.65; }
+  #case button { margin: 8px 5px 0; padding: 12px 16px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--ink); background: transparent; color: var(--ink); }
+  #case button.pri { background: var(--ink); color: var(--paper); }
+
+  #lights { position: fixed; inset: 0; z-index: 4; background: #02040a; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+  body.off #lights { opacity: .72; }
+  @media (max-width: 760px) { #bar { gap: 8px; flex-wrap: wrap; } #bar .brand { display: none; } #nav { order: 3; flex-basis: 100%; } #hintbar { bottom: max(70px, env(safe-area-inset-bottom)); } #intro h1 { font-size: 24px; } }
+  @media (prefers-reduced-motion: reduce) { .rain, .dust, .dot, .ring, .flick { animation: none !important; } #world { transition: none; } }
+</style>
+</head>
+<body>
+<svg id="scene" viewBox="0 0 2000 1116" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Despacho de detective con objetos interactivos">
+  <defs>
+    <radialGradient id="lampg" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffd58a" stop-opacity=".75"/><stop offset=".45" stop-color="#ffb347" stop-opacity=".25"/><stop offset="1" stop-color="#ff9a2a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="beam" gradientUnits="userSpaceOnUse" cx="1000" cy="560" r="760"><stop offset="0" stop-color="#05070c" stop-opacity="0"/><stop offset=".5" stop-color="#05070c" stop-opacity=".2"/><stop offset="1" stop-color="#05070c" stop-opacity=".62"/></radialGradient>
+    <clipPath id="glass"><rect x="895" y="292" width="318" height="400"/><rect x="1250" y="410" width="300" height="285"/></clipPath>
+  </defs>
+  <g id="world">
+    <image href="assets/despacho.webp" x="0" y="0" width="2000" height="1116"/>
+    <g class="rain" clip-path="url(#glass)" id="rain"></g>
+    <circle class="flick" cx="705" cy="590" r="300" fill="url(#lampg)" style="mix-blend-mode:screen"/>
+    <g class="dust" id="dust"></g>
+    <rect width="2000" height="1116" fill="url(#beam)" id="beamrect" pointer-events="none"/>
+    <g id="spots"></g>
+  </g>
+</svg>
+<div id="lights"></div>
+<div id="tip"></div>
+
+<div id="bar">
+  <div class="brand"><b>◆</b> Matías · Caso 2026</div>
+  <nav id="nav" aria-label="Secciones del portafolio">
+    <button data-go="maquina" type="button">Sobre mí</button>
+    <button data-go="tablero" type="button">Skills</button>
+    <button data-go="archivador" type="button">Proyectos</button>
+    <button data-go="calendario" type="button">Trayectoria</button>
+    <button data-go="telefono" type="button">Contacto</button>
+  </nav>
+  <div class="right"><div id="prog" title="Expediente revisado"></div><button id="simple" type="button">Versión simple</button></div>
+</div>
+
+<div id="narr" aria-live="polite"><small>Narrador</small><span id="ntext"></span><span class="caret"></span></div>
+<div id="hintbar">Mueve la linterna · <span>toca los objetos que brillan</span> · o usa el menú de arriba</div>
+
+<div id="intro">
+  <div class="card">
+    <span class="tag">Caso 2026</span>
+    <h1>Matías</h1>
+    <div class="role">Estudiante de Ingeniería Civil en Informática · construyo sistemas reales <span class="hand" style="color:#7a1f14">(borrador)</span></div>
+    <p class="line" id="introline"></p>
+    <button id="open" type="button">Abrir el expediente →</button>
+  </div>
+</div>
+
+<div id="veil" role="dialog" aria-modal="true"><div id="panel"><button class="x" id="close" aria-label="Cerrar">✕</button><div id="content"></div></div></div>
+<div id="case"><div class="card"><div class="stamp">CASO CERRADO</div><p id="caseline"></p><button class="pri" id="talk" type="button">☎ Hablemos</button><button id="keep" type="button">Seguir explorando</button></div></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const scene = $('#scene'), world = $('#world'), tip = $('#tip'), veil = $('#veil'), content = $('#content'), narr = $('#narr'), ntext = $('#ntext');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Narrador ---------- */
+  const NARR = {
+    intro: 'Caso 2026. Sujeto: Matías, estudiante de Ingeniería Informática. Hasta abril no había señales de actividad. Después, algo cambió.',
+    maquina:    { hover: 'El sujeto dejó una carta. Rara vez se explican. Esta vez sí.', open: 'Sin adornos. Así escribe.' },
+    tablero:    { hover: 'Las tecnologías no están sueltas. Cada hilo lleva a un proyecto real.', open: 'Toca una tecnología. Los hilos hacen el resto.' },
+    archivador: { hover: 'Siete expedientes. Un bot de música, un sistema para minimarkets, un agente que juzga descuentos. Nadie los pidió.', open: 'Cada cajón cuenta qué se construyó y qué quedó pendiente.' },
+    calendario: { hover: 'Mayo. Las marcas pasan de cero a cientos por mes. El sujeto dejó de esperar.', open: 'Así luce un año cuando alguien decide moverse.' },
+    telefono:   { hover: 'Una línea abierta. Si el caso te interesa, llama.', open: 'Los mensajes llegan directo. Sin intermediarios.' },
+    lampara:    { hover: 'Siempre hay una lámpara encendida a estas horas.' },
+    ventana:    { hover: 'Afuera sigue lloviendo. Por ahí se llega a la calle.' },
+    cierre: 'Caso cerrado. O casi. El sujeto sigue construyendo. Si te interesa, hay una línea abierta.',
+  };
+  let ntimer = null, ntyping = null, hideT = null, skipOn = true;
+  function say(text, hold = 6000) {
+    clearInterval(ntyping); clearTimeout(hideT);
+    narr.classList.add('on'); document.body.classList.add('narrating');
+    ntext.textContent = ''; let i = 0;
+    ntyping = setInterval(() => { ntext.textContent = text.slice(0, ++i); if (i >= text.length) { clearInterval(ntyping); hideT = setTimeout(hideNarr, hold); } }, reduce ? 0 : 18);
+  }
+  function hideNarr() { clearInterval(ntyping); clearTimeout(hideT); narr.classList.remove('on'); document.body.classList.remove('narrating'); }
+  narr.addEventListener('click', hideNarr);
+
+  /* ---------- Apertura ---------- */
+  const il = $('#introline'); let ii = 0; const itx = NARR.intro;
+  const itype = setInterval(() => { il.textContent = itx.slice(0, ++ii); if (ii >= itx.length) clearInterval(itype); }, reduce ? 0 : 22);
+  $('#open').addEventListener('click', () => { clearInterval(itype); $('#intro').classList.add('hide'); setTimeout(() => $('#intro').remove(), 900); setTimeout(() => say('La oficina está tal como la dejó. Empieza por donde quieras.', 4500), 700); });
+
+  /* ---------- Hotspots (coordenadas de la ilustración 2000×1116) ---------- */
+  const SPOTS = [
+    { id: 'tablero',   label: 'Skills · el tablero',          pts: '38,6 655,214 648,655 42,872', c: [350, 330], sec: true },
+    { id: 'calendario',label: 'Trayectoria · el calendario',  pts: '770,675 868,670 872,742 778,744', c: [820, 708], sec: true },
+    { id: 'lampara',   label: 'Lámpara · luces',              pts: '615,512 802,512 800,572 752,640 750,760 645,760 650,642 640,572', c: [700, 600], amb: true },
+    { id: 'maquina',   label: 'Sobre mí · la carta',          pts: '922,598 1114,598 1112,752 926,752', c: [1018, 690], sec: true },
+    { id: 'telefono',  label: 'Contacto · el teléfono',       pts: '1172,642 1352,640 1352,742 1180,744', c: [1262, 690], sec: true },
+    { id: 'archivador',label: 'Proyectos · el archivador',    pts: '1686,398 2000,398 2000,1046 1690,1046', c: [1850, 640], sec: true },
+    { id: 'ventana',   label: 'Ventana · la calle',           pts: '872,60 1580,60 1580,330 1210,330 1210,400 872,400', c: [1040, 190], amb: true },
+  ];
+  const SECTIONS = SPOTS.filter((s) => s.sec).map((s) => s.id);
+  const found = new Set(); let closed = false;
+  const spots = $('#spots'), prog = $('#prog');
+  SECTIONS.forEach(() => prog.appendChild(document.createElement('i')));
+  const lastSaid = {}; let leaveT = null, hoverId = null;
+  SPOTS.forEach((s) => {
+    const g = document.createElementNS(NS, 'g'); g.dataset.id = s.id; if (s.amb) g.classList.add('amb');
+    const poly = document.createElementNS(NS, 'polygon'); poly.setAttribute('points', s.pts); poly.setAttribute('class', 'hs'); poly.setAttribute('tabindex', '0'); poly.setAttribute('role', 'button'); poly.setAttribute('aria-label', s.label);
+    const ring = document.createElementNS(NS, 'circle'); ring.setAttribute('class', 'ring'); ring.setAttribute('cx', s.c[0]); ring.setAttribute('cy', s.c[1]); ring.setAttribute('r', 14);
+    const dot = document.createElementNS(NS, 'circle'); dot.setAttribute('class', 'dot'); dot.setAttribute('cx', s.c[0]); dot.setAttribute('cy', s.c[1]); dot.setAttribute('r', 8);
+    g.append(poly, ring, dot); spots.appendChild(g);
+    poly.addEventListener('click', () => open(s.id));
+    poly.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(s.id); } });
+    poly.addEventListener('pointerenter', (e) => { clearTimeout(leaveT); hoverId = s.id; tip.textContent = s.label; tip.classList.add('on'); moveTip(e);
+      const now = Date.now(); if (veil.classList.contains('on') || !NARR[s.id] || (lastSaid[s.id] || 0) + 9000 > now) return;
+      clearTimeout(ntimer); ntimer = setTimeout(() => { if (hoverId === s.id && !veil.classList.contains('on')) { lastSaid[s.id] = Date.now(); say(NARR[s.id].hover); } }, 400); });
+    poly.addEventListener('pointermove', moveTip);
+    poly.addEventListener('pointerleave', () => { clearTimeout(leaveT); leaveT = setTimeout(() => { if (hoverId === s.id) { hoverId = null; tip.classList.remove('on'); } }, 140); });
+  });
+  function moveTip(e) { tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; }
+  function markFound(id) {
+    if (!SECTIONS.includes(id) || found.has(id)) return; found.add(id);
+    document.querySelector(`#spots g[data-id="${id}"]`)?.classList.add('found');
+    document.querySelector(`#nav [data-go="${id}"]`)?.classList.add('done');
+    [...prog.children].forEach((d, i) => d.classList.toggle('on', i < found.size));
+  }
+
+  /* ---------- Lluvia, polvo, linterna ---------- */
+  const rain = $('#rain');
+  for (let i = 0; i < (reduce ? 0 : 70); i++) { const l = document.createElementNS(NS, 'line'); const x = 880 + Math.random() * 700, y = 270 + Math.random() * 320, len = 14 + Math.random() * 22;
+    l.setAttribute('x1', x); l.setAttribute('y1', y); l.setAttribute('x2', x - len * 0.16); l.setAttribute('y2', y + len); l.style.animationDuration = (0.9 + Math.random() * 0.9) + 's'; l.style.animationDelay = (-Math.random() * 2) + 's'; rain.appendChild(l); }
+  const dust = $('#dust');
+  for (let i = 0; i < (reduce ? 0 : 38); i++) { const c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', 560 + Math.random() * 520); c.setAttribute('cy', 380 + Math.random() * 400); c.setAttribute('r', 1.2 + Math.random() * 2.2);
+    c.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px'); c.style.setProperty('--dy', (-30 - Math.random() * 60) + 'px'); c.style.animationDuration = (4 + Math.random() * 6) + 's'; c.style.animationDelay = (-Math.random() * 8) + 's'; dust.appendChild(c); }
+  const beam = $('#beam'); let target = { x: 1000, y: 560 }, cur = { x: 1000, y: 560 }, px = 0.5, py = 0.5;
+  function toSvg(cx, cy) { const p = scene.createSVGPoint(); p.x = cx; p.y = cy; const m = scene.getScreenCTM(); return m ? p.matrixTransform(m.inverse()) : { x: 1000, y: 560 }; }
+  addEventListener('pointermove', (e) => { const p = toSvg(e.clientX, e.clientY); target = { x: p.x, y: p.y }; px = e.clientX / innerWidth; py = e.clientY / innerHeight; }, { passive: true });
+  (function frame() { cur.x += (target.x - cur.x) * 0.1; cur.y += (target.y - cur.y) * 0.1; beam.setAttribute('cx', cur.x.toFixed(1)); beam.setAttribute('cy', cur.y.toFixed(1));
+    world.style.transform = `translate(${((0.5 - px) * 26).toFixed(1)}px, ${((0.5 - py) * 14).toFixed(1)}px) scale(1.035)`; requestAnimationFrame(frame); })();
+
+  /* ---------- Contenido (borradores marcados como tales) ---------- */
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const MONTHS = [['Mar', 17], ['Abr', 9], ['May', 106], ['Jun', 382], ['Jul', 408], ['Ago', 404], ['Sep', 308], ['Oct*', 151]];
+  const MILESTONES = [['May 2026', 'Empieza JequeBot, un bot de música para Discord. Las contribuciones se disparan.'], ['Jun 2026', 'Nace Helix, un sistema de gestión para minimarkets chilenos.'], ['Jul 2026', 'Práctica profesional en legal tech.'], ['Sep 2026', 'Rumbo a Casa, ganador entre los 5 del hackathon Zero to Shipped de AWS.'], ['Oct 2026', '1º lugar en Impacto Social, Rally de Innovación 2026 (sede USS).']];
+  const PROJECTS = [
+    ['Rumbo a Casa', 'AWS Zero to Shipped · ganador', 205, 'Proyecto del hackathon de AWS. TypeScript.', 'https://github.com/BlasterLc/rumbo-a-casa'],
+    ['DealJudge', 'Strands · Amazon Bedrock', 43, 'Un agente que juzga si un descuento es real: un modelo mide, Python decide y Bedrock redacta la alerta.', 'https://github.com/BlasterLc/dealjudge'],
+    ['FitTrack', 'React Native · FastAPI · Supabase', 244, 'Seguimiento de gimnasio y nutrición para iOS, Android y web desde una sola base de código, con estimación de calorías por IA.', 'https://github.com/BlasterLc/fittrack'],
+    ['Helix', 'Minimarkets chilenos', 70, 'Sistema de gestión para minimarkets. 1º lugar en Impacto Social, Rally de Innovación 2026. Repositorio privado.', null],
+    ['JequeBot', 'Python · Discord', 154, 'Bot de música para Discord con YouTube y SoundCloud. Repositorio privado.', null],
+    ['Alexa-PC', 'Alexa · Lambda · FastAPI', 57, 'Controla tu PC por voz con un Echo Dot. Repositorio privado.', null],
+    ['Asistente', 'TypeScript · React Native', 116, 'Un hilo donde sueltas lo que quieres hacer y un motor lo convierte en un horario realista. Repositorio privado.', null],
+  ];
+  const SKILLS = { 'Python': ['JequeBot', 'DealJudge', 'Alexa-PC', 'FitTrack'], 'TypeScript': ['Rumbo a Casa', 'Helix', 'Asistente'], 'FastAPI': ['FitTrack', 'Alexa-PC'], 'Supabase': ['FitTrack'],
+                   'React Native': ['FitTrack', 'Asistente'], 'AWS Lambda': ['Alexa-PC'], 'Amazon Bedrock': ['DealJudge'], 'Discord API': ['JequeBot'] };
+  const pj = (n) => PROJECTS.find((p) => p[0] === n);
+
+  const VIEWS = {
+    maquina() { return `<h2><em>01</em>Sobre mí · la carta</h2><div class="letter">
+      <p>Soy Matías, estudiante de 4º año de Ingeniería Civil en Informática en la USS, en Santiago. Egreso en 2027.</p>
+      <p>En mayo de 2026 sentí que tenía que tomar las riendas de mi futuro. Dejé de esperar y empecé a construir: primero un bot de música, después un sistema de gestión para minimarkets chilenos con el que ganamos el Rally de Innovación en nuestra sede.</p>
+      <p>Aprendo una tecnología a la vez, siempre atada a un proyecto real. Si algo sale mal, lo anoto y lo corrijo.</p>
+      <p class="sig">— Matías</p></div><p class="small">Borrador de ejemplo en primera persona: lo reescribimos juntos con tu voz.</p>`; },
+    tablero() { return `<h2><em>02</em>Skills · el tablero</h2><p>Toca una tecnología. Los hilos iluminan los proyectos donde la usé.</p>
+      <div class="skills">${Object.keys(SKILLS).map((k) => `<button type="button" data-k="${esc(k)}">${esc(k)}</button>`).join('')}</div>
+      <div id="skinfo"><span class="small">Elige una tecnología.</span></div><p class="small">Relaciones de ejemplo según tus repos: confirma cada una antes de publicar.</p>`; },
+    archivador() { return `<h2><em>03</em>Proyectos · el archivador</h2>` + PROJECTS.map((p) => `<div class="drawer"><button type="button" aria-expanded="false"><span><b>${esc(p[0])}</b> · <span class="chip">${esc(p[1])}</span></span><span>${p[2]} commits ▾</span></button>
+      <div class="body"><p>${esc(p[3])}</p><p class="hand" style="margin-top:8px">Lo que cambiaría hoy: [borrador, lo escribes tú]</p>${p[4] ? `<p class="small"><a href="${p[4]}" target="_blank" rel="noopener">ver repositorio ↗</a></p>` : '<p class="small">repositorio privado</p>'}</div></div>`).join(''); },
+    calendario() { const max = 410; return `<h2><em>04</em>Trayectoria · el calendario</h2>
+      <div class="bars">${MONTHS.map(([m, v]) => `<div class="${m === 'May' ? 'may' : ''}" style="height:${Math.max(2, v / max * 100)}%"><span>${v}</span></div>`).join('')}</div>
+      <div class="lab">${MONTHS.map(([m]) => `<span>${m}</span>`).join('')}</div>
+      <div class="tl">${MILESTONES.map(([d, t]) => `<div><b>${d}</b> · ${esc(t)}</div>`).join('')}</div>
+      <p class="small">Contribuciones reales de GitHub (1.785 en el último año). *Octubre parcial. Confirma las fechas de los hitos.</p>`; },
+    telefono() { return `<h2><em>05</em>Contacto · el teléfono</h2><p>Déjame un mensaje. Llega directo a mi correo.</p>
+      <input id="n" placeholder="Tu nombre" autocomplete="name"><input id="e" placeholder="Tu correo" type="email" autocomplete="email"><textarea id="m" rows="3" placeholder="¿En qué te ayudo?"></textarea>
+      <button class="btn" id="send" type="button">☎ Enviar</button><p class="small" id="st">Mock: la versión real usa API Gateway, Lambda y SES.</p>`; },
+    ventana() { return `<h2>Ventana · la calle</h2><p>Afuera sigue lloviendo. Por ahí se llega a la calle por la que entraste.</p><a class="btn" href="index.html?grade=azul">← salir a la calle</a>`; },
+  };
+
+  function simpleView() {
+    return `<h2>Versión simple</h2>` + ['maquina', 'tablero', 'archivador', 'calendario', 'telefono'].map((k) => `<section style="margin-bottom:22px">${VIEWS[k]().replace(/<h2>/, '<h3 style="font-size:13px;letter-spacing:.2em;text-transform:uppercase;margin:6px 0 8px;border-bottom:1px solid rgba(27,20,12,.4);padding-bottom:6px">').replace('</h2>', '</h3>')}</section>`).join('') + `<p class="small">Misma información, en lista, para quien tiene poco tiempo.</p>`;
+  }
+
+  function open(id, simple) {
+    if (id === 'lampara') { document.body.classList.toggle('off'); return; }
+    if (simple) content.innerHTML = simpleView(); else content.innerHTML = VIEWS[id]();
+    veil.classList.add('on'); $('#close').focus(); hideNarr();
+    if (!simple && NARR[id]?.open) setTimeout(() => { if (veil.classList.contains('on')) say(NARR[id].open, 4500); }, 450);
+    if (!simple) markFound(id);
+    if (simple) SECTIONS.forEach(markFound);
+    content.querySelectorAll('.drawer > button').forEach((b) => b.addEventListener('click', () => { const d = b.parentElement; d.classList.toggle('open'); b.setAttribute('aria-expanded', d.classList.contains('open')); }));
+    content.querySelectorAll('.skills button').forEach((b) => b.addEventListener('click', () => { content.querySelectorAll('.skills button').forEach((x) => x.classList.toggle('on', x === b));
+      const list = SKILLS[b.dataset.k]; $('#skinfo').innerHTML = `<div class="small" style="margin:0 0 6px">${esc(b.dataset.k)} · usado en ${list.length} proyecto${list.length > 1 ? 's' : ''}</div>` + list.map((n) => `<div class="pj"><b>${esc(n)}</b><span>${esc(pj(n)[1])}</span></div>`).join(''); }));
+    const send = $('#send'); if (send) send.addEventListener('click', () => { const st = $('#st'); st.textContent = '☎ enviando…'; setTimeout(() => st.textContent = '✔ Mensaje enviado (ejemplo). Gracias por llamar.', 900); });
+  }
+  function close() {
+    veil.classList.remove('on');
+    if (!closed && SECTIONS.every((s) => found.has(s))) { closed = true; setTimeout(() => { $('#caseline').textContent = NARR.cierre; $('#case').classList.add('on'); }, 350); }
+  }
+  $('#close').addEventListener('click', close);
+  veil.addEventListener('click', (e) => { if (e.target === veil) close(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { if ($('#case').classList.contains('on')) $('#case').classList.remove('on'); else close(); } });
+  $('#keep').addEventListener('click', () => $('#case').classList.remove('on'));
+  $('#talk').addEventListener('click', () => { $('#case').classList.remove('on'); open('telefono'); });
+  $('#simple').addEventListener('click', () => open('maquina', true));
+  document.querySelectorAll('#nav button').forEach((b) => b.addEventListener('click', () => {
+    const g = document.querySelector(`#spots g[data-id="${b.dataset.go}"] polygon`); g.classList.add('pulse'); setTimeout(() => g.classList.remove('pulse'), 1200); open(b.dataset.go);
+  }));
+})();
+</script>
+</body>
+</html>

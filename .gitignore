@@ -1,0 +1,11 @@
+# local tooling and scratch
+.superpowers/
+*:Zone.Identifier
+node_modules/
+.DS_Store
+
+# raw generated sources (kept locally; optimized .webp versions are committed)
+spike/assets/despacho-higgsfield.png
+
+# reference images from the Gemini session
+img/
