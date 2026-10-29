@@ -94,17 +94,17 @@ La práctica profesional en legal tech se menciona como una línea genérica, si
 
 Principio: **bastante visible, no invasivo.** Todo son capas SVG/CSS sobre la imagen fija, bajo los hotspots (`pointer-events: none`).
 
-- **Carretes de la cinta:** se recortan de la imagen, se llevan a círculo, giran y se vuelven a aplastar con la perspectiva original. Giran lento siempre y rápido al pulsar Play.
+- **Carretes de la cinta:** se recorta solo la cara de cada carrete (sin el borde con grosor, que debe quedar quieto), se lleva a círculo, gira y se vuelve a aplastar con la perspectiva original, con el centro de giro en el eje. Giran lento siempre y rápido al pulsar Play. Una primera versión que giraba también el borde se veía superpuesta y se corrigió.
 - **Humo:** tres hilos finos con desenfoque ligero que ondulan y se desvanecen desde el cigarrillo.
 - **Luz:** la franja de sol de la ventana "respira" (7 s), una sombra de nube suave cruza el cuarto (~26 s) y el brillo de la lámpara parpadea.
 - **Polvo** flotando en los rayos de sol.
 - **Bonsái:** el follaje se recorta y se mece ±1,6° desde la maceta.
 - **Probado y descartado:** autos que pasan tras el vidrio esmerilado (se veían como manchas).
-- **Accesibilidad y rendimiento:** `prefers-reduced-motion` detiene todo. En móvil se conserva solo luz, polvo y carretes (pendiente de implementar).
+- **Accesibilidad y rendimiento:** `prefers-reduced-motion` detiene todo. En móvil se omiten la sombra de nube y el humo de escritorio (el móvil usa su propio humo más fino) y se reduce el polvo.
 
 ## 8. La feature creativa: la lupa
 
-**Qué es.** Un modo opcional en el que el visitante "recoge" la lupa de la mesa y puede mirar de cerca los objetos del despacho. Al apuntar a un objeto aparece una **ficha de papel** con tinta ámbar ("Exhibit A…G") con 1-3 líneas de datos. Tono sobrio, sin humor.
+**Qué es.** Un modo opcional en el que el visitante "recoge" la lupa de la mesa y puede mirar de cerca los objetos del despacho. Al apuntar a un objeto aparece una **ficha de papel** con tinta ámbar ("Exhibit A…G (F y G solo existen en la vertical por ahora)") con 1-3 líneas de datos. Tono sobrio, sin humor.
 
 **Pista visible.** La lupa de la mesa lleva etiqueta "Magnifier" y la franja inferior fija dice "Pick up the magnifier on the desk to inspect the objects". No hay botón aparte en la barra. Se activa con clic en la lupa o con la tecla `S`; se sale con `Esc`. Con la lupa activa, el cursor se convierte en una lente y navegar (clics, menú, scroll) sigue funcionando. Funciona sin la lupa: nada profesional depende de ella.
 
@@ -125,7 +125,7 @@ Principio: **bastante visible, no invasivo.** Todo son capas SVG/CSS sobre la im
 
 **Contador de escaneos (opcional).** Cada ficha puede mostrar "visto N veces por visitantes", guardado en DynamoDB (ver sección 9). Si el backend falla, el contador se oculta y la lupa funciona igual. Es el primer recorte si falta tiempo.
 
-**Móvil (sin resolver).** Se probaron dos enfoques en el mock y ninguno convenció: (1) escena reducida arriba con lista de botones debajo y fichas como lista "Exhibit"; (2) escena a pantalla completa que se recorre deslizando de lado, con el menú fijo, botón 🔍 en el menú y fichas como hoja inferior (toque para la ficha, segundo toque para el panel). El enfoque 2 es el que está hoy en el mock. **Decisión (28 oct):** ninguno de los dos queda; en móvil se usará una **ilustración vertical nueva** del mismo despacho (3:4 o 9:16, objetos apilados y tocables, con los mismos hotspots, etiquetas y movimiento). Se genera en Gemini a partir de la imagen actual, junto con los props nuevos. Requisito mínimo: el contenido profesional se alcanza con el menú sin necesitar la lupa ni la escena.
+**Móvil: ilustración vertical.** En pantallas de hasta 760 px el sitio usa `spike/assets/despacho-vertical.webp` (9:16, 1536×2736), generada en Higgsfield con `flux_3_image` y la ilustración horizontal como referencia. Ya incluye los props nuevos (libros y afiche de cine genérico). Sobre ella se montan los mismos hotspots, etiquetas (más grandes, con la de Contact hacia abajo para no chocar con Projects), puntos pulsantes y capas de movimiento (carretes, humo, polvo, luz, bonsái). Menú fijo arriba con un botón 🔍 para recoger y soltar la lupa; con la lupa activa, un toque abre la ficha como hoja inferior y un segundo toque abre el panel del objeto. Los libros y el afiche son hotspots solo con lupa (Exhibit F y G). Se descartaron antes una lista de botones bajo una escena pequeña y un deslizamiento lateral de la escena horizontal. Pendiente: probar en teléfono real, tabletas y pantallas horizontales.
 
 **Accesibilidad.** Las fichas se anuncian en una región `aria-live`. `prefers-reduced-motion` quita animaciones. Libros y afiche son decorativos para lectores de pantalla; sus fichas deben poder leerse de otra forma (p. ej. como parte de la lista de exhibits).
 
@@ -177,7 +177,7 @@ Reglas: `scan` valida el objetivo contra una lista permitida; una ficha solo cue
 2. **Cargo exacto** en la legaltech y el titular exacto ("Ingeniería Civil en Informática" u otro).
 3. **Relaciones herramienta–caso** del mapa de Skills, y qué herramientas faltan (p. ej. React Native en FitTrack).
 4. **Props nuevos:** títulos concretos de libros, películas y actores del afiche, y generar el arte (libros y afiche/rollo) en Gemini con prompt de Claude para pegarlo sobre la ilustración sin regenerar el cuarto.
-4b. **Versión móvil:** generar la ilustración vertical (ver sección 8) y definir sus hotspots.
+4b. **Móvil:** validar en un teléfono real y decidir si la versión de escritorio también recibe los libros y el afiche (hoy solo la vertical los tiene).
 5. **Repos privados:** confirmar que pueden mostrarse solo por nombre, descripción y premio.
 6. **Capturas** de cada proyecto (las tarjetas necesitan una imagen; si no hay, tarjetas estilizadas).
 7. **Enlaces reales:** GitHub (BlasterLc), LinkedIn, correo, repos y demo de Rumbo a Casa, pestaña Winners de Zero to Shipped.

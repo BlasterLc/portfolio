@@ -102,12 +102,16 @@
   @keyframes cloud { from { transform: translateX(-900px); } to { transform: translateX(700px); } }
   #sunbreath { mix-blend-mode: screen; animation: breathe 7s ease-in-out infinite; }
   @keyframes breathe { 0%,100% { opacity: .25; } 50% { opacity: .75; } }
+  #sceneM { display: none; }
   #read .rx { display: none; }
   @media (max-width: 760px) {
     #bar { gap: 8px; } #bar .brand { display: none; } #nav button { padding: 8px 8px; letter-spacing: .1em; }
-    #stage { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
-    #stage::-webkit-scrollbar { display: none; }
-    #scene { width: calc(100dvh * 2000 / 1116); min-width: 100%; }
+    #stage { overflow-y: auto; padding-top: 48px; background: #0b0805; }
+    #scene { display: none; }
+    #sceneM { display: block; width: 100%; height: auto; margin: 0 auto; max-height: calc(100dvh - 48px); transition: filter .3s; }
+    body.panel-open #sceneM { filter: brightness(.45) saturate(.8); }
+    #sceneM .tag text { font-size: 58px; letter-spacing: 9px; } #sceneM .tag rect { stroke-width: 6; } #sceneM .tag line { stroke-width: 8; }
+    #sceneM .hs { stroke-width: 8; } #sceneM .ring { stroke-width: 7; }
     #lens { display: none !important; }
     #nav button.mobonly { display: block; }
     #hint .more { display: none; } #hint { bottom: 16px; font-size: 11px; }
@@ -158,6 +162,8 @@
     skills:   { ex: 'Exhibit B', name: 'Connections board', lines: ['1,785 contributions in 12 months', 'Steady since May 2026', 'Busiest: Jun–Sep, 300+ a month'] },
     plaque:   { ex: 'Exhibit C', name: 'Winner plaque', lines: ['AWS Zero to Shipped · 1 of 5', 'Rumbo a Casa · 205 commits'] },
     about:    { ex: 'Exhibit D', name: 'Typewriter', lines: ['March 2026: 17 contributions', 'July 2026: 408 contributions'] },
+    books:    { ex: 'Exhibit F', name: 'Books', lines: ['Reads Camus and Dostoevsky'] },
+    poster:   { ex: 'Exhibit G', name: 'Film poster', lines: ['Mafia cinema, the Al Pacino kind'] },
     contact:  { ex: 'Exhibit E', name: 'Telephone', lines: ['Form → API Gateway + Lambda + SES', 'Replies by email'] },
   };
 
@@ -182,7 +188,7 @@
   const bo = el('g', { 'clip-path': 'url(#bonclip)' }); const bs = el('g', { class: 'sway' }, bo); bs.style.transformOrigin = '1790px 394px';
   el('image', { href: 'assets/despacho-tarde.webp', x: 0, y: 0, width: 2000, height: 1116 }, bs);
   // carretes de la grabadora: se recorta cada carrete (elipse por la perspectiva), se estira a círculo, se gira y se vuelve a comprimir
-  [[325.5, 664, 29, 55], [379.5, 653.5, 24.5, 51.5]].forEach(([cx, cy, rx, ry], i) => {
+  [[330, 664, 23, 50], [381, 653, 19.5, 47]].forEach(([cx, cy, rx, ry], i) => {
     const k = rx / ry;
     const cp = el('clipPath', { id: 'reelclip' + i }, defs); el('ellipse', { cx, cy, rx, ry }, cp);
     const outer = el('g', { 'clip-path': `url(#reelclip${i})` });
@@ -203,30 +209,79 @@
     m.style.setProperty('--dx', (Math.random() * 70 - 35).toFixed(0) + 'px'); m.style.setProperty('--dy', (Math.random() * 70 - 45).toFixed(0) + 'px');
     m.style.animationDuration = (6 + Math.random() * 8).toFixed(1) + 's'; m.style.animationDelay = (-Math.random() * 10).toFixed(1) + 's';
   }
-  SPOTS.forEach((s) => {
+  const renderSpot = (s, parent, k = 1, withNav = true) => {
     s.c = s.c || [0, 0]; s.tag = s.tag || [0, 0];
     const g = document.createElementNS(NS, 'g');
     const poly = document.createElementNS(NS, 'polygon');
     poly.setAttribute('points', s.pts); poly.setAttribute('class', 'hs'); poly.setAttribute('tabindex', '0'); poly.setAttribute('role', 'button'); poly.setAttribute('aria-label', s.label); poly.dataset.id = s.id;
-    const ring = document.createElementNS(NS, 'circle'); ring.setAttribute('class', 'ring'); ring.setAttribute('cx', s.c[0]); ring.setAttribute('cy', s.c[1]); ring.setAttribute('r', 14);
-    const dot = document.createElementNS(NS, 'circle'); dot.setAttribute('class', 'dot'); dot.setAttribute('cx', s.c[0]); dot.setAttribute('cy', s.c[1]); dot.setAttribute('r', 8);
-    const w = s.label.length * 18 + 34, h = 44;
+    const ring = document.createElementNS(NS, 'circle'); ring.setAttribute('class', 'ring'); ring.setAttribute('cx', s.c[0]); ring.setAttribute('cy', s.c[1]); ring.setAttribute('r', 14 * k);
+    const dot = document.createElementNS(NS, 'circle'); dot.setAttribute('class', 'dot'); dot.setAttribute('cx', s.c[0]); dot.setAttribute('cy', s.c[1]); dot.setAttribute('r', 8 * k);
+    const w = (s.label.length * 18 + 34) * k, h = 44 * k;
     const tag = document.createElementNS(NS, 'g'); tag.setAttribute('class', 'tag');
-    const ln = document.createElementNS(NS, 'line'); ln.setAttribute('x1', s.tag[0]); ln.setAttribute('y1', s.tag[1] + h / 2); ln.setAttribute('x2', s.c[0]); ln.setAttribute('y2', s.c[1] - 14);
+    const ln = document.createElementNS(NS, 'line'); const below = s.tag[1] > s.c[1]; ln.setAttribute('x1', s.tag[0]); ln.setAttribute('y1', s.tag[1] + (below ? -h : h) / 2); ln.setAttribute('x2', s.c[0]); ln.setAttribute('y2', s.c[1] + (below ? 14 : -14) * k);
     const r = document.createElementNS(NS, 'rect'); r.setAttribute('x', s.tag[0] - w / 2); r.setAttribute('y', s.tag[1] - h / 2); r.setAttribute('width', w); r.setAttribute('height', h);
-    const t = document.createElementNS(NS, 'text'); t.setAttribute('x', s.tag[0]); t.setAttribute('y', s.tag[1] + 9); t.setAttribute('text-anchor', 'middle'); t.textContent = s.label;
-    tag.append(ln, r, t); if (s.prop) { poly.classList.add('prop'); poly.removeAttribute('tabindex'); poly.setAttribute('aria-hidden', 'true'); g.append(poly); } else g.append(poly, ring, dot, tag); spots.appendChild(g);
+    const t = document.createElementNS(NS, 'text'); t.setAttribute('x', s.tag[0]); t.setAttribute('y', s.tag[1] + 9 * k); t.setAttribute('text-anchor', 'middle'); t.textContent = s.label;
+    tag.append(ln, r, t); if (s.prop) { poly.classList.add('prop'); poly.removeAttribute('tabindex'); poly.setAttribute('aria-hidden', 'true'); g.append(poly); } else g.append(poly, ring, dot, tag); parent.appendChild(g);
     poly.addEventListener('click', (e) => (s.prop || (e.pointerType === 'touch' && body.classList.contains('lens-on') && s.id !== 'lens' && s.id !== 'tape' && !(read.dataset.id === s.id && read.classList.contains('on'))) ? lensRead(s.id, e) : s.id === 'lens' ? toggleLens() : s.id === 'tape' ? body.classList.toggle('tape-on') : open(s.id)));
     poly.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); poly.dispatchEvent(new Event('click')); } });
     poly.addEventListener('pointermove', (e) => { if (e.pointerType !== 'touch') lensRead(s.id, e); });
     poly.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') $('#read').classList.remove('on'); });
-    if (s.nav) { const b = document.createElement('button'); b.type = 'button'; b.textContent = s.label; b.dataset.go = s.id; nav.appendChild(b); b.addEventListener('click', () => { pulse(s.id); open(s.id); }); }
-  });
+    if (s.nav && withNav) { const b = document.createElement('button'); b.type = 'button'; b.textContent = s.label; b.dataset.go = s.id; nav.appendChild(b); b.addEventListener('click', () => { pulse(s.id); open(s.id); }); }
+  };
+  SPOTS.forEach((s) => renderSpot(s, spots));
   // orden de la barra: About, Skills, Projects, Contact
   ['about', 'skills', 'projects', 'contact'].forEach((id) => nav.appendChild(nav.querySelector(`[data-go="${id}"]`)));
   { const b = document.createElement('button'); b.type = 'button'; b.id = 'navlens'; b.className = 'mobonly'; b.textContent = '🔍'; b.setAttribute('aria-label', 'Magnifier'); b.addEventListener('click', () => toggleLens()); nav.appendChild(b); }
-  { const st = $('#stage'); if (matchMedia('(max-width: 760px)').matches) { st.scrollLeft = (st.scrollWidth - st.clientWidth) / 2; $('#hintmain').textContent = 'Swipe to look around · pick up the magnifier above'; setTimeout(() => st.addEventListener('scroll', () => $('#hint').classList.add('gone'), { once: true }), 600); } }
-  function pulse(id) { const p = document.querySelector(`.hs[data-id="${id}"]`); p.classList.add('pulse'); setTimeout(() => p.classList.remove('pulse'), 1000); }
+  if (matchMedia('(max-width: 760px)').matches) $('#hintmain').textContent = 'Tap a labelled object · or pick up the magnifier above';
+  matchMedia('(max-width: 760px)').addEventListener('change', () => location.reload());
+  /* ---------- escena vertical (móvil) ---------- */
+  if (matchMedia('(max-width: 760px)').matches) {
+    const W = 1536, H = 2736, K = 2.4;
+    const svg = document.createElementNS(NS, 'svg'); svg.id = 'sceneM'; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Detective office with interactive objects');
+    $('#stage').appendChild(svg);
+    const m = (n, a = {}, p = svg) => { const e = document.createElementNS(NS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); p.appendChild(e); return e; };
+    const md = m('defs'); const IMG = 'assets/despacho-vertical.webp';
+    m('image', { href: IMG, x: 0, y: 0, width: W, height: H });
+    const gg = m('radialGradient', { id: 'glowM' }, md); m('stop', { offset: 0, 'stop-color': '#ffe2a0', 'stop-opacity': .8 }, gg); m('stop', { offset: .5, 'stop-color': '#ffb347', 'stop-opacity': .25 }, gg); m('stop', { offset: 1, 'stop-color': '#ff9a2a', 'stop-opacity': 0 }, gg);
+    const sg = m('linearGradient', { id: 'sunM', x1: 0, y1: 0, x2: 0, y2: 1 }, md); m('stop', { offset: 0, 'stop-color': '#ffd38a', 'stop-opacity': .55 }, sg); m('stop', { offset: 1, 'stop-color': '#ffb15a', 'stop-opacity': 0 }, sg);
+    const fxm = m('g', { 'pointer-events': 'none' });
+    m('rect', { id: 'sunbreath', x: 464, y: 420, width: 730, height: 700, fill: 'url(#sunM)' }, fxm);
+    m('circle', { id: 'lampglow', cx: 480, cy: 1180, r: 380, fill: 'url(#glowM)' }, fxm);
+    // carretes
+    [[125, 1414, 27, 64], [186, 1378, 24, 60]].forEach(([cx, cy, rx, ry], i) => {
+      const k = rx / ry; const cp = m('clipPath', { id: 'reelM' + i }, md); m('ellipse', { cx, cy, rx, ry }, cp);
+      const o = m('g', { 'clip-path': `url(#reelM${i})` }, fxm); const sq = m('g', { transform: `translate(${cx} ${cy}) scale(${k} 1)` }, o);
+      const rot = m('g', { class: 'reel' }, sq); const un = m('g', { transform: `scale(${1 / k} 1) translate(${-cx} ${-cy})` }, rot);
+      m('image', { href: IMG, x: 0, y: 0, width: W, height: H }, un);
+    });
+    // bonsái
+    const bc = m('clipPath', { id: 'bonM' }, md); m('polygon', { points: '1336,730 1380,700 1440,690 1500,716 1536,760 1536,860 1470,880 1440,892 1390,880 1350,800' }, bc);
+    const bo = m('g', { 'clip-path': 'url(#bonM)' }, fxm); const bs = m('g', { class: 'sway' }, bo); bs.style.transformOrigin = '1440px 892px'; m('image', { href: IMG, x: 0, y: 0, width: W, height: H }, bs);
+    // humo
+    const sf = m('filter', { id: 'blurM', x: '-50%', y: '-10%', width: '200%', height: '120%' }, md); m('feGaussianBlur', { stdDeviation: 4 }, sf);
+    [[600, 0, 1], [588, 2.2, -1]].forEach(([x, d, f]) => {
+      const t = m('path', { class: 'thread', d: `M0 0 C ${30 * f} -80, ${-40 * f} -170, ${14 * f} -270 S ${-34 * f} -420, ${20 * f} -560`, transform: `translate(${x} 1440)`, filter: 'url(#blurM)', style: 'display:block;stroke-width:8;stroke-dasharray:170 640' }, fxm); t.style.animationDelay = d + 's';
+    });
+    // polvo
+    for (let i = 0; i < 14; i++) {
+      const c = m('circle', { class: 'mote', cx: 150 + Math.random() * 1250, cy: 450 + Math.random() * 1700, r: (2.5 + Math.random() * 3.5).toFixed(1), fill: 'rgba(255,226,165,.9)' }, fxm);
+      c.style.setProperty('--dx', (Math.random() * 150 - 75).toFixed(0) + 'px'); c.style.setProperty('--dy', (Math.random() * 150 - 100).toFixed(0) + 'px'); c.style.animationDuration = (6 + Math.random() * 8).toFixed(1) + 's'; c.style.animationDelay = (-Math.random() * 10).toFixed(1) + 's';
+    }
+    // hotspots (coordenadas de la imagen vertical)
+    const g = m('g'); const SM = [
+      { id: 'skills',   label: 'Skills',   nav: true,  pts: '20,430 224,430 224,1140 20,1080',            c: [120, 780],  tag: [215, 380] },
+      { id: 'about',    label: 'About',    nav: true,  pts: '690,1310 944,1310 944,1480 690,1480',        c: [817, 1395], tag: [817, 1225] },
+      { id: 'contact',  label: 'Contact',  nav: true,  pts: '1104,1320 1280,1320 1320,1450 1104,1450',    c: [1210, 1385], tag: [1215, 1660] },
+      { id: 'projects', label: 'Projects', nav: true,  pts: '1296,920 1536,920 1536,1660 1296,1660',      c: [1420, 1290], tag: [1300, 1090] },
+      { id: 'plaque',   label: 'Winner',   nav: false, pts: '1246,544 1454,544 1454,700 1246,700',        c: [1350, 622],  tag: [1350, 470] },
+      { id: 'lens',     label: 'Magnifier',nav: false, pts: '56,2160 516,2160 516,2480 56,2480',          c: [290, 2320],  tag: [300, 2150] },
+      { id: 'tape',     label: 'Play',     nav: false, pts: '20,1300 208,1300 208,1630 20,1630',          c: [110, 1545], tag: [170, 1740] },
+      { id: 'books',    label: 'Books',    prop: true,  pts: '1124,1436 1350,1436 1350,1570 1124,1570' },
+      { id: 'poster',   label: 'Poster',   prop: true,  pts: '266,564 444,564 444,884 266,884' },
+    ];
+    SM.forEach((sp) => renderSpot(sp, g, K, false));
+  }
+  function pulse(id) { document.querySelectorAll(`.hs[data-id="${id}"]`).forEach((p) => { p.classList.add('pulse'); setTimeout(() => p.classList.remove('pulse'), 1000); }); }
 
   /* ---------- contenido de los paneles (borrador de maqueta) ---------- */
   const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
@@ -313,7 +368,7 @@
     const on = body.classList.toggle('lens-on'); if (!on) read.classList.remove('on');
     const touch = matchMedia('(max-width: 760px)').matches; $('#navlens').classList.toggle('on', on); $('#navlens').textContent = on ? '🔍 ✕' : '🔍';
     $('#hint').classList.remove('gone');
-    $('#hintmain').textContent = on ? (touch ? 'Magnifier on · tap an object to read it' : 'Magnifier on · move over an object, or tap one · Esc to put it down') : (touch ? 'Swipe to look around · pick up the magnifier above' : 'Pick up the magnifier on the desk to inspect the objects');
+    $('#hintmain').textContent = on ? (touch ? 'Magnifier on · tap an object to read it' : 'Magnifier on · move over an object, or tap one · Esc to put it down') : (touch ? 'Tap a labelled object · or pick up the magnifier above' : 'Pick up the magnifier on the desk to inspect the objects');
   }
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && body.classList.contains('lens-on') && !body.classList.contains('panel-open')) toggleLens(); });
   addEventListener('pointermove', (e) => { lens.style.left = e.clientX + 'px'; lens.style.top = e.clientY + 'px'; });
