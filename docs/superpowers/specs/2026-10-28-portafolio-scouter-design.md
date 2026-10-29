@@ -53,19 +53,19 @@ Matías participa (individual) en el **AWS Student Builder Challenge: Build Your
 - Teléfono → **Contact**: se llama al detective.
 - Tablero de corcho con hilos → **Skills**: es donde conecta sus herramientas con sus casos.
 - Archivero → **Projects**: los casos archivados.
-- Placa en la pared → **Winner**: el logro AWS.
+- Placa en la pared → **Awards**: sus reconocimientos (panel "Achievements").
 
-**Ilustración.** `spike/assets/despacho-tarde.webp` (2000×1116, generada en Higgsfield, modelo cinematic_studio_2_5; original sin retoques en `despacho-tarde-original.webp`). Luz de tarde con persianas. Retoques propios: paisaje de la ventana desenfocado y humo pintado borrado. No se rehace el arte; si se regenera, que sea para añadir espacio o props concretos.
+**Ilustración.** `spike/assets/despacho-tarde.webp` (2000×1116): segunda versión (29 oct), editada en Higgsfield con `flux_3_image` a partir de la primera (cinematic_studio_2_5, conservada en el historial de git y como `despacho-tarde-original.webp` sin retoques). Luz de tarde con persianas; añade los libros junto al teléfono y el afiche de cine entre el tablero y la ventana, iguales a la versión vertical. Todo lo demás conserva su posición, por lo que los hotspots casi no cambiaron. No se rehace el arte; si se regenera, que sea para añadir espacio o props concretos.
 
 **Escena.** SVG con la imagen y una capa de hotspots poligonales en coordenadas de la imagen. La escena se ajusta con `preserveAspectRatio="xMidYMid slice"`.
 
 ## 5. Navegación
 
 - **Barra superior fija (opción A):** marca "Matías Rodriguez" y menú **About, Skills, Projects, Contact**. Funciona sin tocar la escena.
-- **Objetos con etiqueta visible** (punto pulsante y etiqueta de papel): Skills, About, Contact, Projects y Winner (placa), más el carrete de cinta ("Play") y la lupa ("Magnifier").
+- **Objetos con etiqueta visible** (punto pulsante y etiqueta de papel): Skills, About, Contact, Projects y Awards (placa), más el carrete de cinta ("Play") y la lupa ("Magnifier").
 - **Paneles:** hoja clara sobre la escena atenuada, texto legible, sin rotaciones ni máquina de escribir, con enlaces directos. Se cierran con la X, con `Esc` o haciendo clic fuera. Foco visible y navegación por teclado en los hotspots.
 - **Pista inferior fija:** "Pick up the magnifier on the desk to inspect the objects · or use the menu above · press play on the tape". Cambia mientras la lupa está activa.
-- Sin Journey ni trayectoria como sección: los logros viven en Projects, la placa y About.
+- Sin Journey ni trayectoria como sección: los reconocimientos viven en la placa (Achievements) y en las tarjetas de Projects.
 
 ## 6. Paneles (contenido)
 
@@ -86,7 +86,7 @@ Total: 673 commits (dato de la ficha de la lupa). Los repos privados (JequeBot, 
 
 **Contact.** Formulario corto (nombre, correo, mensaje) que usa API Gateway + Lambda + SES, más enlaces a GitHub, LinkedIn y correo, con `mailto:` de respaldo.
 
-**Winner (placa).** Panel breve: ganador (1 de 5) de AWS Zero to Shipped con Rumbo a Casa, enlace a la pestaña Winners y al proyecto. Es un énfasis pequeño; el portafolio sigue siendo completo.
+**Awards (placa): panel "Achievements".** Contenido propio, sin repetir las tarjetas de Projects: AWS Zero to Shipped (ganador, 1 de 5, con Rumbo a Casa, con enlace a la pestaña Winners y al proyecto) y Rally de Innovación 2026, USS (1º lugar Impacto Social con el equipo Helix, por Minuto Cero). Cuando llegue el certificado de AWS se añade aquí. Responde a la sección "Projects/Achievements" que piden las reglas.
 
 La práctica profesional en legal tech se menciona como una línea genérica, sin nombre de cliente ni detalles de código.
 
@@ -104,7 +104,7 @@ Principio: **bastante visible, no invasivo.** Todo son capas SVG/CSS sobre la im
 
 ## 8. La feature creativa: la lupa
 
-**Qué es.** Un modo opcional en el que el visitante "recoge" la lupa de la mesa y puede mirar de cerca los objetos del despacho. Al apuntar a un objeto aparece una **ficha de papel** con tinta ámbar ("Exhibit A…G (F y G solo existen en la vertical por ahora)") con 1-3 líneas de datos. Tono sobrio, sin humor.
+**Qué es.** Un modo opcional en el que el visitante "recoge" la lupa de la mesa y puede mirar de cerca los objetos del despacho. Al apuntar a un objeto aparece una **ficha de papel** con tinta ámbar ("Exhibit A…G ") con 1-3 líneas de datos. Tono sobrio, sin humor.
 
 **Pista visible.** La lupa de la mesa lleva etiqueta "Magnifier" y la franja inferior fija dice "Pick up the magnifier on the desk to inspect the objects". No hay botón aparte en la barra. Se activa con clic en la lupa o con la tecla `S`; se sale con `Esc`. Con la lupa activa, el cursor se convierte en una lente y navegar (clics, menú, scroll) sigue funcionando. Funciona sin la lupa: nada profesional depende de ella.
 
@@ -126,6 +126,8 @@ Principio: **bastante visible, no invasivo.** Todo son capas SVG/CSS sobre la im
 **Contador de escaneos (opcional).** Cada ficha puede mostrar "visto N veces por visitantes", guardado en DynamoDB (ver sección 9). Si el backend falla, el contador se oculta y la lupa funciona igual. Es el primer recorte si falta tiempo.
 
 **Móvil: ilustración vertical.** En pantallas de hasta 760 px el sitio usa `spike/assets/despacho-vertical.webp` (9:16, 1536×2736), generada en Higgsfield con `flux_3_image` y la ilustración horizontal como referencia. Ya incluye los props nuevos (libros y afiche de cine genérico). Sobre ella se montan los mismos hotspots, etiquetas (más grandes, con la de Contact hacia abajo para no chocar con Projects), puntos pulsantes y capas de movimiento (carretes, humo, polvo, luz, bonsái). Menú fijo arriba con un botón 🔍 para recoger y soltar la lupa; con la lupa activa, un toque abre la ficha como hoja inferior y un segundo toque abre el panel del objeto. Los libros y el afiche son hotspots solo con lupa (Exhibit F y G). Se descartaron antes una lista de botones bajo una escena pequeña y un deslizamiento lateral de la escena horizontal. Pendiente: probar en teléfono real, tabletas y pantallas horizontales.
+
+La versión de escritorio ya tiene los mismos libros y afiche (hotspots Books y Poster, Exhibit F y G, solo con lupa).
 
 **Accesibilidad.** Las fichas se anuncian en una región `aria-live`. `prefers-reduced-motion` quita animaciones. Libros y afiche son decorativos para lectores de pantalla; sus fichas deben poder leerse de otra forma (p. ej. como parte de la lista de exhibits).
 
@@ -177,14 +179,16 @@ Reglas: `scan` valida el objetivo contra una lista permitida; una ficha solo cue
 2. **Cargo exacto** en la legaltech y el titular exacto ("Ingeniería Civil en Informática" u otro).
 3. **Relaciones herramienta–caso** del mapa de Skills, y qué herramientas faltan (p. ej. React Native en FitTrack).
 4. **Props nuevos:** títulos concretos de libros, películas y actores del afiche, y generar el arte (libros y afiche/rollo) en Gemini con prompt de Claude para pegarlo sobre la ilustración sin regenerar el cuarto.
-4b. **Móvil:** validar en un teléfono real y decidir si la versión de escritorio también recibe los libros y el afiche (hoy solo la vertical los tiene).
+4b. **Móvil:** validar en un teléfono real, en tabletas y en pantallas horizontales.
 5. **Repos privados:** confirmar que pueden mostrarse solo por nombre, descripción y premio.
 6. **Capturas** de cada proyecto (las tarjetas necesitan una imagen; si no hay, tarjetas estilizadas).
 7. **Enlaces reales:** GitHub (BlasterLc), LinkedIn, correo, repos y demo de Rumbo a Casa, pestaña Winners de Zero to Shipped.
 8. **Dominio propio** (blastercl.dev u otro) o solo la URL de Amplify. Verificar de paso que no exista un portafolio anterior publicado, para cumplir "original y no publicado antes".
 9. **Cuenta AWS y Builder Center:** confirmar cuenta activa con Amplify y estado de estudiante verificado. Sin eso la entrega no califica.
-10. **Certificado de Zero to Shipped:** aún no se entrega; cuando llegue, se añade como segunda prueba en la placa.
+10. **Certificado de Zero to Shipped:** aún no se entrega; cuando llegue, se añade como tercera entrada del panel Achievements.
 11. **Contador de escaneos:** ¿se incluye o se recorta?
+12. **Regeneración de la imagen (más adelante, sin romper hotspots):** los libros se ven medio caídos; hay props sin función (bonsái, cámara, carpeta, cenicero, calendario) que no convencen y habría que reemplazarlos por objetos con sentido. Se regenera editando con las mismas referencias y manteniendo las posiciones.
+13. ~~Panel de la placa~~ Resuelto (29 oct): la placa pasó a "Awards" y su panel a "Achievements" con contenido propio.
 
 ## 14. Plan de alto nivel (calendario sugerido)
 

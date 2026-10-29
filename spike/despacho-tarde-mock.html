@@ -150,17 +150,19 @@
   const SPOTS = [
     { id: 'skills',   label: 'Skills',   nav: true,  pts: '50,12 398,162 398,581 50,619',                        c: [225, 380],  tag: [225, 300] },
     { id: 'about',    label: 'About',    nav: true,  pts: '927,625 1138,625 1132,725 930,725',                   c: [1030, 676], tag: [1030, 585] },
-    { id: 'contact',  label: 'Contact',  nav: true,  pts: '1285,635 1462,635 1462,740 1285,740',                 c: [1372, 688], tag: [1372, 595] },
+    { id: 'contact',  label: 'Contact',  nav: true,  pts: '1285,635 1450,635 1450,695 1368,700 1368,740 1285,740',                 c: [1372, 688], tag: [1372, 595] },
     { id: 'projects', label: 'Projects', nav: true,  pts: '1616,431 1937,425 1937,1056 1616,1050',               c: [1776, 740], tag: [1776, 640] },
-    { id: 'plaque',   label: 'Winner',   nav: false, pts: '1559,150 1770,150 1770,295 1559,295',                 c: [1664, 222], tag: [1664, 335] },
+    { id: 'plaque',   label: 'Awards',   nav: false, pts: '1559,150 1770,150 1770,295 1559,295',                 c: [1664, 222], tag: [1664, 335] },
     { id: 'lens',     label: 'Magnifier',nav: false, pts: '310,1110 480,1015 668,978 672,1040 500,1062 340,1113', c: [490, 1040], tag: [490, 940] },
+    { id: 'books',    label: 'Books',    prop: true, pts: '1368,698 1522,700 1525,770 1370,758' },
+    { id: 'poster',   label: 'Poster',   prop: true, pts: '445,175 580,175 580,415 445,415' },
     { id: 'tape',     label: 'Play',     nav: false, pts: '225,600 400,600 400,825 225,825',                     c: [312, 735],  tag: [312, 862] },
   ];
   // fichas de evidencia (datos del design doc; textos de maqueta)
   const SCAN = {
     projects: { ex: 'Exhibit A', name: 'Projects cabinet', lines: ['4 cases on file · 673 commits', '2 public repos, 2 private', 'Latest win: AWS Zero to Shipped'] },
     skills:   { ex: 'Exhibit B', name: 'Connections board', lines: ['1,785 contributions in 12 months', 'Steady since May 2026', 'Busiest: Jun–Sep, 300+ a month'] },
-    plaque:   { ex: 'Exhibit C', name: 'Winner plaque', lines: ['AWS Zero to Shipped · 1 of 5', 'Rumbo a Casa · 205 commits'] },
+    plaque:   { ex: 'Exhibit C', name: 'Awards plaque', lines: ['AWS Zero to Shipped · 1 of 5', 'Rumbo a Casa · 205 commits'] },
     about:    { ex: 'Exhibit D', name: 'Typewriter', lines: ['March 2026: 17 contributions', 'July 2026: 408 contributions'] },
     books:    { ex: 'Exhibit F', name: 'Books', lines: ['Reads Camus and Dostoevsky'] },
     poster:   { ex: 'Exhibit G', name: 'Film poster', lines: ['Mafia cinema, the Al Pacino kind'] },
@@ -188,7 +190,7 @@
   const bo = el('g', { 'clip-path': 'url(#bonclip)' }); const bs = el('g', { class: 'sway' }, bo); bs.style.transformOrigin = '1790px 394px';
   el('image', { href: 'assets/despacho-tarde.webp', x: 0, y: 0, width: 2000, height: 1116 }, bs);
   // carretes de la grabadora: se recorta cada carrete (elipse por la perspectiva), se estira a círculo, se gira y se vuelve a comprimir
-  [[330, 664, 23, 50], [381, 653, 19.5, 47]].forEach(([cx, cy, rx, ry], i) => {
+  [[328, 664, 24.5, 52], [378, 654, 22, 50]].forEach(([cx, cy, rx, ry], i) => {
     const k = rx / ry;
     const cp = el('clipPath', { id: 'reelclip' + i }, defs); el('ellipse', { cx, cy, rx, ry }, cp);
     const outer = el('g', { 'clip-path': `url(#reelclip${i})` });
@@ -273,7 +275,7 @@
       { id: 'about',    label: 'About',    nav: true,  pts: '690,1310 944,1310 944,1480 690,1480',        c: [817, 1395], tag: [817, 1225] },
       { id: 'contact',  label: 'Contact',  nav: true,  pts: '1104,1320 1280,1320 1320,1450 1104,1450',    c: [1210, 1385], tag: [1215, 1660] },
       { id: 'projects', label: 'Projects', nav: true,  pts: '1296,920 1536,920 1536,1660 1296,1660',      c: [1420, 1290], tag: [1300, 1090] },
-      { id: 'plaque',   label: 'Winner',   nav: false, pts: '1246,544 1454,544 1454,700 1246,700',        c: [1350, 622],  tag: [1350, 470] },
+      { id: 'plaque',   label: 'Awards',   nav: false, pts: '1246,544 1454,544 1454,700 1246,700',        c: [1350, 622],  tag: [1350, 470] },
       { id: 'lens',     label: 'Magnifier',nav: false, pts: '56,2160 516,2160 516,2480 56,2480',          c: [290, 2320],  tag: [300, 2150] },
       { id: 'tape',     label: 'Play',     nav: false, pts: '20,1300 208,1300 208,1630 20,1630',          c: [110, 1545], tag: [170, 1740] },
       { id: 'books',    label: 'Books',    prop: true,  pts: '1124,1436 1350,1436 1350,1570 1124,1570' },
@@ -349,7 +351,10 @@
       <button class="btn" type="button" style="margin-top:0">Send message</button>
       <div class="group"><h3>Or reach me directly</h3><a class="btn alt" href="#" style="margin-top:4px">GitHub</a><a class="btn alt" href="#" style="margin-top:4px">LinkedIn</a><a class="btn alt" href="#" style="margin-top:4px">Email</a></div>
       <p class="meta">Real form: API Gateway + Lambda + SES.</p>`,
-    plaque: () => `<h2>Winner</h2><h1>AWS Zero to Shipped</h1><p>Winner (1 of 5) with <b>Rumbo a Casa</b>.</p><a class="btn" href="#">See the Winners tab</a><a class="btn alt" data-go="projects" href="#">See the project</a>`,
+    plaque: () => `<h2>Awards</h2><h1>Achievements</h1>
+      <div class="group"><h3>2026 · AWS Zero to Shipped</h3><p><b>Winner</b> (1 of 5) with <b>Rumbo a Casa</b>.</p><a class="btn" href="#">See the Winners tab</a><a class="btn alt" data-go="projects" href="#">See the project</a></div>
+      <div class="group"><h3>2026 · Rally de Innovación, USS</h3><p><b>1st place, Social Impact</b> with team Helix, for <b>Minuto Cero</b>, an ERP for Chilean minimarkets.</p><a class="btn alt" data-go="projects" href="#">See the project</a></div>
+      <p class="meta">The AWS certificate will be added here when it arrives.</p>`,
   };
   function open(id) {
     $('#content').innerHTML = PANELS[id](); if (id === 'skills') initMap(); $('#veil').classList.add('on'); body.classList.add('panel-open');
