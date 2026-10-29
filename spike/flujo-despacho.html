@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flow mock · Landing + Study</title>
+<style>
+  :root { --cream:#f3ead7; --paper:#fbf6ea; --ink:#1f2a2e; --teal:#2f6b68; --ochre:#d29a3a; --brick:#a4452f; --line:rgba(31,42,46,.16); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+  body { font: 16px/1.6 "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--cream); }
+  button, input, textarea { font: inherit; color: inherit; }
+  a { color: var(--teal); }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid var(--ochre); outline-offset: 2px; }
+
+  /* ---------- barra de navegación (landing) ---------- */
+  #top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 6px; padding: 10px 20px; background: rgba(243,234,215,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  #top .brand { font-weight: 700; letter-spacing: .02em; margin-right: auto; }
+  #top a.nav { text-decoration: none; color: var(--ink); padding: 6px 10px; border-radius: 6px; font-size: 14px; }
+  #top a.nav:hover { background: rgba(47,107,104,.12); }
+  .btn { display: inline-block; border: 2px solid var(--ink); background: var(--ink); color: var(--cream); padding: 9px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .btn.alt { background: transparent; color: var(--ink); }
+  .btn:hover { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+  /* ---------- hero ---------- */
+  #hero { min-height: 82vh; display: flex; align-items: flex-end; padding: 80px 20px 48px; color: #fff; background: linear-gradient(to top, rgba(14,20,24,.92) 8%, rgba(14,20,24,.25) 70%), url(assets/santiago.webp) center/cover; }
+  .wrap { width: min(980px, 100%); margin: 0 auto; }
+  #hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.05; letter-spacing: -.01em; }
+  #hero .role { margin: 8px 0 14px; font-size: 1.15rem; opacity: .9; }
+  .award { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; padding: 6px 12px; border: 1px solid rgba(255,214,150,.7); border-radius: 999px; font-size: 14px; color: #ffe2a8; text-decoration: none; }
+  .award:hover { background: rgba(255,214,150,.15); }
+  #hero .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+  #hero .btn { border-color: #fff; background: #fff; color: var(--ink); }
+  #hero .btn.alt { background: transparent; color: #fff; }
+  #hero .btn:hover { background: var(--ochre); border-color: var(--ochre); color: var(--ink); }
+  #hero .hint { margin-top: 14px; font-size: 14px; opacity: .85; }
+
+  /* ---------- secciones ---------- */
+  section.s { padding: 64px 20px; border-top: 1px solid var(--line); }
+  section.s:nth-of-type(even) { background: var(--paper); }
+  section.s h2 { font-size: 1.7rem; margin-bottom: 18px; }
+  .content h3 { margin: 18px 0 6px; font-size: 1.05rem; }
+  .content p { margin-bottom: 10px; max-width: 64ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .chip { padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; }
+  .proj { border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 12px 14px; margin-bottom: 10px; }
+  .proj.win { border-color: var(--ochre); box-shadow: 0 0 0 2px rgba(210,154,58,.25); }
+  .proj b { font-size: 1.02rem; }
+  .proj .tag { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--ochre); color: var(--ink); font-size: 12px; font-weight: 700; }
+  .proj small { display: block; color: #51606a; }
+  .bars { display: flex; align-items: flex-end; gap: 10px; height: 150px; margin: 12px 0 4px; }
+  .bars div { flex: 1; background: var(--teal); border-radius: 4px 4px 0 0; position: relative; min-height: 3px; }
+  .bars div span { position: absolute; left: 0; right: 0; bottom: -20px; text-align: center; font-size: 12px; }
+  .bars div i { position: absolute; left: 0; right: 0; top: -18px; text-align: center; font-size: 11px; font-style: normal; }
+  form.msg { display: grid; gap: 10px; max-width: 460px; }
+  form.msg input, form.msg textarea { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .note { font-size: 13px; color: #51606a; }
+  footer { padding: 28px 20px 90px; text-align: center; font-size: 14px; color: #51606a; border-top: 1px solid var(--line); }
+
+  /* botón fijo: pista de la feature */
+  #fab { position: fixed; right: 18px; bottom: 18px; z-index: 9; box-shadow: 0 8px 24px rgba(0,0,0,.25); animation: nudge 3s ease-in-out infinite; }
+  @keyframes nudge { 0%, 85%, 100% { transform: none } 92% { transform: translateY(-5px) } }
+
+  /* ---------- despacho ---------- */
+  #study { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; background: #e9d8b8; }
+  #sbar { display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: var(--ink); color: var(--cream); }
+  #sbar .btn { padding: 6px 12px; background: transparent; border-color: rgba(243,234,215,.6); color: var(--cream); font-size: 14px; }
+  #sbar .btn:hover { background: var(--ochre); color: var(--ink); border-color: var(--ochre); }
+  #sbar .t { font-weight: 700; letter-spacing: .04em; }
+  #sbar .h { margin-left: auto; font-size: 13px; opacity: .8; }
+  #stage { position: relative; flex: 1; min-height: 0; background: linear-gradient(#e9d8b8 62%, #3f7570 62% 78%, #b98f5e 78%); }
+  #scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .rain line { stroke: rgba(235,245,255,.7); stroke-width: 1.3; animation: fall linear infinite; }
+  @keyframes fall { from { transform: translate(0,-120px) } to { transform: translate(-22px, 360px) } }
+  .hs { fill: transparent; stroke: transparent; stroke-width: 3; cursor: pointer; pointer-events: all; transition: fill .15s, stroke .15s; }
+  .hs:hover, .hs:focus-visible { fill: rgba(255,214,120,.22); stroke: #ffd678; outline: none; filter: drop-shadow(0 0 8px rgba(255,200,90,.9)); }
+  .dot { fill: #ffd678; stroke: #7a4f12; stroke-width: 2; pointer-events: none; }
+  .ring { fill: none; stroke: #ffd678; stroke-width: 3; pointer-events: none; transform-box: fill-box; transform-origin: center; animation: ring 2.4s ease-out infinite; }
+  @keyframes ring { from { transform: scale(.5); opacity: .95 } to { transform: scale(2.6); opacity: 0 } }
+  #tip { position: fixed; z-index: 30; pointer-events: none; padding: 6px 10px; background: var(--ink); color: var(--cream); border-radius: 6px; font-size: 13px; opacity: 0; transform: translate(-50%, -130%); white-space: nowrap; transition: opacity .12s; }
+  #tip.on { opacity: 1; }
+  #slist { display: none; gap: 6px; flex-wrap: wrap; padding: 10px 12px; background: var(--paper); border-top: 1px solid var(--line); }
+  #slist .btn { padding: 6px 11px; font-size: 14px; }
+
+  /* panel de detalle sobre la escena */
+  #panel { position: absolute; top: 0; right: 0; bottom: 0; z-index: 5; width: min(470px, 100%); overflow-y: auto; padding: 22px 22px 40px; background: var(--paper); border-left: 4px solid var(--ochre); box-shadow: -12px 0 30px rgba(0,0,0,.25); transform: translateX(102%); transition: transform .28s ease; }
+  #panel.on { transform: none; }
+  #panel h2 { font-size: 1.4rem; margin: 2px 40px 12px 0; }
+  #panel .kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--brick); }
+  #pclose { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: #fff; cursor: pointer; font-size: 18px; }
+
+  /* transición: puerta que se cierra y se abre */
+  #doors { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+  #doors i { position: absolute; top: 0; bottom: 0; width: 50%; background: #1b1713; transition: transform .45s ease-in-out; }
+  #doors i:first-child { left: 0; transform: translateX(-100%); }
+  #doors i:last-child { right: 0; transform: translateX(100%); }
+  #doors.shut i { transform: none; }
+  #doors.shut { pointer-events: all; }
+
+  /* etiqueta solo del mock */
+  #ribbon { position: fixed; left: 10px; bottom: 10px; z-index: 60; padding: 4px 9px; background: rgba(0,0,0,.75); color: #fff; font: 12px ui-monospace, monospace; border-radius: 6px; pointer-events: none; }
+
+  @media (max-width: 760px) {
+    #top a.nav { display: none; }
+    #slist { display: flex; }
+    #sbar .h { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PANTALLA 1 · LANDING ============ -->
+<div id="landing">
+  <header id="top">
+    <span class="brand">Matías Rodriguez</span>
+    <a class="nav" href="#about">About</a><a class="nav" href="#skills">Skills</a><a class="nav" href="#projects">Projects</a><a class="nav" href="#trajectory">Trajectory</a><a class="nav" href="#contact">Contact</a>
+    <button class="btn" type="button" data-study>Enter the study</button>
+  </header>
+
+  <section id="hero">
+    <div class="wrap">
+      <h1>Matías Rodriguez</h1>
+      <p class="role">Computer Science student building products on AWS</p>
+      <a class="award" href="#" data-todo="link to the Winners tab of Zero to Shipped">★ Winner, AWS Zero to Shipped (1 of 5)</a>
+      <div class="cta">
+        <a class="btn" href="#projects">View projects</a>
+        <button class="btn alt" type="button" data-study>Enter the study</button>
+      </div>
+      <p class="hint">Prefer something more hands-on? The whole portfolio also lives in an interactive detective's study.</p>
+    </div>
+  </section>
+
+  <main id="sections"></main>
+  <footer>Mock · all text and links are placeholders</footer>
+  <button id="fab" class="btn" type="button" data-study>🔍 Enter the study</button>
+</div>
+
+<!-- ============ PANTALLA 3 · DESPACHO ============ -->
+<div id="study" hidden>
+  <div id="sbar">
+    <button class="btn" type="button" id="back">← Back to portfolio</button>
+    <span class="t">The study</span>
+    <span class="h">Click an object · Esc closes a panel</span>
+  </div>
+  <div id="stage">
+    <svg id="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Detective's study with interactive objects">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fa6b7"/><stop offset="1" stop-color="#c7d4db"/></linearGradient>
+        <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></radialGradient>
+        <clipPath id="glass"><rect x="525" y="100" width="350" height="310"/></clipPath>
+      </defs>
+
+      <!-- pared y suelo -->
+      <rect width="1600" height="900" fill="#e9d8b8"/>
+      <rect y="520" width="1600" height="190" fill="#3f7570"/>
+      <rect y="514" width="1600" height="8" fill="#2a524e"/>
+      <rect y="700" width="1600" height="200" fill="#b98f5e"/>
+      <rect y="696" width="1600" height="10" fill="#8c6a42"/>
+      <g stroke="#a67c4c" stroke-width="2"><path d="M0 760H1600M0 830H1600"/></g>
+
+      <!-- ventana: la lluvia solo vive dentro del vidrio -->
+      <rect x="495" y="420" width="410" height="14" fill="#7d5834"/>
+      <rect x="505" y="80" width="390" height="344" fill="#6b4a2b"/>
+      <g clip-path="url(#glass)">
+        <rect x="525" y="100" width="350" height="310" fill="url(#sky)"/>
+        <g fill="#7b92a3"><rect x="540" y="250" width="70" height="170"/><rect x="640" y="200" width="60" height="220"/><rect x="760" y="230" width="90" height="190"/></g>
+        <g fill="#5f7686"><rect x="600" y="290" width="55" height="130"/><rect x="700" y="260" width="70" height="160"/></g>
+        <g fill="#f2c46d"><rect x="555" y="275" width="10" height="14"/><rect x="580" y="300" width="10" height="14"/><rect x="655" y="230" width="10" height="14"/><rect x="780" y="262" width="10" height="14"/><rect x="820" y="300" width="10" height="14"/><rect x="722" y="295" width="10" height="14"/></g>
+        <g fill="#cdbf9f"><rect x="525" y="100" width="350" height="72"/></g>
+        <g stroke="#a69a7c" stroke-width="2"><path d="M525 112H875M525 124H875M525 136H875M525 148H875M525 160H875"/></g>
+        <g class="rain" id="rain"></g>
+      </g>
+      <g fill="#6b4a2b"><rect x="696" y="100" width="8" height="310"/><rect x="525" y="251" width="350" height="8"/></g>
+
+      <!-- sombrero en la pared (decoración) -->
+      <g><path d="M120 150v18" stroke="#5b3a24" stroke-width="4"/><ellipse cx="120" cy="196" rx="52" ry="10" fill="#4a4036"/><path d="M92 196c0-34 12-46 28-46s28 12 28 46z" fill="#5a4e42"/><rect x="92" y="184" width="56" height="9" fill="#a4452f"/></g>
+
+      <!-- estante con bonsái -->
+      <rect x="100" y="440" width="240" height="12" rx="2" fill="#7d5834"/>
+      <path d="M130 452v26M310 452v26" stroke="#7d5834" stroke-width="6"/>
+      <g id="bonsai">
+        <path d="M168 410h84l-10 30h-64z" fill="#8c4a2f"/><rect x="164" y="404" width="92" height="8" rx="2" fill="#a25b3b"/>
+        <path d="M210 404c-4-20 10-34 -2-54s6-30 22-34" stroke="#5b3a24" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <ellipse cx="170" cy="352" rx="44" ry="20" fill="#3f7a4a"/><ellipse cx="238" cy="318" rx="52" ry="24" fill="#4f8f57"/><ellipse cx="198" cy="324" rx="34" ry="16" fill="#35693f"/>
+      </g>
+
+      <!-- trofeo / placa del hackathon -->
+      <g id="trophy">
+        <path d="M1025 150v22" stroke="#5b3a24" stroke-width="3"/><path d="M1025 150l-45 22M1025 150l45 22" stroke="#5b3a24" stroke-width="2" fill="none"/>
+        <rect x="960" y="170" width="130" height="140" rx="6" fill="#c8962f"/><rect x="972" y="182" width="106" height="116" fill="#f3ead7"/>
+        <polygon points="1025,196 1034,222 1062,222 1040,238 1048,264 1025,248 1002,264 1010,238 988,222 1016,222" fill="#d29a3a" stroke="#8a5f12" stroke-width="2"/>
+        <text x="1025" y="285" text-anchor="middle" font-size="11" font-weight="700" fill="#1f2a2e" font-family="Segoe UI, sans-serif">ZERO TO SHIPPED</text>
+      </g>
+
+      <!-- archivero -->
+      <g id="drawers">
+        <rect x="1180" y="330" width="240" height="410" rx="4" fill="#8a5a36"/>
+        <rect x="1200" y="312" width="150" height="20" fill="#fbf6ea" stroke="#d8cdb0"/><rect x="1215" y="300" width="120" height="14" fill="#efe5cc" stroke="#d8cdb0"/>
+        <g id="drawerRows"></g>
+      </g>
+
+      <!-- escritorio y silla -->
+      <ellipse cx="730" cy="738" rx="400" ry="16" fill="rgba(0,0,0,.2)"/>
+      <g id="chair"><rect x="668" y="420" width="144" height="150" rx="24" fill="#7a3b2e"/><rect x="682" y="434" width="116" height="122" rx="16" fill="#8d4a3a"/><g fill="#6a3226"><circle cx="716" cy="470" r="4"/><circle cx="764" cy="470" r="4"/><circle cx="740" cy="500" r="4"/><circle cx="716" cy="530" r="4"/><circle cx="764" cy="530" r="4"/></g></g>
+      <rect x="370" y="580" width="720" height="150" fill="#7a4f2b"/>
+      <g fill="none" stroke="#5f3d20" stroke-width="3"><rect x="392" y="596" width="150" height="120"/><rect x="560" y="596" width="340" height="120"/><rect x="918" y="596" width="150" height="120"/></g>
+      <rect x="350" y="554" width="760" height="28" rx="3" fill="#a87546"/>
+
+      <!-- objetos sobre el escritorio -->
+      <g id="lamp"><circle cx="612" cy="505" r="70" fill="url(#glow)"/><ellipse cx="612" cy="552" rx="20" ry="5" fill="#b8892e"/><path d="M612 552V516" stroke="#b8892e" stroke-width="5"/><path d="M586 518c4-26 44-26 52 0z" fill="#2f8f55"/></g>
+      <g id="folder"><rect x="398" y="540" width="100" height="16" rx="2" fill="#c89a52"/><rect x="396" y="533" width="100" height="19" rx="2" fill="#d9b26b"/><rect x="404" y="527" width="32" height="8" rx="2" fill="#d9b26b"/><path d="M410 543h50M410 548h34" stroke="#8a6a32" stroke-width="2"/></g>
+      <g id="lens"><circle cx="542" cy="534" r="22" fill="rgba(200,230,240,.4)" stroke="#b88a2e" stroke-width="5"/><path d="M558 550l22 20" stroke="#5b3a24" stroke-width="7" stroke-linecap="round"/><path d="M530 526a14 14 0 0 1 12-6" stroke="#fff" stroke-width="3" fill="none" opacity=".8"/></g>
+      <g id="ashtray"><ellipse cx="772" cy="552" rx="30" ry="7" fill="#9fb7c4"/><ellipse cx="772" cy="550" rx="22" ry="4" fill="#6f8794"/><rect x="778" y="545" width="14" height="3" rx="1" fill="#efe5cc" transform="rotate(-12 778 545)"/></g>
+      <g id="recorder"><rect x="840" y="500" width="108" height="56" rx="6" fill="#4a4038"/><rect x="848" y="507" width="92" height="30" rx="3" fill="#c9c4b6"/><circle cx="872" cy="522" r="11" fill="#222"/><circle cx="916" cy="522" r="11" fill="#222"/><circle cx="872" cy="522" r="4" fill="#c9c4b6"/><circle cx="916" cy="522" r="4" fill="#c9c4b6"/><path d="M872 511L916 511" stroke="#6a4a32" stroke-width="2"/><g fill="#c9c4b6"><circle cx="862" cy="546" r="4"/><circle cx="880" cy="546" r="4"/><rect x="912" y="542" width="22" height="8" rx="2"/></g></g>
+      <g id="camera"><rect x="982" y="528" width="74" height="30" rx="4" fill="#2b2b2b"/><rect x="982" y="520" width="74" height="10" rx="2" fill="#b8bcc0"/><rect x="994" y="514" width="14" height="8" fill="#9aa0a4"/><circle cx="1020" cy="543" r="12" fill="#111" stroke="#9aa0a4" stroke-width="3"/><circle cx="1020" cy="543" r="5" fill="#345a7a"/></g>
+
+      <g id="spots"></g>
+    </svg>
+
+    <aside id="panel" aria-live="polite">
+      <button id="pclose" type="button" aria-label="Close panel">✕</button>
+      <div id="pbody"></div>
+    </aside>
+    <div id="tip"></div>
+  </div>
+  <nav id="slist" aria-label="Study objects as a list"></nav>
+</div>
+
+<div id="doors" aria-hidden="true"><i></i><i></i></div>
+<div id="ribbon"></div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- datos únicos: alimentan landing y despacho ---------- */
+const PROJECTS = [
+  { n: 'Rumbo a Casa', win: true, pub: true, stack: 'TypeScript · AWS Lambda, CloudFront, DynamoDB, Polly', d: 'Winner among 5 at AWS Zero to Shipped.' },
+  { n: 'DealJudge', pub: true, stack: 'Python · Strands · Amazon Bedrock', d: 'Agent that judges whether a discount is real.' },
+  { n: 'FitTrack', pub: true, stack: 'React Native · FastAPI · Supabase', d: 'Gym and nutrition tracking with AI calorie estimates.' },
+  { n: 'Helix', stack: 'TypeScript · FastAPI', d: 'ERP for Chilean minimarkets. 1st place, Social Impact, Rally de Innovación 2026 (USS).' },
+  { n: 'JequeBot', stack: 'Python · Discord', d: 'Music bot for Discord.' },
+  { n: 'Alexa-PC', stack: 'Python · FastAPI · AWS Lambda', d: 'Control a PC by voice with Alexa.' },
+  { n: 'Assistant', stack: 'TypeScript · React Native', d: 'Turns intentions into a realistic schedule.' },
+];
+const SKILLS = {
+  Languages: ['TypeScript', 'Python'],
+  Backend: ['FastAPI', 'Supabase'],
+  'Cloud & AI': ['AWS Lambda', 'CloudFront', 'DynamoDB', 'Polly', 'Amazon Bedrock', 'Strands'],
+  Frontend: ['React Native'],
+};
+const MONTHS = [['Mar', 17], ['Apr', 9], ['May', 106], ['Jun', 382], ['Jul', 408], ['Aug', 404], ['Sep', 308], ['Oct', 151]];
+
+const chips = (a) => `<div class="chips">${a.map((x) => `<span class="chip">${x}</span>`).join('')}</div>`;
+const R = {
+  about: () => `<p>I'm a Computer Science student at USS (graduating 2027). I build full-stack and cloud products and like shipping them end to end.</p>
+    <p class="note">Placeholder copy. First person, no growth story.</p>`,
+  skills: () => Object.entries(SKILLS).map(([g, a]) => `<h3>${g}</h3>${chips(a)}`).join('') + `<p class="note">Each skill will list the projects where it was used.</p>`,
+  projects: () => PROJECTS.map((p) => `<div class="proj${p.win ? ' win' : ''}"><b>${p.n}</b>${p.win ? '<span class="tag">Winner</span>' : ''}<small>${p.stack}</small><p>${p.d}</p>${p.pub ? '<a href="#" data-todo="repo">Repo</a>' : '<span class="note">Private repo</span>'}</div>`).join(''),
+  trajectory: () => `<p>Contributions per month (GitHub).</p><div class="bars" style="margin-bottom:28px">${MONTHS.map(([m, v]) => `<div style="height:${Math.max(2, v / 408 * 100)}%"><i>${v}</i><span>${m}</span></div>`).join('')}</div>`,
+  contact: () => `<form class="msg" onsubmit="event.preventDefault();this.outerHTML='<p><b>Message recorded.</b> (mock: no backend yet)</p>'">
+      <input required placeholder="Your name" aria-label="Your name"><input required type="email" placeholder="Your email" aria-label="Your email">
+      <textarea required rows="4" placeholder="Leave a message" aria-label="Message"></textarea><button class="btn" type="submit">Send</button></form>
+    <p class="note">Fallback if the backend is down: <a href="mailto:bullax360@gmail.com">email directly</a>.</p>`,
+  outside: () => `<p>Outside the code: Dragon Ball Sparking! Zero modding (skins, stages, music), Age of Empires II, a self-hosted Minecraft server, the gym five days a week, and dark existential literature.</p>`,
+  award: () => `<p><b>AWS Zero to Shipped, Winner (1 of 5)</b> with Rumbo a Casa.</p><p>Built with AWS Lambda, CloudFront, DynamoDB and Polly (voice for the video).</p>
+    <p><a href="#" data-todo="Winners tab URL">See the Winners tab</a></p>
+    <h3>Also</h3><p>Helix: 1st place, Social Impact, Rally de Innovación 2026 (USS).</p>`,
+  egg: () => `<p>An empty ashtray. Cold case.</p><p class="note">Easter-egg slot (undecided).</p>`,
+};
+
+/* sección ⇄ objeto del despacho */
+const MAP = [
+  { key: 'about', title: 'About me', obj: 'Case folder', kick: 'Folder', land: true },
+  { key: 'skills', title: 'Skills', obj: 'Magnifying glass', kick: 'Examined under the lens', land: true },
+  { key: 'projects', title: 'Projects', obj: 'Filing cabinet', kick: 'Drawers', land: true },
+  { key: 'trajectory', title: 'Trajectory', obj: 'Camera', kick: 'Snapshots', land: true },
+  { key: 'contact', title: 'Contact', obj: 'Tape recorder', kick: 'Leave a message', land: true },
+  { key: 'outside', title: 'Outside the code', obj: 'Bonsai', kick: 'Off the clock', land: false },
+  { key: 'award', title: 'AWS Zero to Shipped', obj: 'Wall plaque', kick: 'Winner', land: false },
+  { key: 'egg', title: 'Cold case', obj: 'Ashtray', kick: 'Easter egg', land: false },
+];
+/* rect del hotspot por objeto (x, y, w, h en el viewBox 1600×900) */
+const BOX = {
+  about: [384, 518, 126, 58], skills: [506, 508, 82, 72], projects: [1180, 330, 240, 410], trajectory: [974, 508, 90, 56],
+  contact: [834, 494, 120, 66], outside: [112, 292, 200, 164], award: [954, 164, 142, 152], egg: [738, 540, 68, 28],
+};
+const SECTION_FOR_SPOT = { outside: 'about', award: 'projects', egg: 'about' };
+
+/* ---------- landing: secciones generadas desde los mismos datos ---------- */
+$('#sections').innerHTML = MAP.filter((m) => m.land).map((m) => `<section class="s" id="${m.key}"><div class="wrap"><h2>${m.title}</h2><div class="content">${R[m.key]()}${m.key === 'about' ? `<h3>Outside the code</h3>${R.outside()}` : ''}</div></div></section>`).join('');
+
+/* ---------- escena: cajones, lluvia, hotspots ---------- */
+$('#drawerRows').innerHTML = [0, 1, 2, 3].map((i) => `<rect x="1192" y="${342 + i * 98}" width="216" height="88" rx="3" fill="#9a6a3f" stroke="#5a3a20" stroke-width="2"/><rect x="1282" y="${356 + i * 98}" width="40" height="14" fill="#d9c79a"/><rect x="1285" y="${392 + i * 98}" width="30" height="6" rx="2" fill="#b8892e"/>`).join('');
+$('#rain').innerHTML = Array.from({ length: 46 }, () => { const x = 520 + Math.random() * 380, y = 80 + Math.random() * 120, l = 12 + Math.random() * 14; return `<line x1="${x}" y1="${y}" x2="${x - 4}" y2="${y + l}" style="animation-duration:${(0.8 + Math.random() * .7).toFixed(2)}s;animation-delay:-${(Math.random() * 2).toFixed(2)}s"/>`; }).join('');
+const svgNS = 'http://www.w3.org/2000/svg';
+MAP.forEach((m) => {
+  const [x, y, w, h] = BOX[m.key];
+  const g = document.createElementNS(svgNS, 'g');
+  g.innerHTML = `<rect class="hs" x="${x}" y="${y}" width="${w}" height="${h}" rx="8" tabindex="0" role="button" aria-label="${m.obj}: ${m.title}" data-key="${m.key}"/><circle class="ring" cx="${x + w / 2}" cy="${y + h / 2}" r="10"/><circle class="dot" cx="${x + w / 2}" cy="${y + h / 2}" r="7"/>`;
+  $('#spots').appendChild(g);
+});
+$('#slist').innerHTML = MAP.map((m) => `<button class="btn alt" type="button" data-open="${m.key}">${m.obj} · ${m.title}</button>`).join('');
+
+/* tooltip */
+const tip = $('#tip');
+$('#spots').addEventListener('pointerover', (e) => { const r = e.target.closest('.hs'); if (!r) return; const m = MAP.find((x) => x.key === r.dataset.key); const b = r.getBoundingClientRect(); tip.textContent = `${m.obj} → ${m.title}`; tip.style.left = b.left + b.width / 2 + 'px'; tip.style.top = b.top + 'px'; tip.classList.add('on'); });
+$('#spots').addEventListener('pointerout', () => tip.classList.remove('on'));
+$('#spots').addEventListener('focusin', (e) => e.target.dispatchEvent(new PointerEvent('pointerover', { bubbles: true })));
+$('#spots').addEventListener('focusout', () => tip.classList.remove('on'));
+
+/* ---------- navegación: el hash es la única fuente de verdad ---------- */
+const doors = $('#doors');
+const wait = (ms) => new Promise((r) => setTimeout(r, reduced ? 0 : ms));
+async function go(hash, anim) {
+  if (anim) { doors.classList.add('shut'); await wait(480); }
+  location.hash = hash;
+  await wait(80);
+  if (anim) { doors.classList.remove('shut'); }
+}
+let lastKey = 'about';
+function openPanel(key) {
+  const m = MAP.find((x) => x.key === key); if (!m) return closePanel();
+  lastKey = key;
+  $('#pbody').innerHTML = `<div class="kicker">${m.obj} · ${m.kick}</div><h2>${m.title}</h2><div class="content">${R[key]()}</div>`;
+  $('#panel').classList.add('on'); $('#pclose').focus({ preventScroll: true });
+}
+function closePanel() { $('#panel').classList.remove('on'); }
+function route() {
+  const m = location.hash.match(/^#\/study(?:\/(\w+))?/);
+  const inStudy = !!m;
+  $('#study').hidden = !inStudy; $('#landing').hidden = inStudy;
+  document.body.style.overflow = inStudy ? 'hidden' : '';
+  if (inStudy) { m[1] ? openPanel(m[1]) : closePanel(); }
+  $('#ribbon').textContent = !inStudy ? 'MOCK · screen 1: landing' : m[1] ? `MOCK · screen 4: panel “${m[1]}”` : 'MOCK · screen 3: the study';
+}
+addEventListener('hashchange', route);
+
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  if (t.closest('[data-study]')) return go('#/study', true);
+  const op = t.closest('[data-open]'); if (op) { location.hash = '#/study/' + op.dataset.open; return; }
+  const hs = t.closest('.hs'); if (hs) { location.hash = '#/study/' + hs.dataset.key; return; }
+  if (t.closest('#pclose')) { location.hash = '#/study'; return; }
+  if (t.closest('#back')) { go('', true).then(() => { const id = SECTION_FOR_SPOT[lastKey] || lastKey; $('#' + id)?.scrollIntoView(); }); return; }
+  const a = t.closest('a[data-todo]'); if (a) e.preventDefault();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$('#study').hidden && $('#panel').classList.contains('on')) location.hash = '#/study';
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('hs')) { e.preventDefault(); location.hash = '#/study/' + e.target.dataset.key; }
+});
+route();
+</script>
+</body>
+</html>
