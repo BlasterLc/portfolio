@@ -1,11 +1,19 @@
 # local tooling and scratch
 .superpowers/
 *:Zone.Identifier
+*.crdownload
 node_modules/
 .DS_Store
+.claude/skills/
 
-# raw generated sources (kept locally; optimized .webp versions are committed)
-spike/assets/despacho-higgsfield.png
-
-# reference images from the Gemini session
+# everything kept only on this machine: unused or non-redistributable 3D models, copyrighted reference audio/screenshots, old spikes
+_local/
 img/
+
+# copyrighted references used only to compare by ear / by eye; never commit
+**/ref/
+**/ref-*.png
+
+# deployment package (rebuilt by deploy/build-dist.py)
+deploy/dist/
+deploy/dist.zip
