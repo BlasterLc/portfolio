@@ -307,7 +307,7 @@ const hintEl = $('#hint');
 function renderCredits(loaded) {
   const A = (h, t) => h ? `<a href="${h}" target="_blank" rel="noopener">${t}</a>` : t;
   const f = k => { const c = CREDITS[k]; return `${A(c.url, '“' + c.title + '”')} by ${A(c.authorUrl, c.author)}, licensed under ${A(c.licenseUrl, c.license)}. ${c.changes}`; };
-  $('#credits').innerHTML = 'Credits: ' + (loaded.length ? loaded.map(k => `${k === 'ps2' ? 'Console model' : 'TV model'}: ${f(k)}`).join(' · ') : 'no external model loaded (procedural console and TV). The console model is credited here (title, author, license, link) when it is used.') + (PROPS_GLB ? ' · Room props: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> models (CC0; thanks to James Ray Cock, Plat251, Serhii Khromov, Thomas Paul Mouilleron and Yann Kervran).' : '');
+  $('#credits').innerHTML = 'Credits: ' + (loaded.length ? loaded.map(k => `${k === 'ps2' ? 'Console model' : 'TV model'}: ${f(k)}`).join(' · ') : 'no external model loaded (procedural console and TV). The console model is credited here (title, author, license, link) when it is used.') + (PROPS_GLB ? ' · Room props: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> models (CC0; thanks to James Ray Cock, Plat251, Serhii Khromov, Thomas Paul Mouilleron and Yann Kervran).' : '') + ' · Skill icons: logo paths from <a href="https://simpleicons.org" target="_blank" rel="noopener">simple-icons</a> (CC0); the logos belong to their owners and are used only to name technologies.';
 }
 renderCredits([]);
 
