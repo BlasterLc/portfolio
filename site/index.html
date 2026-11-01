@@ -231,10 +231,18 @@ const MENU = [
   { id: 'contact', label: 'Contact', sub: 'Say hello', val: '3 links' },
 ];
 const PROJECTS = [
-  { name: 'Rumbo a Casa', main: true, c1: '#8d9db8', c2: '#b6a98b', award: ['Winner \u00b7 Zero to Shipped', 'AWS Builder Center hackathon, 2026'], blurb: 'Placeholder. Main disc. Inserting it will later open a scene with the routes DS49, DS1, DS19 and DS52, and the rules engine behind them.' },
-  { name: 'FitTrack', c1: '#8aa39d', c2: '#9aa6bd', blurb: 'Placeholder description of FitTrack. Replace with the real case study.' },
-  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026'], blurb: 'Placeholder description of Minuto Cero. Replace with the real case study.' },
-  { name: 'JequeBot', c1: '#9a9fbd', c2: '#a9a28f', blurb: 'Placeholder description of JequeBot. Replace with the real case study.' },
+  { name: 'Rumbo a Casa', main: true, c1: '#8d9db8', c2: '#b6a98b', award: ['Winner \u00b7 Social Good', 'AWS Zero to Shipped hackathon, 2026'],
+    blurb: 'Which Chilean housing subsidy fits your family, and the exact papers to bring. A rules engine cites the decree behind every answer.',
+    stack: 'TypeScript \u00b7 AWS: CloudFront, Lambda, Bedrock, DynamoDB, Polly',
+    links: [{ label: 'Live app', url: 'https://d26duk07atmc3z.cloudfront.net' }, { label: 'Code', url: 'https://github.com/BlasterLc/rumbo-a-casa' }] },
+  { name: 'FitTrack', c1: '#8aa39d', c2: '#9aa6bd',
+    blurb: 'Workouts and nutrition in one app, on your phone or in the browser. Describe a meal by text, photo or voice and Claude estimates the macros.',
+    stack: 'Expo \u00b7 FastAPI \u00b7 Supabase \u00b7 Claude API',
+    links: [{ label: 'Code', url: 'https://github.com/BlasterLc/fittrack' }] },
+  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026'], blurb: 'Placeholder description of Minuto Cero. Replace with the real case study.', stack: 'Stack: placeholder.', links: [] },
+  { name: 'JequeBot', c1: '#9a9fbd', c2: '#a9a28f',
+    blurb: 'A Discord music bot: plays YouTube and SoundCloud in voice channels, with slash commands and playback buttons.',
+    stack: 'Python \u00b7 yt-dlp \u00b7 Docker \u00b7 Railway', links: [] },
 ];
 const SKILLS = [
   { id: 'python', name: 'Python', abbr: 'Py', rgb: [55, 118, 171], what: 'Backend, scripts and bots: FastAPI services, a Discord music bot and an Alexa-controlled music player.' },
@@ -299,7 +307,7 @@ $('#plain').innerHTML = `
   <h2>About</h2>${ABOUT.map(t => `<p>${t}</p>`).join('')}
   <h2>Skills</h2><ul>${SKILLS.map(k => `<li><strong>${k.name}</strong> \u2014 ${k.what}</li>`).join('')}</ul>
   <h2>Projects &amp; achievements</h2>
-  ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}</p>` : ''}<p>${p.blurb}</p></div>`).join('')}
+  ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}</p>` : ''}<p>${p.blurb}</p><p><small>${p.stack}</small></p>${p.links.length ? `<p>${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join(' \u00b7 ')}</p>` : ''}</div>`).join('')}
   <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
   <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="#" onclick="return false">${c}</a></li>`).join('')}</ul>`;
 const hintEl = $('#hint');
@@ -738,7 +746,7 @@ Promise.all([300, 500, 700].map(w => new FontFace('Quicksand', `url(${FONT_BASE}
   .then(() => { redraw(); }).catch(e => console.warn('[font] Quicksand failed to load, using the fallback stack', e));
 
 const YEL = '#E6E04A', CYAN = '#4FD0E8';
-const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, save: 0, skillMenu: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
+const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, save: 0, skillMenu: 0, pmenu: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
 let hits = [];
 const hit = (x, y, w, h, o) => hits.push({ x, y, w, h, ...o });
 function wrap(c, text, x, y, maxW, lh) {
@@ -951,8 +959,9 @@ function drawBody(c, t) {
         c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = FONT(20, 700); c.fillText('Reading disc…', SW / 2, 252); c.textAlign = 'left';
         c.fillStyle = 'rgba(16,12,52,.7)'; roundRect(c, 116, 266, 280, 12, 6); c.fill(); c.fillStyle = CYAN; roundRect(c, 116, 266, Math.max(12, 280 * ui.prog), 12, 6); c.fill();
       } else {
-        panel(); discIcon(c, p, 74, 130, 30, 1); c.fillStyle = '#fff'; c.font = FONT(15, 500); const y = wrap(c, p.blurb, 122, 118, 350, 22) + 8;
-        c.fillStyle = CYAN; c.font = FONT(13, 500); wrap(c, p.main ? 'Routes: DS49 · DS1 · DS19 · DS52 (scene not built in this spike).' : 'Stack, role and links: placeholder.', 122, y, 350, 19);
+        panel(); discIcon(c, p, 74, 130, 30, 1); c.fillStyle = '#fff'; c.font = FONT(15, 500); let y = wrap(c, p.blurb, 122, 118, 350, 22) + 2;
+        c.fillStyle = CYAN; c.font = FONT(13, 500); wrap(c, p.stack, 122, y, 350, 18);
+        p.links.forEach((l, n) => { const x = 122 + n * 118, sel = ui.pmenu === n; roundRect(c, x, 240, 106, 32, 9); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.14)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(15, 700); c.textAlign = 'center'; c.fillText(l.label + ' \u2197', x + 53, 261); c.textAlign = 'left'; hit(x, 236, 106, 40, { kind: 'plink', i: n }); });
       }
     }
     legend(c, [{ sym: 'x', label: s === 'projects' ? 'Insert' : 'Enter', act: 'enter' }, { sym: 'o', label: s === 'project' ? 'Eject' : 'Back', act: 'back' }]);
@@ -1111,7 +1120,7 @@ async function insertDisc(i) {
     await tween(.8, k => { d.position.z = z0 - .13 * k; updateClip(); }, ease.io);
     d.visible = false;
   }
-  ui.loaded = i; ui.screen = 'project'; ui.ready = false; ui.prog = 0; ui.msg = ''; redraw(); say(p.name + ' loaded');
+  ui.loaded = i; ui.pmenu = 0; ui.screen = 'project'; ui.ready = false; ui.prog = 0; ui.msg = ''; redraw(); say(p.name + ' loaded');
   await tween(1.4, k => { ui.prog = k; }, ease.io); ui.ready = true; redraw(); ui.busy = false;
 }
 async function ejectDisc() {
@@ -1142,6 +1151,7 @@ function nav(d) {
   if (ui.screen === 'home') { const n = Math.max(0, Math.min(MENU.length - 1, ui.sel + d)); if (n === ui.sel) return; ui.sel = n; if (rm()) ui.pos = n; }
   else if (ui.screen === 'projects') { const n = Math.max(0, Math.min(PROJECTS.length - 1, ui.disc + d)); if (n === ui.disc) return; ui.disc = n; if (rm()) ui.dpos = n; }
   else if (ui.screen === 'skills') { const n = Math.max(0, Math.min(SKILLS.length - 1, ui.skill + d)); if (n === ui.skill) return; ui.skill = n; }
+  else if (ui.screen === 'project') { const m = PROJECTS[ui.loaded].links.length; if (m < 2) return; const n = Math.max(0, Math.min(m - 1, ui.pmenu + d)); if (n === ui.pmenu) return; ui.pmenu = n; }
   else if (ui.screen === 'skill') { const n = Math.max(0, Math.min(1, ui.skillMenu + d)); if (n === ui.skillMenu) return; ui.skillMenu = n; }
   else if (ui.screen === 'guestbook') { const n = Math.max(0, Math.min(gbCount() - 1, ui.save + d)); if (n === ui.save) return; ui.save = n; }
   else return; mark('menu change'); sfx.nav(); redraw();
@@ -1150,6 +1160,7 @@ async function confirm() {
   if (!ui.on || ui.busy || ui.screen === 'boot') return; firstUse();
   if (ui.screen === 'home') { ui.screen = MENU[ui.sel].id; ui.msg = ''; sfx.ok(); redraw(); say(MENU[ui.sel].label); }
   else if (ui.screen === 'projects') { sfx.ok(); await insertDisc(ui.disc); }
+  else if (ui.screen === 'project') { const l = PROJECTS[ui.loaded].links[ui.pmenu]; if (l && ui.ready) { sfx.ok(); window.open(l.url, '_blank', 'noopener'); } }
   else if (ui.screen === 'skills') { ui.screen = 'skill'; ui.skillMenu = 0; sfx.ok(); redraw(); say(SKILLS[ui.skill].name); }
   else if (ui.screen === 'skill') { sfx.ok(); if (ui.skillMenu === 0) { ui.screen = 'projects'; redraw(); say('Projects'); } else { ui.screen = 'skills'; redraw(); say('Skills'); } }
   else if (ui.screen === 'guestbook') { if (ui.save === 0) { sfx.ok(); openGbForm(); } else sfx.nav(); }
@@ -1203,6 +1214,7 @@ function activate(h, touch) {
   if (h.kind === 'open') return confirm();
   if (h.kind === 'step') return nav(h.d);
   if (h.kind === 'gb') { if (ui.save === h.i && h.i === 0) return confirm(); ui.save = h.i; sfx.nav(); return redraw(); }
+  if (h.kind === 'plink') { ui.pmenu = h.i; return confirm(); }
   if (h.kind === 'skmenu') { ui.skillMenu = h.i; return confirm(); }
   if (h.kind === 'skill') { if (ui.skill === h.i) return confirm(); ui.skill = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'proj') { if (touch && ui.disc !== h.i) { ui.disc = h.i; sfx.nav(); redraw(); return; } ui.disc = h.i; return confirm(); }
