@@ -50,6 +50,9 @@ for f in glbs + extra:
 for pid in prop_ids:
     shutil.copytree(os.path.join(SRC, 'assets/props', pid), os.path.join(OUT, 'assets/props', pid))
 shutil.copy(os.path.join(SRC, 'assets/props/credits.json'), os.path.join(OUT, 'assets/props/credits.json'))
+os.makedirs(os.path.join(OUT, 'assets/icons'))
+for iid in re.findall(r"id: '([a-z]+)', name: '[^']+', abbr:", html):          # the 3D skill icons the SKILLS list uses
+    shutil.copy(os.path.join(SRC, 'assets/icons', iid + '.png'), os.path.join(OUT, 'assets/icons', iid + '.png'))
 
 n = 0
 with zipfile.ZipFile(ZIP, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as z:
