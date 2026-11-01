@@ -1,0 +1,123 @@
+{
+ "note": "Extract of CloudTrail event history (cloudtrail:LookupEvents, EventSource=amplify.amazonaws.com). Redacted: no account id, source IP, access key, ARNs or request ids. The first deployment was made by the coding agent through the official AWS MCP server (userAgent aws-mcp.amazonaws.com) with the IAM user below.",
+ "events": [
+  {
+   "eventTime": "2026-11-01T01:24:03Z",
+   "eventName": "ListApps",
+   "eventSource": "amplify.amazonaws.com",
+   "awsRegion": "us-east-1",
+   "readOnly": true,
+   "user": {
+    "type": "IAMUser",
+    "userName": "blaster"
+   },
+   "userAgent": "aws-mcp.amazonaws.com",
+   "requestParameters": {},
+   "errorCode": null
+  },
+  {
+   "eventTime": "2026-11-01T01:24:35Z",
+   "eventName": "CreateApp",
+   "eventSource": "amplify.amazonaws.com",
+   "awsRegion": "us-east-1",
+   "readOnly": false,
+   "user": {
+    "type": "IAMUser",
+    "userName": "blaster"
+   },
+   "userAgent": "aws-mcp.amazonaws.com",
+   "requestParameters": {
+    "name": "ps2-room-portfolio",
+    "platform": "WEB"
+   },
+   "errorCode": null
+  },
+  {
+   "eventTime": "2026-11-01T01:24:35Z",
+   "eventName": "CreateBranch",
+   "eventSource": "amplify.amazonaws.com",
+   "awsRegion": "us-east-1",
+   "readOnly": false,
+   "user": {
+    "type": "IAMUser",
+    "userName": "blaster"
+   },
+   "userAgent": "aws-mcp.amazonaws.com",
+   "requestParameters": {
+    "stage": "PRODUCTION",
+    "appId": "d5w3zjhtyz0vy",
+    "branchName": "main"
+   },
+   "errorCode": null
+  },
+  {
+   "eventTime": "2026-11-01T01:24:35Z",
+   "eventName": "CreateDeployment",
+   "eventSource": "amplify.amazonaws.com",
+   "awsRegion": "us-east-1",
+   "readOnly": false,
+   "user": {
+    "type": "IAMUser",
+    "userName": "blaster"
+   },
+   "userAgent": "aws-mcp.amazonaws.com",
+   "requestParameters": {
+    "appId": "d5w3zjhtyz0vy",
+    "branchName": "main"
+   },
+   "errorCode": null
+  },
+  {
+   "eventTime": "2026-11-01T01:24:58Z",
+   "eventName": "StartDeployment",
+   "eventSource": "amplify.amazonaws.com",
+   "awsRegion": "us-east-1",
+   "readOnly": false,
+   "user": {
+    "type": "IAMUser",
+    "userName": "blaster"
+   },
+   "userAgent": "aws-mcp.amazonaws.com",
+   "requestParameters": {
+    "jobId": "1",
+    "appId": "d5w3zjhtyz0vy",
+    "branchName": "main"
+   },
+   "errorCode": null
+  },
+  {
+   "eventTime": "2026-11-01T01:25:03Z",
+   "eventName": "GetApp",
+   "eventSource": "amplify.amazonaws.com",
+   "awsRegion": "us-east-1",
+   "readOnly": true,
+   "user": {
+    "type": "IAMUser",
+    "userName": "blaster"
+   },
+   "userAgent": "aws-mcp.amazonaws.com",
+   "requestParameters": {
+    "appId": "d5w3zjhtyz0vy"
+   },
+   "errorCode": null
+  },
+  {
+   "eventTime": "2026-11-01T01:25:03Z",
+   "eventName": "GetJob",
+   "eventSource": "amplify.amazonaws.com",
+   "awsRegion": "us-east-1",
+   "readOnly": true,
+   "user": {
+    "type": "IAMUser",
+    "userName": "blaster"
+   },
+   "userAgent": "aws-mcp.amazonaws.com",
+   "requestParameters": {
+    "jobId": "1",
+    "appId": "d5w3zjhtyz0vy",
+    "branchName": "main"
+   },
+   "errorCode": null
+  }
+ ]
+}
