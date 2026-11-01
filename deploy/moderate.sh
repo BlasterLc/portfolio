@@ -27,7 +27,9 @@ case "$cmd" in
     items PENDING | python3 -c 'import json,sys
 rows=json.load(sys.stdin)["Items"]
 print(f"{len(rows)} pending")
-for i in rows: print(f"  {i[\"id\"][\"S\"]}  {i[\"createdAt\"][\"S\"]}  [{i[\"color\"][\"S\"]}] {i[\"name\"][\"S\"]}: {i[\"message\"][\"S\"]}")'
+for i in rows:
+    g = {k: v["S"] for k, v in i.items() if "S" in v}
+    print("  %s  %s  [%s] %s: %s" % (g["id"], g["createdAt"], g["color"], g["name"], g["message"]))'
     echo "public: $(items SAVE | python3 -c 'import json,sys;print(len(json.load(sys.stdin)["Items"]))')" ;;
   approve)
     [ -n "$id" ] || { echo "usage: approve <id|all>"; exit 1; }
