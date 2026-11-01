@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de iconos 3D de skills (desechable)</title>
+<style>
+  body { margin:0; background:#16151a; color:#efe5d2; font:15px system-ui, sans-serif; padding:20px; }
+  h1 { font-size:18px; margin:0 0 6px; } p { color:#a39a88; margin:4px 0 14px; max-width:760px; }
+  #grid { display:grid; grid-template-columns:repeat(4, 150px); gap:14px; }
+  .cell { background:radial-gradient(ellipse at 50% 40%, #3a3a52, #18171f); border-radius:10px; padding:10px; text-align:center; font-size:13px; }
+  canvas.p { width:128px; height:128px; display:block; margin:0 auto 6px; }
+</style>
+</head>
+<body>
+<h1>Iconos 3D de skills · giro prerenderizado</h1>
+<p>Cada logo (datos CC0 de <i>simple-icons</i>, marcas de sus dueños) se extruye con bisel en three.js y se renderiza a una tira de 24 fotogramas de giro. Aquí se reproducen desde la tira ya generada, igual que lo hará el TV.</p>
+<div id="grid"></div>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const FR = 24, CELL = 128, COLS = 6, ROWS = 4, SS = 2;                       // 24 frames, 128 px cells (rendered at 2x and downscaled), 6x4 atlas
+const ICONS = [
+  { id: 'python', file: 'python', name: 'Python', color: '#3776AB' },
+  { id: 'javascript', file: 'javascript', name: 'JavaScript', color: '#F7DF1E' },
+  { id: 'node', file: 'nodedotjs', name: 'Node', color: '#5FA04E' },
+  { id: 'nextjs', file: 'nextdotjs', name: 'Next.js', color: '#E8E8EE' },       // brand colour is black: lightened so it reads on dark backgrounds
+  { id: 'fastapi', file: 'fastapi', name: 'FastAPI', color: '#009688' },
+  { id: 'supabase', file: 'supabase', name: 'Supabase', color: '#3FCF8E' },
+  { id: 'testing', file: 'jest', name: 'Testing', color: '#C21325' },
+  { id: 'githubactions', file: 'githubactions', name: 'GitHub Actions', color: '#2088FF' },
+];
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setSize(CELL * SS, CELL * SS, false); renderer.setPixelRatio(1); renderer.setClearColor(0x000000, 0);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene(), pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture;
+const cam = new THREE.PerspectiveCamera(28, 1, .1, 50); cam.position.set(0, 0, 9);
+const key = new THREE.DirectionalLight(0xffffff, 2.1); key.position.set(-2.5, 3, 5); scene.add(key); scene.add(new THREE.HemisphereLight(0xffffff, 0x404060, .55));
+
+async function build(ic) {
+  const txt = await (await fetch(`svg/${ic.file}.svg`)).text(), data = new SVGLoader().parse(txt), shapes = [];
+  for (const p of data.paths) shapes.push(...SVGLoader.createShapes(p));
+  const geo = new THREE.ExtrudeGeometry(shapes, { depth: 3.2, bevelEnabled: true, bevelThickness: .55, bevelSize: .45, bevelSegments: 4, curveSegments: 14 });
+  geo.scale(1, -1, 1); geo.computeBoundingBox(); const bb = geo.boundingBox, c = bb.getCenter(new THREE.Vector3()); geo.translate(-c.x, -c.y, -c.z);
+  const s = 3.1 / Math.max(bb.max.x - bb.min.x, bb.max.y - bb.min.y); geo.scale(s, s, s); geo.computeVertexNormals();
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: ic.color, roughness: .34, metalness: .22, envMapIntensity: 1.0 }));
+  return mesh;
+}
+const out = {}; const grid = document.getElementById('grid');
+for (const ic of ICONS) {
+  const mesh = await build(ic); scene.add(mesh);
+  const atlas = document.createElement('canvas'); atlas.width = CELL * COLS; atlas.height = CELL * ROWS; const g = atlas.getContext('2d'); g.imageSmoothingQuality = 'high';
+  for (let f = 0; f < FR; f++) {
+    mesh.rotation.set(-.12, (f / FR) * Math.PI * 2, 0); renderer.render(scene, cam);
+    g.drawImage(renderer.domElement, (f % COLS) * CELL, Math.floor(f / COLS) * CELL, CELL, CELL);
+  }
+  scene.remove(mesh); mesh.geometry.dispose();
+  out[ic.id] = atlas.toDataURL('image/png');
+  const cell = document.createElement('div'); cell.className = 'cell'; const pv = document.createElement('canvas'); pv.className = 'p'; pv.width = pv.height = CELL; cell.append(pv, ic.name); grid.append(cell);
+  const pc = pv.getContext('2d'); let k = 0; setInterval(() => { pc.clearRect(0, 0, CELL, CELL); pc.drawImage(atlas, (k % COLS) * CELL, Math.floor(k / COLS) * CELL, CELL, CELL, 0, 0, CELL, CELL); k = (k + 1) % FR; }, 70);
+}
+window.__icons = out; window.__ICONS = ICONS; window.__done = true;
+</script>
+</body>
+</html>

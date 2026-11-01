@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio de sonido v2 (prototipo desechable)</title>
+<style>
+  :root { --bg:#14120f; --panel:#1f1b16; --ink:#efe5d2; --muted:#a39a88; --acc:#e0a24a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:22px; margin:0 0 4px; } .tag { color:var(--acc); font-size:13px; letter-spacing:.08em; text-transform:uppercase; }
+  p.note { color:var(--muted); margin:6px 0 18px; }
+  .grid { display:grid; gap:16px; grid-template-columns:1fr; } @media (min-width:760px){ .grid{ grid-template-columns:1fr 1fr; } }
+  section { background:var(--panel); border-radius:12px; padding:16px; }
+  h2 { font-size:16px; margin:0 0 10px; color:var(--acc); } h2 small { color:var(--muted); font-weight:400; }
+  .row { display:grid; grid-template-columns:150px 1fr 56px; gap:8px; align-items:center; margin:6px 0; font-size:14px; }
+  .row output { color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--acc); }
+  button { background:var(--acc); color:#241a0c; border:0; border-radius:8px; padding:10px 16px; font:600 15px system-ui; cursor:pointer; margin:4px 6px 4px 0; }
+  button.alt { background:#3a342b; color:var(--ink); } button:active { transform:translateY(1px); }
+  canvas { width:100%; height:80px; background:#0d0b09; border-radius:8px; display:block; margin-top:10px; }
+  kbd { background:#3a342b; border-radius:4px; padding:1px 6px; font-size:12px; }
+  textarea { width:100%; height:110px; background:#0d0b09; color:var(--ink); border:1px solid #3a342b; border-radius:8px; padding:8px; font:12px monospace; }
+</style>
+</head>
+<body>
+<main>
+  <div class="tag">Prototipo desechable · no es el sitio · v2 afinada con mediciones de tus clips</div>
+  <h1>Laboratorio de sonido v2</h1>
+  <p class="note">Sonidos sintetizados desde cero en el navegador, calibrados con las notas, la duración, el volumen y el brillo medidos en tus 5 clips (no se copia ni se reproduce ningún audio original). Cada botón lleva el número del clip que intenta parecerse para que compares uno a uno. Atajos: <kbd>1</kbd> arranque A (07) · <kbd>2</kbd> arranque B (08) · <kbd>↑</kbd><kbd>↓</kbd> tic (12) · <kbd>Enter</kbd> campanita (13) · <kbd>Esc</kbd> swoosh (14).</p>
+
+  <div class="grid">
+    <section>
+      <h2>Arranque <small>clips 07 y 08</small></h2>
+      <button id="bA">▶ A · largo (07)</button><button id="bB" class="alt">▶ B · corto (08)</button><button id="bStop" class="alt">■ Parar</button>
+      <div id="bootCtl"></div>
+    </section>
+    <section>
+      <h2>Menú <small>clips 12, 13 y 14</small></h2>
+      <button id="b12">▶ Tic (12)</button><button id="b13" class="alt">▶ Campanita (13)</button><button id="b14" class="alt">▶ Swoosh (14)</button>
+      <div id="ticCtl"></div>
+    </section>
+    <section>
+      <h2>Volumen y salida</h2>
+      <div id="mainCtl"></div>
+      <canvas id="scope" width="640" height="80"></canvas>
+    </section>
+    <section>
+      <h2>Ajustes actuales</h2>
+      <button id="bCopy" class="alt">Copiar ajustes</button><button id="bReset" class="alt">Restablecer</button>
+      <textarea id="out" readonly></textarea>
+    </section>
+  </div>
+</main>
+
+<script>
+/* Throwaway sound lab v2. Synthesized with the Web Audio API; tuned with measurements (pitch centre, range, envelope, brightness) of the reference clips. No audio is copied. */
+const DEF = {
+  boot: { trans: -7, cutoff: 1150, noise: .15, vib: .3, air: 1.2, level: 1 },
+  tic:  { trans: 0, f: 525, dur: 75, click: .5, bell: .55, sw: .5 },
+  main: { vol: .75 },
+};
+let P = JSON.parse(JSON.stringify(DEF));
+const SPEC = {
+  boot: [['trans', 'Transponer (semitonos)', -12, 12, 1], ['cutoff', 'Brillo: corte agudo (Hz)', 500, 7000, 50], ['noise', 'Textura (ruido)', 0, 1, .01], ['vib', 'Vibrato / coro', 0, 1, .01], ['air', 'Aire / eco (s)', .2, 4, .1], ['level', 'Nivel', .3, 2, .01]],
+  tic:  [['trans', 'Transponer (semitonos)', -12, 12, 1], ['f', 'Tic: tono (Hz)', 300, 1000, 5], ['dur', 'Tic: duración (ms)', 30, 200, 5], ['click', 'Tic: clic inicial', 0, 1, .01], ['bell', 'Campanita: nivel', 0, 1, .01], ['sw', 'Swoosh: nivel', 0, 1, .01]],
+  main: [['vol', 'Volumen', 0, 1, .01]],
+};
+const $ = s => document.querySelector(s);
+let ctx = null, master = null, analyser = null;
+for (const [grp, rows] of Object.entries(SPEC)) {
+  const box = $('#' + (grp === 'boot' ? 'bootCtl' : grp === 'tic' ? 'ticCtl' : 'mainCtl'));
+  for (const [k, label, min, max, step] of rows) {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = `<label for="${grp}_${k}">${label}</label><input type="range" id="${grp}_${k}" min="${min}" max="${max}" step="${step}" value="${P[grp][k]}"><output></output>`;
+    box.appendChild(r);
+    const inp = r.querySelector('input'), out = r.querySelector('output');
+    const upd = () => { P[grp][k] = +inp.value; out.textContent = (+inp.value).toFixed(step < 1 ? 2 : 0); show(); if (grp === 'main' && master) master.gain.value = P.main.vol; };
+    inp.addEventListener('input', upd); upd();
+  }
+}
+function show() { $('#out').value = JSON.stringify(P, null, 1); }
+
+/* ---------- helpers ---------- */
+const semis = n => Math.pow(2, n / 12);
+function impulse(ctx, secs, decay = 2.4) { const n = Math.max(1, secs * ctx.sampleRate | 0), b = ctx.createBuffer(2, n, ctx.sampleRate); for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); let lp = 0; for (let i = 0; i < n; i++) { lp += ((Math.random() * 2 - 1) - lp) * .4; d[i] = lp * Math.pow(1 - i / n, decay); } } return b; }
+function noiseBuf(ctx, secs) { const n = secs * ctx.sampleRate | 0, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return b; }
+function ramp(g, t0, pts) { g.gain.cancelScheduledValues(t0); g.gain.setValueAtTime(.0001, t0); for (const [t, v] of pts) g.gain.linearRampToValueAtTime(Math.max(.0001, v), t0 + t); }
+
+/* ---------- boot pad: a dense chord of detuned saw voices, low-passed, with a noise bed. Notes and envelope come from the measurements:
+   A (07): 8.6 s, loud from the very first instant, slowly fading ~5 dB; chord G#3 B3 C#4 E4 F#4 G#4 B4 + high E6. rms 0.18, centroid ~1 kHz.
+   B (08): 3.7 s, swells in 0.4 s, holds, steps down ~3 dB at 1.3 s; chord D4 E4 A4 B4 C5 E5 A5 + high E6 B6. rms 0.34, centroid ~1.3 kHz. ---------- */
+const BOOT = {
+  A: { dur: 8.65, notes: [[207.7, 1], [246.9, 1], [277.2, 1], [329.6, .9], [370, .8], [415.3, .9], [493.9, .8], [1319, .35], [1245, .3]], env: [[0, .0001], [.15, 1], [8.3, .56], [8.65, .0001]], rms: .184, gain: 1.9 },
+  B: { dur: 3.69, notes: [[293.7, 1], [329.6, 1], [440, 1], [493.9, .9], [523.3, .8], [659.3, .6], [880, .7], [1319, .35], [1976, .15]], env: [[0, .0001], [.4, 1], [1.3, 1], [1.4, .72], [3.55, .62], [3.69, .0001]], rms: .336, gain: 2.15 },
+};
+function synthBoot(ctx, dest, which, p, t0 = ctx.currentTime + .03) {
+  const B = BOOT[which], k = semis(p.trans), out = ctx.createGain(), sat = ctx.createWaveShaper(), cv = new Float32Array(2048);
+  for (let i = 0; i < 2048; i++) cv[i] = Math.tanh((i / 1023.5 - 1) * 1.1);
+  sat.curve = cv; if (!window.__nosat) { sat.connect(dest); dest = sat; }          // soft limiter: a dense chord can peak above 1
+  out.gain.value = B.rms * B.gain * p.level;                                         // gain = calibration against the reference clip's rms (offline render)
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = p.cutoff; lp.Q.value = .5;
+  const eg = ctx.createGain(); ramp(eg, t0, B.env); lp.connect(eg); eg.connect(out);
+  const verb = ctx.createConvolver(); verb.buffer = impulse(ctx, p.air, 2.4); const wet = ctx.createGain(); wet.gain.value = .22; out.connect(verb); verb.connect(wet); wet.connect(dest); out.connect(dest);
+  const stopAt = t0 + B.dur + .1;
+  for (const [f, g] of B.notes) for (const det of [-7, 0, 6]) {
+    const o = ctx.createOscillator(), vg = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = f * k; o.detune.value = det + (Math.random() - .5) * 4; vg.gain.value = (g * (f < 600 ? 1 : f < 1100 ? .6 : .35)) / 3;
+    lfo.frequency.value = 4.2 + Math.random() * 1.6; lg.gain.value = p.vib * 9; lfo.connect(lg); lg.connect(o.detune); o.connect(vg); vg.connect(lp);
+    o.start(t0 + Math.random() / (f * k)); lfo.start(t0); o.stop(stopAt); lfo.stop(stopAt);   // random start phase: the saws do not all peak together
+  }
+  if (p.noise > 0) { const nb = ctx.createBufferSource(); nb.buffer = noiseBuf(ctx, Math.ceil(B.dur + 1)); nb.loop = true; const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = .5; const ng = ctx.createGain(); ng.gain.value = .12 * p.noise; nb.connect(bp); bp.connect(ng); ng.connect(lp); nb.start(t0); nb.stop(stopAt); }
+  return B.dur;
+}
+
+/* ---------- menu sounds from clips 12, 13, 14 ---------- */
+function swell(ctx, dest, t0, freqs, rise, fall, peak, wave = 'sine') {            // soft symmetric bump of a few tones (the shape of clips 13 and 14)
+  const g = ctx.createGain(); g.gain.setValueAtTime(.0001, t0); g.gain.linearRampToValueAtTime(peak, t0 + rise); g.gain.linearRampToValueAtTime(.0001, t0 + rise + fall); g.connect(dest);
+  for (const [f, a] of freqs) { const o = ctx.createOscillator(), e = ctx.createGain(); o.type = wave; o.frequency.value = f; e.gain.value = a; o.connect(e); e.connect(g); o.start(t0); o.stop(t0 + rise + fall + .05); }
+}
+function synthMenu(ctx, dest, kind, p, t0 = ctx.currentTime + .005) {
+  const k = semis(p.trans), out = ctx.createGain(); out.gain.value = 1; out.connect(dest);
+  if (kind === '12') {                                                              // pure ~525 Hz tone: short noisy click, flat body, quick release (measured 0.11 s)
+    const d = p.dur / 1000, o = ctx.createOscillator(), e = ctx.createGain(); o.type = 'sine'; o.frequency.value = p.f * k;
+    e.gain.setValueAtTime(.0001, t0); e.gain.linearRampToValueAtTime(.32, t0 + .002); e.gain.setValueAtTime(.3, t0 + d); e.gain.linearRampToValueAtTime(.0001, t0 + d + .012); o.connect(e); e.connect(out); o.start(t0); o.stop(t0 + d + .03);
+    if (p.click > 0) { const nb = ctx.createBufferSource(); nb.buffer = noiseBuf(ctx, 1); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3700 * k; bp.Q.value = 2; const ce = ctx.createGain(); ce.gain.setValueAtTime(.9 * p.click, t0); ce.gain.linearRampToValueAtTime(.0001, t0 + .014); nb.connect(bp); bp.connect(ce); ce.connect(out); nb.start(t0); nb.stop(t0 + .03); }
+    return d + .1;
+  }
+  if (kind === '13') {                                                              // two soft swells (peaks at .16 s and .36 s, second ~half as loud); G#4 C#5 F#5-ish with decaying upper partials
+    const a = p.bell * .62, f = x => x * k;
+    swell(ctx, out, t0, [[f(415.3), 1], [f(554.4), .95], [f(740), .4], [f(830.6), .12], [f(1108), .08]], .16, .13, a, 'triangle');
+    swell(ctx, out, t0 + .26, [[f(554.4), .8], [f(740), .6], [f(415.3), .35], [f(1108), .08]], .1, .26, a * .6, 'triangle');
+    return .85;
+  }
+  const f = x => x * k, a = p.sw * .8;                                              // 14: a soft bump (peak at .12 s, gone by .39 s) of a ~335 Hz cluster, plus a very faint rising chirp
+  swell(ctx, out, t0, [[f(335), 1], [f(406), .6], [f(432), .35], [f(183), .25], [f(137), .12]], .12, .27, a);
+  const c = ctx.createOscillator(), ce = ctx.createGain(); c.type = 'sine'; c.frequency.setValueAtTime(5000, t0); c.frequency.linearRampToValueAtTime(8000, t0 + .15); ce.gain.setValueAtTime(.0001, t0); ce.gain.linearRampToValueAtTime(.012 * p.sw, t0 + .05); ce.gain.linearRampToValueAtTime(.0001, t0 + .16); c.connect(ce); ce.connect(out); c.start(t0); c.stop(t0 + .2);
+  return .45;
+}
+
+/* ---------- live engine ---------- */
+function ensure() {
+  if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+  ctx = new (window.AudioContext || window.webkitAudioContext)(); master = ctx.createGain(); master.gain.value = P.main.vol;
+  analyser = ctx.createAnalyser(); analyser.fftSize = 1024; const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -6; comp.ratio.value = 3; master.connect(comp); comp.connect(analyser); analyser.connect(ctx.destination); draw();
+}
+let bootBus = null;
+function stopBoot() { if (bootBus) { try { bootBus.gain.setTargetAtTime(0, ctx.currentTime, .04); const b = bootBus; setTimeout(() => b.disconnect(), 400); } catch (e) {} bootBus = null; } }
+function playBoot(w) { ensure(); stopBoot(); bootBus = ctx.createGain(); bootBus.connect(master); synthBoot(ctx, bootBus, w, P.boot); }
+const playMenu = k => { ensure(); synthMenu(ctx, master, k, P.tic); };
+function draw() { const cv = $('#scope'), c = cv.getContext('2d'), a = new Uint8Array(analyser.fftSize); (function loop() { analyser.getByteTimeDomainData(a); c.fillStyle = '#0d0b09'; c.fillRect(0, 0, cv.width, cv.height); c.strokeStyle = '#e0a24a'; c.lineWidth = 1.5; c.beginPath(); for (let i = 0; i < a.length; i++) { const x = i / a.length * cv.width, y = a[i] / 255 * cv.height; i ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); requestAnimationFrame(loop); })(); }
+
+$('#bA').onclick = () => playBoot('A'); $('#bB').onclick = () => playBoot('B'); $('#bStop').onclick = () => { if (ctx) stopBoot(); };
+$('#b12').onclick = () => playMenu('12'); $('#b13').onclick = () => playMenu('13'); $('#b14').onclick = () => playMenu('14');
+$('#bCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#out').value); } catch (e) { $('#out').select(); document.execCommand('copy'); } $('#bCopy').textContent = 'Copiado'; setTimeout(() => ($('#bCopy').textContent = 'Copiar ajustes'), 1200); };
+$('#bReset').onclick = () => { P = JSON.parse(JSON.stringify(DEF)); for (const [g, rows] of Object.entries(SPEC)) for (const [k] of rows) { const i = $('#' + g + '_' + k); i.value = P[g][k]; i.dispatchEvent(new Event('input')); } };
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && ['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  if (e.key === '1') playBoot('A'); else if (e.key === '2') playBoot('B'); else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); playMenu('12'); } else if (e.key === 'Enter') playMenu('13'); else if (e.key === 'Escape') playMenu('14');
+});
+show();
+
+/* debug hook for the headless check: render a sound offline and return the same metrics used on the reference clips */
+window.__render = async (kind) => {
+  const sr = 44100, secs = kind === 'A' ? 8.8 : kind === 'B' ? 3.8 : 1.2, oc = new OfflineAudioContext(1, sr * secs | 0, sr);
+  if (kind === 'A' || kind === 'B') synthBoot(oc, oc.destination, kind, P.boot, 0); else synthMenu(oc, oc.destination, kind, P.tic, 0);
+  const buf = await oc.startRendering(); return { sr, data: Array.from(buf.getChannelData(0)) };
+};
+</script>
+</body>
+</html>

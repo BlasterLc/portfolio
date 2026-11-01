@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototipo del intro (desechable)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dosis:wght@500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; height:100%; background:#050608; color:#efe5d2; font:15px system-ui, sans-serif; }
+  #wrap { position:relative; width:min(96vw, 128vh*1.0); aspect-ratio:4/3; margin:2vh auto 0; background:#000; overflow:hidden; border-radius:10px; }
+  canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  #logo { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font:500 5.6vw/1.1 "Dosis", "Helvetica Neue", Arial, sans-serif; letter-spacing:.02em; text-shadow:0 0 14px rgba(120,160,255,.45); opacity:0; pointer-events:none; text-align:center; }
+  #vig { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 28%, rgba(0,0,6,.55) 62%, rgba(0,0,4,.95) 100%); pointer-events:none; }
+  #black { position:absolute; inset:0; background:#000; opacity:0; pointer-events:none; }
+  #bar { display:flex; gap:10px; align-items:center; justify-content:center; margin:14px auto; flex-wrap:wrap; }
+  button { background:#e0a24a; color:#241a0c; border:0; border-radius:8px; padding:10px 16px; font:600 15px system-ui; cursor:pointer; }
+  button.alt { background:#3a342b; color:#efe5d2; }
+  #tl { width:min(60vw,420px); accent-color:#e0a24a; } #time { color:#a39a88; min-width:84px; font-variant-numeric:tabular-nums; }
+  .tag { text-align:center; color:#e0a24a; font-size:12px; letter-spacing:.08em; text-transform:uppercase; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="tag">Prototipo desechable · intro tipo consola con texto propio (provisional)</div>
+<div id="wrap"><canvas id="gl"></canvas><div id="vig"></div><div id="logo">Matías Rodríguez</div><div id="black"></div></div>
+<div id="bar">
+  <button id="bPlay">▶ Reproducir con sonido</button><button id="bMute" class="alt">▶ Sin sonido</button>
+  <input id="tl" type="range" min="0" max="8.65" step="0.01" value="0"><span id="time">0.00 / 8.65 s</span>
+</div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+<script type="module">
+import * as THREE from 'three';
+const T_END = 8.65, wrap = document.getElementById('wrap'), canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5)); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x01030e); scene.fog = new THREE.FogExp2(0x040d3a, .052);   // deep blue haze: far towers dissolve into the pit
+const camera = new THREE.PerspectiveCamera(52, 4 / 3, .1, 120); scene.add(camera);
+function size() { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', () => { size(); render(cur); }); size();
+
+/* ---- lights: soft white from above (tower tops), strong blue from the pit below ---- */
+scene.add(new THREE.HemisphereLight(0xdfe0e6, 0x0a0c18, .42));
+const top = new THREE.DirectionalLight(0xffffff, .85); top.position.set(-3, 10, 4); scene.add(top);
+const pit = new THREE.PointLight(0x2f55ff, 45, 60, 1.7); pit.position.set(0, -13, 0); scene.add(pit);
+const pit2 = new THREE.PointLight(0x1a2f9a, 12, 40, 1.9); pit2.position.set(0, -5, 0); scene.add(pit2);
+
+/* ---- glow at the bottom of the shaft ---- */
+function glowTex(stops) { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), gr = g.createRadialGradient(128, 128, 0, 128, 128, 128); stops.forEach(([o, col]) => gr.addColorStop(o, col)); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const pitGlow = new THREE.Mesh(new THREE.PlaneGeometry(46, 46).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: glowTex([[0, 'rgba(70,110,255,1)'], [.35, 'rgba(30,55,200,.7)'], [.7, 'rgba(10,20,90,.25)'], [1, 'rgba(0,0,20,0)']]), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+pitGlow.position.y = -14.5; scene.add(pitGlow);
+
+/* ---- towers: stacks of pale grey blocks around a central shaft, seeded so they never change ---- */
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const blockMat = new THREE.MeshStandardMaterial({ color: 0xb4b4b6, roughness: .7, metalness: 0, transparent: true, opacity: .94 });
+const towers = new THREE.Group(); scene.add(towers);
+const FLOOR = -14;
+function tower(x, z, w, d, topY) {
+  let y = FLOOR; const gap = .07;
+  while (y < topY) { const h = Math.min(topY - y, .9 + rnd() * 1.7), m = new THREE.Mesh(new THREE.BoxGeometry(w, h - gap, d), blockMat); m.position.set(x, y + h / 2, z); towers.add(m); y += h; }
+}
+const placed = [];
+for (let i = 0; i < 230; i++) {
+  const x = (rnd() * 2 - 1) * 14, z = (rnd() * 2 - 1) * 14, w = .8 + rnd() * 1.0, d = .8 + rnd() * 1.0;
+  if (Math.abs(x) < 1.7 + w / 2 && Math.abs(z - .6) < 1.7 + d / 2) continue;           // corridor the camera descends through
+  if (placed.some(p => Math.abs(p[0] - x) < (p[2] + w) / 2 + .35 && Math.abs(p[1] - z) < (p[3] + d) / 2 + .35)) continue;
+  placed.push([x, z, w, d]); tower(x, z, w, d, 1.5 + Math.pow(rnd(), 1.3) * 14);        // heights from low stumps to tall columns
+}
+
+/* ---- smoke: fractal-noise texture, stacked horizontal layers over the pit floor (they turn slowly, in different directions) and soft wisps drifting between the towers ---- */
+function smokeTex(sd) {
+  const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'), im = g.createImageData(N, N);
+  const h = (x, y) => { let n = (x * 374761393 + y * 668265263 + sd * 982451653) | 0; n = (n ^ (n >> 13)) * 1274126177; return ((n ^ (n >> 16)) >>> 0) / 4294967295; };
+  const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf); return (h(xi, yi) * (1 - u) + h(xi + 1, yi) * u) * (1 - v) + (h(xi, yi + 1) * (1 - u) + h(xi + 1, yi + 1) * u) * v; };
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    let a = 0, amp = .55, f = 3.2, tot = 0; for (let o = 0; o < 5; o++) { a += vn(x / N * f, y / N * f) * amp; tot += amp; amp *= .5; f *= 2; } a /= tot;
+    const dx = x / N - .5, dy = y / N - .5, fall = Math.max(0, 1 - Math.hypot(dx, dy) * 2), al = Math.pow(Math.max(0, a - .34) * 3.2, 1.3) * Math.min(1, fall * 1.6), p = (y * N + x) * 4;
+    im.data[p] = im.data[p + 1] = im.data[p + 2] = 255; im.data[p + 3] = Math.min(255, al * 255);
+  }
+  g.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const smokeA = smokeTex(3), smokeB = smokeTex(11);
+const layers = [];
+for (let i = 0; i < 8; i++) {
+  const grp = new THREE.Group(), m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: i % 2 ? smokeA : smokeB, color: i % 3 ? 0x4a74ff : 0x8a9cff, transparent: true, opacity: .55 + (i % 3) * .1, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  const sc = 26 + i * 3.4; m.scale.set(sc, 1, sc); grp.add(m); grp.position.set((i % 3 - 1) * 1.6, -14.4 + i * .85, (i % 2 - .5) * 2); scene.add(grp); layers.push({ grp, speed: (i % 2 ? 1 : -1) * (.018 + i * .006) });
+}
+const wisps = [];
+for (let i = 0; i < 16; i++) {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: i % 2 ? smokeA : smokeB, color: 0x8fa2e8, transparent: true, opacity: .2 + rnd() * .12, depthWrite: false, fog: false }));
+  const base = [(rnd() * 2 - 1) * 9, -11 + rnd() * 24, (rnd() * 2 - 1) * 9]; sp.scale.setScalar(7 + rnd() * 6); sp.position.set(...base); scene.add(sp); wisps.push({ sp, base, ph: rnd() * 6.28, sp1: .08 + rnd() * .1 });
+}
+
+/* ---- the four fine sparks, one per button colour (cross blue, circle red, triangle green, square pink); they ride with the camera ---- */
+const spark = glowTex([[0, 'rgba(255,255,255,1)'], [.25, 'rgba(255,255,255,.6)'], [1, 'rgba(255,255,255,0)']]);
+const SPARKS = [[0x5aa0ff, 1.0, 1.3, .7, 0], [0xff4a4a, 1.3, .9, 1.1, 1.6], [0x4aff7a, .8, 1.5, .9, 3.1], [0xff7ad9, 1.1, 1.1, 1.3, 4.5]].map(([col, fx, fy, ph, off], i) => {
+  const g = new THREE.Group(), head = new THREE.Sprite(new THREE.SpriteMaterial({ map: spark, color: col, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false }));
+  head.scale.setScalar(.34); g.add(head); const trail = [];
+  for (let k = 1; k <= 9; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: spark, color: col, transparent: true, opacity: .5 * (1 - k / 10), blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false })); s.scale.setScalar(.3 * (1 - k / 12)); camera.add(s); trail.push(s); }
+  camera.add(head); return { col, fx, fy, ph, off, head, trail };
+});
+const sparkPos = (S, t) => [Math.sin(t * .35 * S.fx + S.off) * 2.1 + Math.sin(t * .9 + S.ph) * .25, Math.cos(t * .29 * S.fy + S.off * 1.3) * 1.35 + Math.cos(t * .7 + S.ph) * .2];
+
+/* ---- timeline (synced to the 8.65 s boot chord): 0-0.4 fade in · 0-5.6 camera starts slow and accelerates into the dark (spins a little); fades to black at the bottom · 5.85-6.75 name in (after landing) · hold · 8.1-8.65 out to black ---- */
+const T_LAND = 5.6, ease = x => x * x * (3 - 2 * x), clamp01 = x => Math.max(0, Math.min(1, x));
+const logo = document.getElementById('logo'), black = document.getElementById('black');
+let cur = 0;
+function render(t) {
+  cur = t; const u = clamp01(t / T_LAND), k = Math.pow(u, 2.4), y = 15.5 - k * 28;                 // starts very slowly and keeps accelerating as it plunges into the dark
+  camera.position.set(Math.sin(t * .15) * .35, y, .6 + Math.cos(t * .13) * .25); const spin = .42 * k + Math.sin(t * .2) * .02; camera.up.set(Math.sin(spin), 0, -Math.cos(spin)); camera.lookAt(0, y - 10, 0);   // straight down the shaft, with a small sideways turn that grows as it speeds up
+  pit.intensity = 35 + k * 25; pitGlow.material.opacity = .22 + k * .18;
+  const sa = .25 + .75 * ease(clamp01((t - 5.3) / 1.4));                         // sparks get brighter when the logo appears
+  for (const S of SPARKS) {
+    const [px, py] = sparkPos(S, t); S.head.position.set(px, py, -5.2); S.head.material.opacity = sa;
+    S.trail.forEach((s, i) => { const [qx, qy] = sparkPos(S, t - (i + 1) * .045); s.position.set(qx, qy, -5.2); s.material.opacity = .5 * (1 - (i + 1) / 10) * sa; });
+  }
+  const dive = ease(clamp01((t - 3.9) / 1.7)); renderer.toneMappingExposure = 1.1 * (1 - dive);          // the blue gives way to black at the bottom
+  layers.forEach(L => { L.grp.rotation.y = t * L.speed; });
+  wisps.forEach(W => { W.sp.position.set(W.base[0] + Math.sin(t * W.sp1 + W.ph) * 1.6, W.base[1] + Math.sin(t * W.sp1 * .7 + W.ph) * .8, W.base[2] + Math.cos(t * W.sp1 + W.ph) * 1.6); });
+  logo.style.opacity = ease(clamp01((t - T_LAND - .25) / .9)) * (1 - ease(clamp01((t - 8.0) / .55)));
+  black.style.opacity = Math.max(1 - ease(clamp01(t / .45)), ease(clamp01((t - 8.1) / .55)));
+  renderer.render(scene, camera); document.getElementById('tl').value = t; document.getElementById('time').textContent = t.toFixed(2) + ' / ' + T_END + ' s';
+}
+window.__seek = t => render(t);
+
+/* ---- sound: the same synthesized boot chord as the site (long version, transposed down a fifth) ---- */
+let actx = null, bus = null;
+const BOOT_A = { dur: 8.65, notes: [[207.7, 1], [246.9, 1], [277.2, 1], [329.6, .9], [370, .8], [415.3, .9], [493.9, .8], [1319, .35], [1245, .3]], env: [[0, .0001], [.15, 1], [8.3, .56], [8.65, .0001]], rms: .184, gain: 1.9 };
+function chord() {
+  const c = actx, dest = c.createGain(); dest.gain.value = .75; dest.connect(c.destination); bus = dest;
+  const p = { trans: -7, cutoff: 1150, noise: .15, vib: .3, air: 1.2, level: 1 }, t0 = c.currentTime + .03, k = Math.pow(2, p.trans / 12), out = c.createGain(), sat = c.createWaveShaper(), cv = new Float32Array(2048);
+  for (let i = 0; i < 2048; i++) cv[i] = Math.tanh((i / 1023.5 - 1) * 1.1); sat.curve = cv; sat.connect(dest); out.gain.value = BOOT_A.rms * BOOT_A.gain * p.level;
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = p.cutoff; lp.Q.value = .5; const eg = c.createGain(); eg.gain.setValueAtTime(.0001, t0); for (const [t, v] of BOOT_A.env) eg.gain.linearRampToValueAtTime(Math.max(.0001, v), t0 + t); lp.connect(eg); eg.connect(out);
+  const n = Math.max(1, p.air * c.sampleRate | 0), ib = c.createBuffer(2, n, c.sampleRate); for (let q = 0; q < 2; q++) { const d = ib.getChannelData(q); let l = 0; for (let i = 0; i < n; i++) { l += ((Math.random() * 2 - 1) - l) * .4; d[i] = l * Math.pow(1 - i / n, 2.4); } }
+  const verb = c.createConvolver(); verb.buffer = ib; const wet = c.createGain(); wet.gain.value = .22; out.connect(verb); verb.connect(wet); wet.connect(sat); out.connect(sat);
+  const stopAt = t0 + BOOT_A.dur + .1;
+  for (const [f, g] of BOOT_A.notes) for (const det of [-7, 0, 6]) { const o = c.createOscillator(), vg = c.createGain(), lfo = c.createOscillator(), lg = c.createGain(); o.type = 'sawtooth'; o.frequency.value = f * k; o.detune.value = det + (Math.random() - .5) * 4; vg.gain.value = (g * (f < 600 ? 1 : f < 1100 ? .6 : .35)) / 3; lfo.frequency.value = 4.2 + Math.random() * 1.6; lg.gain.value = p.vib * 9; lfo.connect(lg); lg.connect(o.detune); o.connect(vg); vg.connect(lp); o.start(t0 + Math.random() / (f * k)); lfo.start(t0); o.stop(stopAt); lfo.stop(stopAt); }
+  const nb = c.createBufferSource(), nbuf = c.createBuffer(1, Math.ceil(BOOT_A.dur + 1) * c.sampleRate, c.sampleRate), nd = nbuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1; nb.buffer = nbuf; const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = .5; const ng = c.createGain(); ng.gain.value = .12 * p.noise; nb.connect(bp); bp.connect(ng); ng.connect(lp); nb.start(t0); nb.stop(stopAt);
+}
+let raf = 0, t0 = 0;
+function play(withSound) {
+  cancelAnimationFrame(raf); if (bus) { try { bus.disconnect(); } catch (e) {} bus = null; }
+  if (withSound) { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume().then(chord); }
+  t0 = performance.now() + 60; const loop = () => { const t = Math.max(0, (performance.now() - t0) / 1000); render(Math.min(t, T_END)); if (t < T_END) raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop);
+}
+document.getElementById('bPlay').onclick = () => play(true); document.getElementById('bMute').onclick = () => play(false);
+document.getElementById('tl').oninput = e => { cancelAnimationFrame(raf); render(+e.target.value); };
+render(0);
+</script>
+</body>
+</html>

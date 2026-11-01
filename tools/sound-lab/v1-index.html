@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio de sonido (prototipo desechable)</title>
+<style>
+  :root { --bg:#14120f; --panel:#1f1b16; --ink:#efe5d2; --muted:#a39a88; --acc:#e0a24a; --blue:#6f86ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:880px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:22px; margin:0 0 4px; } .tag { color:var(--acc); font-size:13px; letter-spacing:.08em; text-transform:uppercase; }
+  p.note { color:var(--muted); margin:6px 0 18px; }
+  .grid { display:grid; gap:16px; grid-template-columns:1fr; } @media (min-width:760px){ .grid{ grid-template-columns:1fr 1fr; } }
+  section { background:var(--panel); border-radius:12px; padding:16px; }
+  h2 { font-size:16px; margin:0 0 10px; color:var(--acc); }
+  .row { display:grid; grid-template-columns:130px 1fr 54px; gap:8px; align-items:center; margin:6px 0; font-size:14px; }
+  .row output { color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--acc); }
+  button { background:var(--acc); color:#241a0c; border:0; border-radius:8px; padding:10px 16px; font:600 15px system-ui; cursor:pointer; margin:4px 6px 4px 0; }
+  button.alt { background:#3a342b; color:var(--ink); } button:active { transform:translateY(1px); }
+  canvas { width:100%; height:80px; background:#0d0b09; border-radius:8px; display:block; margin-top:10px; }
+  kbd { background:#3a342b; border-radius:4px; padding:1px 6px; font-size:12px; }
+  textarea { width:100%; height:92px; background:#0d0b09; color:var(--ink); border:1px solid #3a342b; border-radius:8px; padding:8px; font:12px monospace; }
+</style>
+</head>
+<body>
+<main>
+  <div class="tag">Prototipo desechable · no es el sitio</div>
+  <h1>Laboratorio de sonido: arranque tipo PS2 y menú</h1>
+  <p class="note">Todo se sintetiza en el navegador (sin archivos de audio ni material con derechos). Compara a oído con el original en otra pestaña, mueve los controles y, cuando algo te guste, pulsa «Copiar ajustes» y pégalo en el chat con lo que sientes que falta. Atajos: <kbd>Espacio</kbd> arranque · <kbd>↑</kbd><kbd>↓</kbd> tic del menú · <kbd>Enter</kbd> aceptar · <kbd>Esc</kbd> volver.</p>
+
+  <div class="grid">
+    <section>
+      <h2>Arranque (pantalla de la consola)</h2>
+      <button id="bBoot">▶ Arranque</button><button id="bStop" class="alt">■ Parar</button>
+      <div id="bootCtl"></div>
+    </section>
+    <section>
+      <h2>Menú (al cambiar de opción)</h2>
+      <button id="bTic">▶ Tic</button><button id="bEnter" class="alt">▶ Aceptar</button><button id="bBack" class="alt">▶ Volver</button>
+      <div id="ticCtl"></div>
+    </section>
+    <section>
+      <h2>Ambiente del cuarto</h2>
+      <button id="bAmb" class="alt">Activar ambiente</button>
+      <div id="ambCtl"></div>
+    </section>
+    <section>
+      <h2>Volumen y salida</h2>
+      <div id="mainCtl"></div>
+      <canvas id="scope" width="640" height="80"></canvas>
+    </section>
+  </div>
+
+  <section style="margin-top:16px">
+    <h2>Ajustes actuales</h2>
+    <button id="bCopy" class="alt">Copiar ajustes</button><button id="bReset" class="alt">Restablecer</button>
+    <textarea id="out" readonly></textarea>
+  </section>
+</main>
+
+<script>
+/* Throwaway sound lab. Everything is synthesized with the Web Audio API; no audio files, nothing copied from any game. */
+const DEF = {
+  boot: { root: 55, length: 7.5, shimmer: .55, bright: .6, reverb: 3.8, sweep: .5, bell: .6 },
+  tic:  { pitch: 1250, decay: 95, glass: .45, bright: .7, click: .25, verb: .15 },
+  amb:  { hum: .35, fan: .35 },
+  main: { vol: .7 },
+};
+let P = JSON.parse(JSON.stringify(DEF));
+const SPEC = {
+  boot: [['root', 'Nota grave (Hz)', 36, 110, 1], ['length', 'Duración (s)', 3, 12, .1], ['shimmer', 'Brillo flotante', 0, 1, .01], ['bright', 'Claridad', 0, 1, .01], ['reverb', 'Eco / sala (s)', .5, 7, .1], ['sweep', 'Barrido ascendente', 0, 1, .01], ['bell', 'Campana final', 0, 1, .01]],
+  tic:  [['pitch', 'Tono (Hz)', 500, 3000, 10], ['decay', 'Duración (ms)', 30, 400, 5], ['glass', 'Cuerpo de vidrio', 0, 1, .01], ['bright', 'Claridad', 0, 1, .01], ['click', 'Clic seco', 0, 1, .01], ['verb', 'Eco', 0, 1, .01]],
+  amb:  [['hum', 'Zumbido del CRT', 0, 1, .01], ['fan', 'Ventilador', 0, 1, .01]],
+  main: [['vol', 'Volumen', 0, 1, .01]],
+};
+const $ = s => document.querySelector(s);
+let ctx = null, master = null, analyser = null, amb = null;   // declared before the controls are built (they read them)
+for (const [grp, rows] of Object.entries(SPEC)) {
+  const box = $('#' + (grp === 'boot' ? 'bootCtl' : grp === 'tic' ? 'ticCtl' : grp === 'amb' ? 'ambCtl' : 'mainCtl'));
+  for (const [k, label, min, max, step] of rows) {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = `<label for="${grp}_${k}">${label}</label><input type="range" id="${grp}_${k}" min="${min}" max="${max}" step="${step}" value="${P[grp][k]}"><output></output>`;
+    box.appendChild(r);
+    const inp = r.querySelector('input'), out = r.querySelector('output'), upd = () => { P[grp][k] = +inp.value; out.textContent = (+inp.value).toFixed(step < 1 ? (step < .1 ? 2 : 1) : 0); show(); if (grp === 'main' && master) master.gain.value = P.main.vol; if (grp === 'amb' && amb) setAmb(); };
+    inp.addEventListener('input', upd); upd();
+  }
+}
+function show() { $('#out').value = JSON.stringify(P, null, 1); }
+
+/* ---------- synthesis ---------- */
+function impulse(ctx, secs, decay = 2.2) {                       // generated room: decaying stereo noise, gently low-passed
+  const n = Math.max(1, secs * ctx.sampleRate | 0), b = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); let lp = 0; for (let i = 0; i < n; i++) { const w = Math.random() * 2 - 1; lp += (w - lp) * .35; d[i] = lp * Math.pow(1 - i / n, decay); } }
+  return b;
+}
+function noiseBuf(ctx, secs) { const n = secs * ctx.sampleRate | 0, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0); let l = 0; for (let i = 0; i < n; i++) { l = (l + (Math.random() * 2 - 1) * .02) / 1.02; d[i] = l * 3.5; } return b; }
+function env(g, t0, pts) { g.gain.cancelScheduledValues(t0); g.gain.setValueAtTime(.0001, t0); for (const [dt, v] of pts) g.gain.linearRampToValueAtTime(Math.max(.0001, v), t0 + dt); }
+
+function synthBoot(ctx, dest, p, t0 = ctx.currentTime + .03) {
+  const D = p.length, f0 = p.root, out = ctx.createGain(); out.gain.value = .65;
+  const verb = ctx.createConvolver(); verb.buffer = impulse(ctx, p.reverb, 2.0); const wet = ctx.createGain(); wet.gain.value = .75; verb.connect(wet); wet.connect(out);
+  const dry = ctx.createGain(); dry.gain.value = .55; dry.connect(out);
+  const tone = ctx.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = 900 + p.bright * 9000; tone.Q.value = .4;
+  const bus = ctx.createGain(); bus.connect(tone); tone.connect(dry); tone.connect(verb); out.connect(dest);
+  const stopAt = t0 + D + p.reverb + .5;
+  const osc = (type, f, g, a0, pts) => { const o = ctx.createOscillator(), e = ctx.createGain(); o.type = type; o.frequency.value = f; env(e, t0 + a0, pts.map(([dt, v]) => [dt, v * g])); o.connect(e); e.connect(bus); o.start(t0 + a0); o.stop(stopAt); return o; };
+  // 1) deep drone that swells in and breathes out
+  osc('sine', f0, .55, 0, [[D * .38, 1], [D * .62, .85], [D * .98, 0]]);
+  osc('sine', f0 * 2.005, .28, 0, [[D * .45, 1], [D * .7, .7], [D, 0]]);
+  osc('triangle', f0 * 3, .1, D * .05, [[D * .4, 1], [D * .8, .3], [D * .95, 0]]);
+  // 2) sub rumble (filtered noise)
+  const nz = ctx.createBufferSource(); nz.buffer = noiseBuf(ctx, Math.ceil(D + 1)); const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 160; const ng = ctx.createGain();
+  env(ng, t0, [[D * .4, .5], [D * .75, .3], [D, 0]]); nz.connect(nf); nf.connect(ng); ng.connect(bus); nz.start(t0); nz.stop(stopAt);
+  // 3) floating shimmer: detuned partials with slow tremolo, staggered in
+  const ratios = [4, 6, 8, 9, 12, 16, 18, 24];
+  ratios.forEach((r, i) => {
+    const a0 = D * (.12 + i * .045), len = D * .5, g = (.05 + p.shimmer * .12) * (1 - i * .06);
+    const o = ctx.createOscillator(), e = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = f0 * r * (1 + (Math.random() - .5) * .006); lfo.frequency.value = .15 + Math.random() * .5; lg.gain.value = g * .5;
+    env(e, t0 + a0, [[len * .45, g], [len, 0]]); lfo.connect(lg); lg.connect(e.gain); o.connect(e); e.connect(bus);
+    o.start(t0 + a0); lfo.start(t0 + a0); o.stop(stopAt); lfo.stop(stopAt);
+  });
+  // 4) glassy rising sweep
+  if (p.sweep > 0) { const o = ctx.createOscillator(), e = ctx.createGain(); o.type = 'sine'; const s0 = t0 + D * .36; o.frequency.setValueAtTime(f0 * 4, s0); o.frequency.exponentialRampToValueAtTime(f0 * 22, s0 + D * .2); env(e, s0, [[D * .1, .18 * p.sweep], [D * .2, 0]]); o.connect(e); e.connect(bus); o.start(s0); o.stop(s0 + D * .22); }
+  // 5) final bell-like chord (inharmonic partials, long decay)
+  if (p.bell > 0) {
+    const b0 = t0 + D * .56; [[8, 1], [12.02, .7], [16.1, .5], [20.3, .3], [26.4, .18]].forEach(([r, v]) => {
+      const o = ctx.createOscillator(), e = ctx.createGain(); o.type = 'sine'; o.frequency.value = f0 * r; env(e, b0, [[.012, .13 * p.bell * v], [D * .4, .0001]]); o.connect(e); e.connect(bus); o.start(b0); o.stop(b0 + D * .45);
+    });
+  }
+  return stopAt - t0;
+}
+
+function synthTic(ctx, dest, p, kind = 'tic', t0 = ctx.currentTime + .005) {
+  const out = ctx.createGain(); out.gain.value = .8; out.connect(dest);
+  const verb = ctx.createConvolver(); verb.buffer = impulse(ctx, 1.1, 3); const wet = ctx.createGain(); wet.gain.value = p.verb * .9; verb.connect(wet); wet.connect(out);
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500 + p.bright * 9000; lp.connect(out); lp.connect(verb);
+  const D = p.decay / 1000;
+  const blip = (when, f, dur, g, drop) => {
+    const o = ctx.createOscillator(), e = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(f * (1 + drop), when); o.frequency.exponentialRampToValueAtTime(f, when + .02);
+    e.gain.setValueAtTime(.0001, when); e.gain.exponentialRampToValueAtTime(g, when + .003); e.gain.exponentialRampToValueAtTime(.0001, when + dur); o.connect(e); e.connect(lp); o.start(when); o.stop(when + dur + .02);
+    const o2 = ctx.createOscillator(), e2 = ctx.createGain(); o2.type = 'sine'; o2.frequency.value = f * 2.41; e2.gain.setValueAtTime(.0001, when); e2.gain.exponentialRampToValueAtTime(g * p.glass * .7, when + .003); e2.gain.exponentialRampToValueAtTime(.0001, when + dur * .6); o2.connect(e2); e2.connect(lp); o2.start(when); o2.stop(when + dur);
+    if (p.click > 0) { const nb = ctx.createBufferSource(); nb.buffer = noiseBuf(ctx, 1); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f * 3; bp.Q.value = 1.2; const ce = ctx.createGain(); ce.gain.setValueAtTime(g * p.click * 1.6, when); ce.gain.exponentialRampToValueAtTime(.0001, when + .012); nb.connect(bp); bp.connect(ce); ce.connect(lp); nb.start(when); nb.stop(when + .03); }
+  };
+  if (kind === 'tic') { blip(t0, p.pitch, D, .5, .06); return D + 1.2; }
+  if (kind === 'enter') { blip(t0, p.pitch * .9, D * 1.3, .45, .04); blip(t0 + .075, p.pitch * 1.35, D * 2.2, .5, .03); const w = ctx.createOscillator(), e = ctx.createGain(); w.type = 'sine'; w.frequency.value = p.pitch * .45; env(e, t0, [[.02, .15], [D * 3, 0]]); w.connect(e); e.connect(lp); w.start(t0); w.stop(t0 + D * 3.2); return D * 3 + 1.3; }
+  blip(t0, p.pitch * .72, D * 1.5, .5, -.08); return D * 1.5 + 1.2;                // back: a lower blip that slides down
+}
+
+/* ---------- live engine ---------- */
+function ensure() {
+  if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+  ctx = new (window.AudioContext || window.webkitAudioContext)(); master = ctx.createGain(); master.gain.value = P.main.vol;
+  analyser = ctx.createAnalyser(); analyser.fftSize = 1024; const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -10; comp.ratio.value = 4;
+  master.connect(comp); comp.connect(analyser); analyser.connect(ctx.destination); draw();
+}
+let bootNodes = [];
+function playBoot() { ensure(); stopBoot(); const bus = ctx.createGain(); bus.connect(master); bootNodes.push(bus); synthBoot(ctx, bus, P.boot); }
+function stopBoot() { for (const n of bootNodes) { try { n.gain.cancelScheduledValues(ctx.currentTime); n.gain.setTargetAtTime(0, ctx.currentTime, .05); setTimeout(() => n.disconnect(), 400); } catch (e) {} } bootNodes = []; }
+const play = k => { ensure(); synthTic(ctx, master, P.tic, k); };
+function setAmb() { if (!amb) return; amb.hum.gain.value = .05 * P.amb.hum; amb.fan.gain.value = .12 * P.amb.fan; }
+function toggleAmb() {
+  ensure();
+  if (amb) { amb.nodes.forEach(n => { try { n.stop(); } catch (e) {} }); amb = null; $('#bAmb').textContent = 'Activar ambiente'; return; }
+  const hum = ctx.createGain(), fan = ctx.createGain(), nodes = [];
+  [50, 100, 150].forEach((f, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.value = [1, .5, .2][i]; o.connect(g); g.connect(hum); o.start(); nodes.push(o); });
+  const nb = ctx.createBufferSource(); nb.buffer = noiseBuf(ctx, 4); nb.loop = true; const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; nb.connect(lp); lp.connect(fan); nb.start(); nodes.push(nb);
+  hum.connect(master); fan.connect(master); amb = { hum, fan, nodes }; setAmb(); $('#bAmb').textContent = 'Desactivar ambiente';
+}
+function draw() {
+  const cv = $('#scope'), c = cv.getContext('2d'), a = new Uint8Array(analyser.fftSize);
+  (function loop() { analyser.getByteTimeDomainData(a); c.fillStyle = '#0d0b09'; c.fillRect(0, 0, cv.width, cv.height); c.strokeStyle = '#e0a24a'; c.lineWidth = 1.5; c.beginPath(); for (let i = 0; i < a.length; i++) { const x = i / a.length * cv.width, y = a[i] / 255 * cv.height; i ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); requestAnimationFrame(loop); })();
+}
+
+$('#bBoot').onclick = playBoot; $('#bStop').onclick = () => { if (ctx) stopBoot(); };
+$('#bTic').onclick = () => play('tic'); $('#bEnter').onclick = () => play('enter'); $('#bBack').onclick = () => play('back'); $('#bAmb').onclick = toggleAmb;
+$('#bCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#out').value); $('#bCopy').textContent = 'Copiado'; } catch (e) { $('#out').select(); document.execCommand('copy'); $('#bCopy').textContent = 'Copiado'; } setTimeout(() => ($('#bCopy').textContent = 'Copiar ajustes'), 1200); };
+$('#bReset').onclick = () => { P = JSON.parse(JSON.stringify(DEF)); for (const [g, rows] of Object.entries(SPEC)) for (const [k] of rows) { const i = $('#' + g + '_' + k); i.value = P[g][k]; i.dispatchEvent(new Event('input')); } };
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && ['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  if (e.code === 'Space') { e.preventDefault(); playBoot(); } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); play('tic'); } else if (e.key === 'Enter') play('enter'); else if (e.key === 'Escape' || e.key === 'Backspace') play('back');
+});
+show();
+
+/* debug hook for the headless check: renders a sound offline and returns peak/rms per second */
+window.__render = async (kind) => {
+  const sr = 44100, secs = kind === 'boot' ? P.boot.length + P.boot.reverb + 1 : 2.5, oc = new OfflineAudioContext(2, sr * secs | 0, sr);
+  if (kind === 'boot') synthBoot(oc, oc.destination, P.boot, 0.01); else synthTic(oc, oc.destination, P.tic, kind, 0.01);
+  const buf = await oc.startRendering(), d = buf.getChannelData(0), res = []; let peak = 0;
+  for (let s = 0; s < secs; s++) { let m = 0, q = 0, n = 0; for (let i = s * sr; i < Math.min(d.length, (s + 1) * sr); i++) { const v = Math.abs(d[i]); m = Math.max(m, v); q += v * v; n++; } peak = Math.max(peak, m); res.push([+m.toFixed(3), +Math.sqrt(q / n).toFixed(3)]); }
+  return { peak: +peak.toFixed(3), perSecond: res, nan: Array.from(d).some(Number.isNaN) };
+};
+</script>
+</body>
+</html>
