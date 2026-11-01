@@ -1,0 +1,16 @@
+{
+  "name": "@portfolio/backend",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "vitest run", "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1139.0",
+    "@aws-sdk/lib-dynamodb": "^3.1139.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

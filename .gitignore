@@ -16,3 +16,7 @@ _local/
 # deployment package (rebuilt by deploy/build-dist.py)
 deploy/dist/
 deploy/dist.zip
+
+# CDK output
+infra/cdk.out/
+deploy/cdk-outputs.json

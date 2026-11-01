@@ -1,0 +1,11 @@
+{
+  "name": "build-your-tech",
+  "private": true,
+  "workspaces": ["backend", "infra"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "npm test --workspaces --if-present",
+    "synth": "npm run synth -w infra",
+    "deploy:api": "npm run deploy -w infra"
+  }
+}
