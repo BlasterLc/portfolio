@@ -237,15 +237,15 @@ const PROJECTS = [
   { name: 'JequeBot', c1: '#9a9fbd', c2: '#a9a28f', blurb: 'Placeholder description of JequeBot. Replace with the real case study.' },
 ];
 const SKILLS = [
-  { name: 'Python', abbr: 'Py', rgb: [205, 120, 60], what: 'Backend, scripts and bots: FastAPI services, a Discord music bot and an Alexa-controlled music player.' },
-  { name: 'JavaScript / Node', abbr: 'JS', rgb: [225, 190, 70], what: 'The language of this very site: the 3D room in your browser and the Lambda functions behind its guestbook.' },
-  { name: 'Next.js', abbr: 'Nx', rgb: [110, 170, 90], what: 'My framework of choice for full web apps.' },
-  { name: 'Supabase', abbr: 'Sb', rgb: [70, 90, 130], what: 'Postgres, auth and storage as the backend of a web app.' },
-  { name: 'Testing', abbr: 'Ts', rgb: [60, 150, 140], what: 'Jest, Cypress and Vitest, for unit and end-to-end tests. The API behind this site has 40 tests.' },
-  { name: 'GitHub Actions', abbr: 'GA', rgb: [80, 190, 120], what: 'CI pipelines: tests and checks that run by themselves.' },
-  { name: 'AWS', abbr: 'AWS', rgb: [200, 90, 110], what: 'Amplify Hosting, API Gateway, Lambda, DynamoDB and CDK: everything behind this site.' },
-  { name: 'Self-hosting', abbr: 'Sh', rgb: [90, 95, 110], what: 'Servers I run myself: DigitalOcean, Railway and Uptime Kuma to watch them.' },
-  { name: 'Anthropic SDK / RAG', abbr: 'AI', rgb: [120, 100, 170], what: 'Assistants built on the Anthropic SDK, and a RAG pipeline of my own.' },
+  { id: 'python', name: 'Python', abbr: 'Py', rgb: [55, 118, 171], what: 'Backend, scripts and bots: FastAPI services, a Discord music bot and an Alexa-controlled music player.' },
+  { id: 'javascript', name: 'JavaScript / Node', abbr: 'JS', rgb: [190, 160, 30], what: 'The language of this very site: the 3D room in your browser and the Lambda functions behind its guestbook.' },
+  { id: 'nextjs', name: 'Next.js', abbr: 'Nx', rgb: [105, 110, 135], what: 'My framework of choice for full web apps.' },
+  { id: 'supabase', name: 'Supabase', abbr: 'Sb', rgb: [40, 150, 105], what: 'Postgres, auth and storage as the backend of a web app.' },
+  { id: 'testing', name: 'Testing', abbr: 'Ts', rgb: [194, 19, 37], what: 'Jest, Cypress and Vitest, for unit and end-to-end tests. The API behind this site has 40 tests.' },
+  { id: 'githubactions', name: 'GitHub Actions', abbr: 'GA', rgb: [32, 120, 230], what: 'CI pipelines: tests and checks that run by themselves.' },
+  { id: 'aws', name: 'AWS', abbr: 'AWS', rgb: [220, 125, 10], what: 'Amplify Hosting, API Gateway, Lambda, DynamoDB and CDK: everything behind this site.' },
+  { id: 'selfhosting', name: 'Self-hosting', abbr: 'Sh', rgb: [0, 110, 220], what: 'Servers I run myself: DigitalOcean, Railway and Uptime Kuma to watch them.' },
+  { id: 'anthropic', name: 'Anthropic SDK / RAG', abbr: 'AI', rgb: [200, 105, 75], what: 'Assistants built on the Anthropic SDK, and a RAG pipeline of my own.' },
 ];
 const ABOUT = ['I\u2019m Mat\u00edas, a fourth-year Computer Science Engineering student at Universidad San Sebasti\u00e1n in Santiago, graduating in 2027. I\u2019m doing my internship at Lexinnova, a legal-tech company.', 'I learn one technology at a time, tied to a real project, and I want to understand why something works before I ship it. I also verify what AI writes for me.'];
 const CONTACT = ['Email (placeholder)', 'GitHub (placeholder)', 'LinkedIn (placeholder)'];
@@ -823,7 +823,20 @@ function bgWarm(c) {                                                 // warm gre
 }
 
 /* small icon vocabulary: every glyph is drawn here */
+const iconSheets = {};                                              // prerendered 3D spin: 24 frames of 128 px in a 6 x 4 sheet (tools/icons)
+function iconSheet(id) {
+  let im = iconSheets[id]; if (!im) { im = iconSheets[id] = new Image(); im.onload = () => { if (ui.screen === 'skills' || ui.screen === 'skill') redraw(); }; im.src = 'assets/icons/' + id + '.png'; }
+  return im.complete && im.naturalWidth ? im : null;
+}
 function skillIcon(c, sk, i, cx, cy, s, t, sel) {
+  const im = iconSheet(sk.id);
+  if (im) {
+    const f = rm() ? 0 : Math.floor(t * 5 + i * 7) % 24, d = s * 1.7;
+    c.save(); c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(cx, cy + s * .72, s * .5, s * .11, 0, 0, 6.29); c.fill(); c.restore();
+    c.drawImage(im, (f % 6) * 128, ((f / 6) | 0) * 128, 128, 128, cx - d / 2, cy - d / 2, d, d);
+    if (sel) { c.save(); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 2.5; roundRect(c, cx - s * .66, cy - s * .66, s * 1.32, s * 1.32, s * .2); c.stroke(); c.restore(); }
+    return;
+  }
   const turn = Math.cos(t * .9 + i * 1.1), w = Math.max(.12, Math.abs(turn)) * s, pal = sk.rgb;
   c.save(); c.translate(cx, cy);
   c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(0, s * .62, s * .5, s * .1, 0, 0, 6.29); c.fill();
@@ -833,6 +846,7 @@ function skillIcon(c, sk, i, cx, cy, s, t, sel) {
   c.restore();
   if (sel) { c.save(); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 2.5; roundRect(c, cx - s * .66, cy - s * .66, s * 1.32, s * 1.32, s * .2); c.stroke(); c.fillStyle = CYAN; c.beginPath(); c.moveTo(cx - 7, cy - s * .86); c.lineTo(cx + 7, cy - s * .86); c.lineTo(cx, cy - s * .86 + 10); c.fill(); c.restore(); }
 }
+SKILLS.forEach(k => iconSheet(k.id));
 function discIcon(c, p, cx, cy, r, alpha) {
   c.save(); c.globalAlpha = alpha; const g = c.createLinearGradient(cx - r, cy - r, cx + r, cy + r); g.addColorStop(0, p.c1); g.addColorStop(1, p.c2);
   c.fillStyle = g; c.beginPath(); c.arc(cx, cy, r, 0, 6.29); c.fill(); c.strokeStyle = 'rgba(235,242,255,.55)'; c.lineWidth = 1.2; c.stroke();
