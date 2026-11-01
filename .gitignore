@@ -8,7 +8,6 @@ node_modules/
 
 # everything kept only on this machine: unused or non-redistributable 3D models, copyrighted reference audio/screenshots, old spikes
 _local/
-img/
 
 # copyrighted references used only to compare by ear / by eye; never commit
 **/ref/
