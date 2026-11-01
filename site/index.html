@@ -225,7 +225,7 @@ const MODEL_CFG = {
 /* ================= content (placeholder) ================= */
 const MENU = [
   { id: 'about', label: 'About', sub: 'Profile', val: 'Matías' },
-  { id: 'skills', label: 'Skills', sub: 'Memory card', val: '8 saves' },
+  { id: 'skills', label: 'Skills', sub: 'Memory card', get val() { return SKILLS.length + ' saves'; } },
   { id: 'projects', label: 'Projects', sub: 'Discs', val: '4 discs' },
   { id: 'guestbook', label: 'Guestbook', sub: 'Memory card', get val() { return gbVal(); } },
   { id: 'contact', label: 'Contact', sub: 'Say hello', val: '3 links' },
@@ -236,7 +236,17 @@ const PROJECTS = [
   { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026'], blurb: 'Placeholder description of Minuto Cero. Replace with the real case study.' },
   { name: 'JequeBot', c1: '#9a9fbd', c2: '#a9a28f', blurb: 'Placeholder description of JequeBot. Replace with the real case study.' },
 ];
-const SKILLS = ['Python', 'JavaScript', 'Node', 'Next.js', 'FastAPI', 'Supabase', 'Testing', 'GitHub Actions'];
+const SKILLS = [
+  { name: 'Python', abbr: 'Py', rgb: [205, 120, 60], what: 'Backend, scripts and bots: FastAPI services, a Discord music bot and an Alexa-controlled music player.' },
+  { name: 'JavaScript / Node', abbr: 'JS', rgb: [225, 190, 70], what: 'The language of this very site: the 3D room in your browser and the Lambda functions behind its guestbook.' },
+  { name: 'Next.js', abbr: 'Nx', rgb: [110, 170, 90], what: 'My framework of choice for full web apps.' },
+  { name: 'Supabase', abbr: 'Sb', rgb: [70, 90, 130], what: 'Postgres, auth and storage as the backend of a web app.' },
+  { name: 'Testing', abbr: 'Ts', rgb: [60, 150, 140], what: 'Jest, Cypress and Vitest, for unit and end-to-end tests. The API behind this site has 40 tests.' },
+  { name: 'GitHub Actions', abbr: 'GA', rgb: [80, 190, 120], what: 'CI pipelines: tests and checks that run by themselves.' },
+  { name: 'AWS', abbr: 'AWS', rgb: [200, 90, 110], what: 'Amplify Hosting, API Gateway, Lambda, DynamoDB and CDK: everything behind this site.' },
+  { name: 'Self-hosting', abbr: 'Sh', rgb: [90, 95, 110], what: 'Servers I run myself: DigitalOcean, Railway and Uptime Kuma to watch them.' },
+  { name: 'Anthropic SDK / RAG', abbr: 'AI', rgb: [120, 100, 170], what: 'Assistants built on the Anthropic SDK, and a RAG pipeline of my own.' },
+];
 const ABOUT = ['I\u2019m Mat\u00edas, a fourth-year Computer Science Engineering student at Universidad San Sebasti\u00e1n in Santiago, graduating in 2027. I\u2019m doing my internship at Lexinnova, a legal-tech company.', 'I learn one technology at a time, tied to a real project, and I want to understand why something works before I ship it. I also verify what AI writes for me.'];
 const CONTACT = ['Email (placeholder)', 'GitHub (placeholder)', 'LinkedIn (placeholder)'];
 
@@ -287,7 +297,7 @@ function renderGbPlain() {
 $('#plain').innerHTML = `
   <h1>Matías</h1><p>Placeholder tagline. This is the plain version: the same content as the console, as a normal page.</p>
   <h2>About</h2>${ABOUT.map(t => `<p>${t}</p>`).join('')}
-  <h2>Skills</h2><ul>${SKILLS.map(s => `<li>${s}</li>`).join('')}</ul>
+  <h2>Skills</h2><ul>${SKILLS.map(k => `<li><strong>${k.name}</strong> \u2014 ${k.what}</li>`).join('')}</ul>
   <h2>Projects &amp; achievements</h2>
   ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}</p>` : ''}<p>${p.blurb}</p></div>`).join('')}
   <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
@@ -728,7 +738,7 @@ Promise.all([300, 500, 700].map(w => new FontFace('Quicksand', `url(${FONT_BASE}
   .then(() => { redraw(); }).catch(e => console.warn('[font] Quicksand failed to load, using the fallback stack', e));
 
 const YEL = '#E6E04A', CYAN = '#4FD0E8';
-const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, save: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
+const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, save: 0, skillMenu: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
 let hits = [];
 const hit = (x, y, w, h, o) => hits.push({ x, y, w, h, ...o });
 function wrap(c, text, x, y, maxW, lh) {
@@ -813,13 +823,13 @@ function bgWarm(c) {                                                 // warm gre
 }
 
 /* small icon vocabulary: every glyph is drawn here */
-function skillIcon(c, name, i, cx, cy, s, t, sel) {
-  const turn = Math.cos(t * .9 + i * 1.1), w = Math.max(.12, Math.abs(turn)) * s, pal = [[205, 120, 60], [225, 190, 70], [110, 170, 90], [70, 90, 130], [60, 150, 140], [80, 190, 120], [200, 90, 110], [90, 95, 110]][i % 8];
+function skillIcon(c, sk, i, cx, cy, s, t, sel) {
+  const turn = Math.cos(t * .9 + i * 1.1), w = Math.max(.12, Math.abs(turn)) * s, pal = sk.rgb;
   c.save(); c.translate(cx, cy);
   c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(0, s * .62, s * .5, s * .1, 0, 0, 6.29); c.fill();
   const g = c.createLinearGradient(-w / 2, -s / 2, w / 2, s / 2); g.addColorStop(0, `rgb(${Math.min(255, pal[0] + 40)},${Math.min(255, pal[1] + 40)},${Math.min(255, pal[2] + 40)})`); g.addColorStop(1, `rgb(${pal[0]},${pal[1]},${pal[2]})`);
   roundRect(c, -w / 2, -s / 2, w, s, s * .16); c.fillStyle = g; c.fill(); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.5; c.stroke();
-  if (turn > 0) { c.fillStyle = 'rgba(255,255,255,.95)'; c.font = FONT(s * .36, 700); c.textAlign = 'center'; c.save(); c.scale(Math.max(.2, turn), 1); c.fillText(name.slice(0, 2), 0, s * .13); c.restore(); }
+  if (turn > 0) { c.fillStyle = 'rgba(255,255,255,.95)'; c.font = FONT(s * .36, 700); c.textAlign = 'center'; c.save(); c.scale(Math.max(.2, turn), 1); c.fillText(sk.abbr, 0, s * .13); c.restore(); }
   c.restore();
   if (sel) { c.save(); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 2.5; roundRect(c, cx - s * .66, cy - s * .66, s * 1.32, s * 1.32, s * .2); c.stroke(); c.fillStyle = CYAN; c.beginPath(); c.moveTo(cx - 7, cy - s * .86); c.lineTo(cx + 7, cy - s * .86); c.lineTo(cx, cy - s * .86 + 10); c.fill(); c.restore(); }
 }
@@ -864,13 +874,23 @@ function drawBody(c, t) {
   } else if (s === 'skills') {
     bgWarm(c); header(c, true);
     c.save(); c.fillStyle = '#fff'; c.font = FONT(24, 700); otext(c, 'Skills', 26, 64); c.font = FONT(14, 500); otext(c, `${SKILLS.length} saves · ${10 - SKILLS.length} items free`, 26, 84);
-    c.fillStyle = YEL; c.font = FONT(22, 700); c.textAlign = 'right'; otext(c, SKILLS[ui.skill], SW - 26, 64); c.font = FONT(14, 500); c.fillStyle = '#fff'; otext(c, 'Memory card', SW - 26, 84); c.restore();
+    c.fillStyle = YEL; c.font = FONT(22, 700); c.textAlign = 'right'; otext(c, SKILLS[ui.skill].name, SW - 26, 64); c.font = FONT(14, 500); c.fillStyle = '#fff'; otext(c, 'Memory card', SW - 26, 84); c.restore();
     for (let i = 0; i < 10; i++) {
       const col = i % 5, row = (i / 5) | 0, cx = 62 + col * 97, cy = 150 + row * 100;
       if (i < SKILLS.length) { skillIcon(c, SKILLS[i], i, cx, cy, 44, rm() ? 0 : t, i === ui.skill); hit(cx - 48, cy - 50, 96, 100, { kind: 'skill', i }); }
       else { c.strokeStyle = 'rgba(255,255,255,.55)'; c.setLineDash([4, 4]); c.lineWidth = 1.5; roundRect(c, cx - 22, cy - 22, 44, 44, 8); c.stroke(); c.setLineDash([]); }
     }
     legend(c, [{ sym: 'x', label: 'Enter', act: 'enter' }, { sym: 'o', label: 'Back', act: 'back' }, { sym: 'tri', label: 'Options', act: 'options' }], true);
+  } else if (s === 'skill') {                                          // the selected save: the background takes the icon's colour, the icon grows on the left, a small menu on the right
+    const k = SKILLS[ui.skill], [r, g, b] = k.rgb, mix = (f, w) => `rgb(${Math.round(r * f + w * (1 - f))},${Math.round(g * f + w * (1 - f))},${Math.round(b * f + w * (1 - f))})`;
+    const bg = c.createLinearGradient(0, 0, SW, SH); bg.addColorStop(0, mix(.45, 10)); bg.addColorStop(.5, mix(.8, 30)); bg.addColorStop(1, mix(.55, 5)); c.fillStyle = bg; c.fillRect(0, 0, SW, SH);
+    for (let n = 0; n < 3; n++) { const bx = SW * (.25 + .5 * (.5 + .5 * Math.sin(t * .35 + n * 2.1))), by = SH * (.3 + .4 * (.5 + .5 * Math.cos(t * .27 + n * 1.7))), o = c.createRadialGradient(bx, by, 0, bx, by, 190); o.addColorStop(0, mix(1, 255).replace('rgb', 'rgba').replace(')', ',.45)')); o.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = o; c.fillRect(0, 0, SW, SH); }
+    header(c, false);
+    skillIcon(c, k, ui.skill, 112, 168, 108, rm() ? 0 : t, false);
+    c.fillStyle = YEL; c.font = FONT(24, 700); c.textAlign = 'left'; c.fillText(k.name, 214, 112);
+    c.fillStyle = '#fff'; c.font = FONT(15, 500); wrap(c, k.what, 214, 142, 264, 21);
+    ['Projects', 'Back'].forEach((lb, n) => { const x = 214 + n * 142, sel = ui.skillMenu === n; roundRect(c, x, 226, 126, 36, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(0,0,0,.28)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(16, 700); c.textAlign = 'center'; c.fillText(lb, x + 63, 250); c.textAlign = 'left'; hit(x, 222, 126, 44, { kind: 'skmenu', i: n }); });
+    legend(c, [{ sym: 'x', label: 'Enter', act: 'enter' }, { sym: 'o', label: 'Back', act: 'back' }]);
   } else if (s === 'guestbook') {
     bgWarm(c); header(c, true);
     const n = GB.saves.length, shown = Math.min(n, GB_SLOTS), cur = ui.save > 0 ? GB.saves[ui.save - 1] : null;
@@ -1108,6 +1128,7 @@ function nav(d) {
   if (ui.screen === 'home') { const n = Math.max(0, Math.min(MENU.length - 1, ui.sel + d)); if (n === ui.sel) return; ui.sel = n; if (rm()) ui.pos = n; }
   else if (ui.screen === 'projects') { const n = Math.max(0, Math.min(PROJECTS.length - 1, ui.disc + d)); if (n === ui.disc) return; ui.disc = n; if (rm()) ui.dpos = n; }
   else if (ui.screen === 'skills') { const n = Math.max(0, Math.min(SKILLS.length - 1, ui.skill + d)); if (n === ui.skill) return; ui.skill = n; }
+  else if (ui.screen === 'skill') { const n = Math.max(0, Math.min(1, ui.skillMenu + d)); if (n === ui.skillMenu) return; ui.skillMenu = n; }
   else if (ui.screen === 'guestbook') { const n = Math.max(0, Math.min(gbCount() - 1, ui.save + d)); if (n === ui.save) return; ui.save = n; }
   else return; mark('menu change'); sfx.nav(); redraw();
 }
@@ -1115,12 +1136,14 @@ async function confirm() {
   if (!ui.on || ui.busy || ui.screen === 'boot') return; firstUse();
   if (ui.screen === 'home') { ui.screen = MENU[ui.sel].id; ui.msg = ''; sfx.ok(); redraw(); say(MENU[ui.sel].label); }
   else if (ui.screen === 'projects') { sfx.ok(); await insertDisc(ui.disc); }
-  else if (ui.screen === 'skills') { sfx.nav(); }
+  else if (ui.screen === 'skills') { ui.screen = 'skill'; ui.skillMenu = 0; sfx.ok(); redraw(); say(SKILLS[ui.skill].name); }
+  else if (ui.screen === 'skill') { sfx.ok(); if (ui.skillMenu === 0) { ui.screen = 'projects'; redraw(); say('Projects'); } else { ui.screen = 'skills'; redraw(); say('Skills'); } }
   else if (ui.screen === 'guestbook') { if (ui.save === 0) { sfx.ok(); openGbForm(); } else sfx.nav(); }
 }
 async function back() {
   if (!ui.on || ui.busy || ui.screen === 'boot') return; firstUse();
   if (ui.screen === 'project') { sfx.back(); await ejectDisc(); ui.screen = 'projects'; redraw(); say('Projects'); }
+  else if (ui.screen === 'skill') { sfx.back(); ui.screen = 'skills'; redraw(); say('Skills'); }
   else if (ui.screen !== 'home') { sfx.back(); ui.screen = 'home'; ui.msg = ''; redraw(); say('Menu'); }
   else if (ui.screen === 'home') stepBack();
 }
@@ -1166,7 +1189,8 @@ function activate(h, touch) {
   if (h.kind === 'open') return confirm();
   if (h.kind === 'step') return nav(h.d);
   if (h.kind === 'gb') { if (ui.save === h.i && h.i === 0) return confirm(); ui.save = h.i; sfx.nav(); return redraw(); }
-  if (h.kind === 'skill') { ui.skill = h.i; sfx.nav(); return redraw(); }
+  if (h.kind === 'skmenu') { ui.skillMenu = h.i; return confirm(); }
+  if (h.kind === 'skill') { if (ui.skill === h.i) return confirm(); ui.skill = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'proj') { if (touch && ui.disc !== h.i) { ui.disc = h.i; sfx.nav(); redraw(); return; } ui.disc = h.i; return confirm(); }
 }
 const justSkipped = () => performance.now() - ui.skipT < 120;
@@ -1206,7 +1230,7 @@ addEventListener('keydown', e => { if (document.body.classList.contains('plain')
   skipBoot(); }, true);   // any key: start (wide shot) or skip the boot
 let pdown = null, pendingMove = null, activeUntil = 0;
 const markActive = (ms = 600) => { activeUntil = performance.now() + ms; };
-const menuScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects' || ui.screen === 'skills' || ui.screen === 'guestbook');
+const menuScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects' || ui.screen === 'skills' || ui.screen === 'skill' || ui.screen === 'guestbook');
 const dragScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects');
 const spacing = () => (ui.screen === 'projects' ? 132 : 140);
 function pxPerLogical() {                                          // on-screen pixels per canvas-logical unit of the TV screen
@@ -1259,7 +1283,7 @@ const arrL = $('#arrL'), arrR = $('#arrR');
 arrL.addEventListener('click', () => nav(-1)); arrR.addEventListener('click', () => nav(1));
 function updateArrows() {                                          // visibility and end states
   const show = menuScreen() && !document.body.classList.contains('plain') && cam.mode === 'close'; arrL.hidden = arrR.hidden = !show; if (!show) return;
-  const i = ui.screen === 'projects' ? ui.disc : ui.screen === 'skills' ? ui.skill : ui.screen === 'guestbook' ? ui.save : ui.sel, n = ui.screen === 'skills' ? SKILLS.length - 1 : ui.screen === 'guestbook' ? gbCount() - 1 : ui.screen === 'projects' ? PROJECTS.length - 1 : MENU.length - 1; arrL.disabled = i <= 0; arrR.disabled = i >= n;
+  const i = ui.screen === 'projects' ? ui.disc : ui.screen === 'skill' ? ui.skillMenu : ui.screen === 'skills' ? ui.skill : ui.screen === 'guestbook' ? ui.save : ui.sel, n = ui.screen === 'skill' ? 1 : ui.screen === 'skills' ? SKILLS.length - 1 : ui.screen === 'guestbook' ? gbCount() - 1 : ui.screen === 'projects' ? PROJECTS.length - 1 : MENU.length - 1; arrL.disabled = i <= 0; arrR.disabled = i >= n;
 }
 let arrKey = '';
 const _bx = new THREE.Box3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _p3 = new THREE.Vector3();
@@ -1520,7 +1544,7 @@ async function warmup() {
   let n = 0; for (const t of texs) { renderer.initTexture(t); if (++n % 6 === 0) await tick(); }
   const keep = { screen: ui.screen, loaded: ui.loaded, ready: ui.ready, prog: ui.prog, on: ui.on };
   ui.loaded = 0; ui.ready = true; ui.on = true;
-  for (const st of ['boot', 'home', 'skills', 'guestbook', 'projects', 'project', 'about', 'contact', 'standby']) { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
+  for (const st of ['boot', 'home', 'skills', 'skill', 'guestbook', 'projects', 'project', 'about', 'contact', 'standby']) { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
   Object.assign(ui, { screen: keep.screen, loaded: keep.loaded, ready: keep.ready, prog: keep.prog, on: keep.on, bootT: 0 }); drawTV(); tintTV();
   discPool.forEach(d => { d.visible = false; });
   kickShadow(); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick();
