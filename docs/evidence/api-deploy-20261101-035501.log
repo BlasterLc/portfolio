@@ -1,0 +1,136 @@
+
+[03:55:01Z] Guestbook API deploy  stack=PortfolioApi region=us-east-1 profile=blaster node=v24.20.0
+
+[03:55:01Z] 1/5  who am I (account id masked)
+{
+    "UserArn": "arn:aws:iam::************:user/blaster"
+}
+
+[03:55:02Z] 2/5  unit tests (backend + infra)
+ ✓ test/backend.test.ts (29 tests) 14ms
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+ ✓ test/portfolio-stack.test.ts (6 tests) 1547ms
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+
+[03:55:08Z] 3/5  cdk deploy
+Bundling asset PortfolioApi/ApiFn/Code/Stage...
+
+  ...321bdb5068895d7cbf7f75d0d6607e7527d0fa259513ca1-building/index.js   5.8kb
+  ...db5068895d7cbf7f75d0d6607e7527d0fa259513ca1-building/index.js.map  17.9kb
+
+⚡ Done in 4ms
+
+✨  Synthesis time: 1.98s
+
+PortfolioApi: start: Building ApiFn/Code
+PortfolioApi: success: Built ApiFn/Code
+PortfolioApi: start: Building PortfolioApi Template
+PortfolioApi: success: Built PortfolioApi Template
+PortfolioApi: start: Publishing ApiFn/Code (************-us-east-1-12f4b09b)
+PortfolioApi: start: Publishing PortfolioApi Template (************-us-east-1-fa974b43)
+PortfolioApi: success: Published ApiFn/Code (************-us-east-1-12f4b09b)
+PortfolioApi: success: Published PortfolioApi Template (************-us-east-1-fa974b43)
+PortfolioApi: creating CloudFormation changeset...
+PortfolioApi: deploying... [1/1]
+PortfolioApi |  0/17 | 12:56:14 AM | REVIEW_IN_PROGRESS      | AWS::CloudFormation::Stack     | PortfolioApi User Initiated
+PortfolioApi |  0/17 | 12:56:25 AM | CREATE_IN_PROGRESS      | AWS::CloudFormation::Stack     | PortfolioApi User Initiated
+PortfolioApi |  0/17 | 12:56:27 AM | CREATE_IN_PROGRESS      | AWS::SNS::Topic                | Alerts (Alerts91F83244) 
+PortfolioApi |  0/17 | 12:56:27 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Api         | Api (ApiF70053CD) 
+PortfolioApi |  0/17 | 12:56:27 AM | CREATE_IN_PROGRESS      | AWS::DynamoDB::Table           | GuestbookTable (GuestbookTable9E0AB405) 
+PortfolioApi |  0/17 | 12:56:27 AM | CREATE_IN_PROGRESS      | AWS::Logs::LogGroup            | ApiFnLogs (ApiFnLogsADB874AE) 
+PortfolioApi |  0/17 | 12:56:27 AM | CREATE_IN_PROGRESS      | AWS::CDK::Metadata             | CDKMetadata/Default (CDKMetadata) 
+PortfolioApi |  0/17 | 12:56:27 AM | CREATE_IN_PROGRESS      | AWS::IAM::Role                 | ApiFn/ServiceRole (ApiFnServiceRoleD18AAE0E) 
+PortfolioApi |  0/17 | 12:56:28 AM | CREATE_IN_PROGRESS      | AWS::Logs::LogGroup            | ApiFnLogs (ApiFnLogsADB874AE) Resource creation Initiated
+PortfolioApi |  0/17 | 12:56:28 AM | CREATE_IN_PROGRESS      | AWS::SNS::Topic                | Alerts (Alerts91F83244) Resource creation Initiated
+PortfolioApi |  0/17 | 12:56:28 AM | CREATE_IN_PROGRESS      | AWS::CDK::Metadata             | CDKMetadata/Default (CDKMetadata) Resource creation Initiated
+PortfolioApi |  0/17 | 12:56:28 AM | CREATE_IN_PROGRESS      | AWS::IAM::Role                 | ApiFn/ServiceRole (ApiFnServiceRoleD18AAE0E) Resource creation Initiated
+PortfolioApi |  1/17 | 12:56:28 AM | CREATE_COMPLETE         | AWS::CDK::Metadata             | CDKMetadata/Default (CDKMetadata) 
+PortfolioApi |  1/17 | 12:56:28 AM | CREATE_IN_PROGRESS      | AWS::DynamoDB::Table           | GuestbookTable (GuestbookTable9E0AB405) Resource creation Initiated
+PortfolioApi |  1/17 | 12:56:28 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Api         | Api (ApiF70053CD) Resource creation Initiated
+PortfolioApi |  2/17 | 12:56:28 AM | CREATE_COMPLETE         | AWS::SNS::Topic                | Alerts (Alerts91F83244) 
+PortfolioApi |  3/17 | 12:56:29 AM | CREATE_COMPLETE         | AWS::ApiGatewayV2::Api         | Api (ApiF70053CD) 
+PortfolioApi |  3/17 | 12:56:29 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Stage       | DefaultStage (DefaultStageEE28A986) 
+PortfolioApi |  3/17 | 12:56:30 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Stage       | DefaultStage (DefaultStageEE28A986) Resource creation Initiated
+PortfolioApi |  4/17 | 12:56:31 AM | CREATE_COMPLETE         | AWS::ApiGatewayV2::Stage       | DefaultStage (DefaultStageEE28A986) 
+PortfolioApi |  4/17 | 12:56:37 AM | CREATE_IN_PROGRESS      | AWS::Logs::LogGroup            | ApiFnLogs (ApiFnLogsADB874AE) Eventual consistency check initiated
+PortfolioApi |  5/17 | 12:56:37 AM | CREATE_COMPLETE         | AWS::Logs::LogGroup            | ApiFnLogs (ApiFnLogsADB874AE) 
+PortfolioApi |  6/17 | 12:56:41 AM | CREATE_COMPLETE         | AWS::DynamoDB::Table           | GuestbookTable (GuestbookTable9E0AB405) 
+PortfolioApi |  7/17 | 12:56:44 AM | CREATE_COMPLETE         | AWS::IAM::Role                 | ApiFn/ServiceRole (ApiFnServiceRoleD18AAE0E) 
+PortfolioApi |  7/17 | 12:56:45 AM | CREATE_IN_PROGRESS      | AWS::IAM::Policy               | ApiFn/ServiceRole/DefaultPolicy (ApiFnServiceRoleDefaultPolicy56A1E6E5) 
+PortfolioApi |  7/17 | 12:56:46 AM | CREATE_IN_PROGRESS      | AWS::IAM::Policy               | ApiFn/ServiceRole/DefaultPolicy (ApiFnServiceRoleDefaultPolicy56A1E6E5) Resource creation Initiated
+PortfolioApi |  8/17 | 12:57:01 AM | CREATE_COMPLETE         | AWS::IAM::Policy               | ApiFn/ServiceRole/DefaultPolicy (ApiFnServiceRoleDefaultPolicy56A1E6E5) 
+PortfolioApi |  8/17 | 12:57:02 AM | CREATE_IN_PROGRESS      | AWS::Lambda::Function          | ApiFn (ApiFnE0725F78) 
+PortfolioApi |  8/17 | 12:57:04 AM | CREATE_IN_PROGRESS      | AWS::Lambda::Function          | ApiFn (ApiFnE0725F78) Resource creation Initiated
+PortfolioApi |  8/17 | 12:57:05 AM | CREATE_IN_PROGRESS      | AWS::Lambda::Function          | ApiFn (ApiFnE0725F78) Eventual consistency check initiated
+PortfolioApi |  8/17 | 12:57:05 AM | CREATE_IN_PROGRESS      | AWS::CloudWatch::Alarm         | ApiVolume (ApiVolume9DBC133A) 
+PortfolioApi |  8/17 | 12:57:05 AM | CREATE_IN_PROGRESS      | AWS::Lambda::Permission        | Api/GET--saves/SavesIntegration-Permission (ApiGETsavesSavesIntegrationPermission6F1A12E5) 
+PortfolioApi |  8/17 | 12:57:05 AM | CREATE_IN_PROGRESS      | AWS::Lambda::Permission        | Api/POST--saves/SavesIntegration-Permission (ApiPOSTsavesSavesIntegrationPermissionD8D92F74) 
+PortfolioApi |  8/17 | 12:57:05 AM | CREATE_IN_PROGRESS      | AWS::CloudWatch::Alarm         | ApiErrors (ApiErrors8A265993) 
+PortfolioApi |  8/17 | 12:57:06 AM | CREATE_IN_PROGRESS      | AWS::CloudWatch::Alarm         | ApiVolume (ApiVolume9DBC133A) Resource creation Initiated
+PortfolioApi |  8/17 | 12:57:06 AM | CREATE_IN_PROGRESS      | AWS::CloudWatch::Alarm         | ApiErrors (ApiErrors8A265993) Resource creation Initiated
+PortfolioApi |  8/17 | 12:57:06 AM | CREATE_IN_PROGRESS      | AWS::Lambda::Permission        | Api/POST--saves/SavesIntegration-Permission (ApiPOSTsavesSavesIntegrationPermissionD8D92F74) Resource creation Initiated
+PortfolioApi |  8/17 | 12:57:06 AM | CREATE_IN_PROGRESS      | AWS::Lambda::Permission        | Api/GET--saves/SavesIntegration-Permission (ApiGETsavesSavesIntegrationPermission6F1A12E5) Resource creation Initiated
+PortfolioApi |  9/17 | 12:57:06 AM | CREATE_COMPLETE         | AWS::Lambda::Permission        | Api/GET--saves/SavesIntegration-Permission (ApiGETsavesSavesIntegrationPermission6F1A12E5) 
+PortfolioApi | 10/17 | 12:57:06 AM | CREATE_COMPLETE         | AWS::Lambda::Permission        | Api/POST--saves/SavesIntegration-Permission (ApiPOSTsavesSavesIntegrationPermissionD8D92F74) 
+PortfolioApi | 11/17 | 12:57:08 AM | CREATE_COMPLETE         | AWS::CloudWatch::Alarm         | ApiVolume (ApiVolume9DBC133A) 
+PortfolioApi | 12/17 | 12:57:08 AM | CREATE_COMPLETE         | AWS::CloudWatch::Alarm         | ApiErrors (ApiErrors8A265993) 
+PortfolioApi | 13/17 | 12:57:10 AM | CREATE_COMPLETE         | AWS::Lambda::Function          | ApiFn (ApiFnE0725F78) 
+PortfolioApi | 13/17 | 12:57:10 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Integration | Api/GET--saves/SavesIntegration (ApiGETsavesSavesIntegration1E26CB2D) 
+PortfolioApi | 13/17 | 12:57:11 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Integration | Api/GET--saves/SavesIntegration (ApiGETsavesSavesIntegration1E26CB2D) Resource creation Initiated
+PortfolioApi | 14/17 | 12:57:12 AM | CREATE_COMPLETE         | AWS::ApiGatewayV2::Integration | Api/GET--saves/SavesIntegration (ApiGETsavesSavesIntegration1E26CB2D) 
+PortfolioApi | 14/17 | 12:57:12 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Route       | Api/POST--saves (ApiPOSTsavesD674A252) 
+PortfolioApi | 14/17 | 12:57:12 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Route       | Api/GET--saves (ApiGETsavesCED06E9E) 
+PortfolioApi | 14/17 | 12:57:13 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Route       | Api/POST--saves (ApiPOSTsavesD674A252) Resource creation Initiated
+PortfolioApi | 14/17 | 12:57:14 AM | CREATE_IN_PROGRESS      | AWS::ApiGatewayV2::Route       | Api/GET--saves (ApiGETsavesCED06E9E) Resource creation Initiated
+PortfolioApi | 15/17 | 12:57:14 AM | CREATE_COMPLETE         | AWS::ApiGatewayV2::Route       | Api/POST--saves (ApiPOSTsavesD674A252) 
+PortfolioApi | 16/17 | 12:57:14 AM | CREATE_COMPLETE         | AWS::ApiGatewayV2::Route       | Api/GET--saves (ApiGETsavesCED06E9E) 
+PortfolioApi | 17/17 | 12:57:15 AM | CREATE_COMPLETE         | AWS::CloudFormation::Stack     | PortfolioApi 
+
+✅  PortfolioApi
+
+✨  Deployment time: 54.13s
+
+Outputs:
+PortfolioApi.ApiUrl = https://or80tf65j9.execute-api.us-east-1.amazonaws.com
+PortfolioApi.TableName = PortfolioApi-GuestbookTable9E0AB405-1W2W6WXR5B72O
+Stack ARN:
+arn:aws:cloudformation:us-east-1:************:stack/PortfolioApi/2e9d7890-d5a8-11f1-b9b0-12ffc050efbb
+
+✨  Total time: 127.59s
+
+ApiUrl: https://or80tf65j9.execute-api.us-east-1.amazonaws.com
+
+[03:57:17Z] 4/5  live smoke test against https://or80tf65j9.execute-api.us-east-1.amazonaws.com
+$ POST /saves (valid)
+{"save":{"id":"22305e7b","name":"Smoke test","message":"Hello from the terminal","color":"teal","createdAt":"2026-11-01T03:57:18.935Z"}}
+201
+$ GET /saves
+{"saves":[{"id":"22305e7b","name":"Smoke test","message":"Hello from the terminal","color":"teal","createdAt":"2026-11-01T03:57:18.935Z"}]}
+200
+$ POST /saves (invalid: link)
+{"error":"message_links","message":"Links are not allowed in the guestbook."}
+400
+$ POST /saves (not JSON)
+{"error":"unsupported_media_type","message":"Send application/json."}
+415
+$ DELETE /saves
+{"message":"Not Found"}
+404
+$ GET /other
+{"message":"Not Found"}
+404
+$ OPTIONS /saves (CORS preflight from the Amplify site)
+HTTP/2 204 
+access-control-allow-origin: https://main.d5w3zjhtyz0vy.amplifyapp.com
+access-control-allow-methods: GET,OPTIONS,POST
+access-control-allow-headers: content-type
+access-control-max-age: 3600
+$ OPTIONS /saves from a stranger site (must get no allow-origin)
+HTTP/2 204 
+
+[03:57:23Z] 5/5  clean up the smoke-test save (this is also how you moderate: delete an item by key)
+deleted SAVE / 2026-11-01T03:57:18.935Z#22305e7b
+
+[03:57:24Z] DONE

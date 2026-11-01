@@ -43,6 +43,36 @@
   #gl.hover { cursor: pointer; }
   body.plain #gl, body.plain .hud, body.plain .film { display: none; }
 
+
+  /* guestbook form (a native <dialog>: focus trap, Esc and inert background come from the browser) */
+  #gbDlg { border: 1px solid var(--line); background: var(--panel-solid); color: var(--text); padding: 0; width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; font: inherit; }
+  #gbDlg::backdrop { background: rgba(10,14,22,.6); }
+  #gbForm { padding: 22px 22px 20px; display: grid; gap: 14px; }
+  #gbForm h2 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
+  #gbForm p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--soft); }
+  #gbForm label, #gbForm legend { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+  #gbForm input[type=text], #gbForm textarea { font: inherit; font-weight: 400; font-size: 16px; color: var(--text); background: rgba(10,14,22,.45); border: 1px solid var(--line); padding: 10px 12px; min-height: 44px; width: 100%; box-sizing: border-box; }
+  #gbForm textarea { resize: vertical; min-height: 84px; }
+  #gbForm :focus-visible, #gbDlg button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  #gbForm fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .gbswatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .gbswatches label { display: block; position: relative; }
+  .gbswatches input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .gbswatches input + span { display: block; width: 100%; height: 44px; background: var(--c); border: 2px solid rgba(255,255,255,.35); box-sizing: border-box; }
+  .gbswatches input:checked + span { border-color: #fff; box-shadow: 0 0 0 2px var(--panel-solid), 0 0 0 4px #fff; }
+  .gbswatches input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 4px; }
+  .gbhp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  #gbCount { font-weight: 400; font-size: 12px; color: var(--soft); justify-self: end; }
+  #gbErr { color: #ffb4a8; min-height: 1.2em; }
+  .gbbtns { display: flex; gap: 8px; justify-content: flex-end; }
+  .gbbtns button, .gbopen { min-height: 44px; padding: 0 18px; border: 1px solid var(--line); background: #3a4968; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+  .gbbtns button[type=submit] { background: #e6e3dc; color: #1c2436; }
+  .gbbtns button:disabled { opacity: .6; cursor: default; }
+  #plain .gbitem { list-style: none; margin: 0 0 10px; padding: 12px 16px; background: #3c4c6b; border: 1px solid var(--line); border-left: 6px solid var(--c); }
+  #plain .gbitem p { margin: 4px 0 0; }
+  #plain .gbitem time { margin-left: 10px; font-size: 13px; color: var(--soft); }
+  #plain #gbList { padding: 0; }
+
   /* light film: grain + vignette, static (no animation, so nothing to turn off for reduced motion) */
   .film { display: none !important; position: fixed; inset: 0; pointer-events: none; z-index: 5;
     background:
@@ -109,6 +139,18 @@
 <button id="stepBack" class="hud" type="button" hidden>‹ Step back</button>
 <button id="arrL" class="navarrow hud" type="button" aria-label="Previous item" hidden>‹</button><button id="arrR" class="navarrow hud" type="button" aria-label="Next item" hidden>›</button>
 
+<dialog id="gbDlg" aria-labelledby="gbT">
+  <form id="gbForm" method="dialog" novalidate>
+    <h2 id="gbT">New save</h2>
+    <p>Leave your name and a short message on the memory card. No links, please. Saves are deleted after 60 days.</p>
+    <label>Name or nickname <input type="text" name="name" maxlength="20" autocomplete="nickname" required></label>
+    <label>Message <textarea name="message" maxlength="140" rows="3" required></textarea><span id="gbCount" aria-hidden="true">0 / 140</span></label>
+    <fieldset><legend>Icon colour</legend><div class="gbswatches" id="gbSw"></div></fieldset>
+    <div class="gbhp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+    <p id="gbErr" role="alert"></p>
+    <div class="gbbtns"><button type="button" id="gbCancel">Cancel</button><button type="submit" id="gbSend">Save</button></div>
+  </form>
+</dialog>
 <main id="plain" aria-label="Plain version"></main>
 <footer id="foot"><b>Throwaway prototype (spike).</b> Not the site. All text is placeholder. <span id="credits"></span></footer>
 <div class="sr" id="live" aria-live="polite"></div>
@@ -183,6 +225,7 @@ const MENU = [
   { id: 'about', label: 'About', sub: 'Profile', val: 'Matías' },
   { id: 'skills', label: 'Skills', sub: 'Memory card', val: '8 saves' },
   { id: 'projects', label: 'Projects', sub: 'Discs', val: '4 discs' },
+  { id: 'guestbook', label: 'Guestbook', sub: 'Memory card', get val() { return gbVal(); } },
   { id: 'contact', label: 'Contact', sub: 'Say hello', val: '3 links' },
 ];
 const PROJECTS = [
@@ -204,7 +247,42 @@ const params = new URLSearchParams(location.search);
 const PROPS_GLB = !params.has('noprops');                          // real CC0 models (Poly Haven) replace the procedural plant and cushions; ?noprops shows the old procedural room
 const coarse = matchMedia('(pointer: coarse)').matches;
 
-/* ================= plain version (unchanged) ================= */
+
+/* ================= guestbook: visitors leave a "save" on the memory card (API Gateway + Lambda + DynamoDB, see backend/ and infra/) ================= */
+const API = (params.get('api') || 'https://or80tf65j9.execute-api.us-east-1.amazonaws.com').replace(/\/+$/, '');
+const GB = { saves: [], status: 'idle' };                          // status: idle | loading | ok | error
+const GB_COLORS = { red: '#e0584f', blue: '#4f7fe0', green: '#58b36b', pink: '#e58bb6', yellow: '#e6c04a', teal: '#3fb1a6', orange: '#e58f3f', violet: '#8a6fe0' };
+const GB_SLOTS = 9;                                                // the TV grid shows the newest 9 saves (+ the "new save" slot); the plain version lists all of them
+const gbVal = () => GB.status === 'ok' ? `${GB.saves.length} save${GB.saves.length === 1 ? '' : 's'}` : GB.status === 'error' ? 'Offline' : 'Reading…';
+const gbCount = () => 1 + Math.min(GB.saves.length, GB_SLOTS);     // selectable slots on the TV: 0 = new save
+async function gbFetch(path, opts = {}) {
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 9000);
+  try { return await fetch(API + path, { ...opts, signal: ctl.signal }); } finally { clearTimeout(timer); }
+}
+async function loadSaves() {
+  GB.status = 'loading'; gbChanged();
+  try {
+    const r = await gbFetch('/saves'); if (!r.ok) throw new Error('http ' + r.status);
+    const d = await r.json(); GB.saves = Array.isArray(d.saves) ? d.saves : []; GB.status = 'ok';
+  } catch (e) { GB.status = 'error'; }
+  gbChanged();
+}
+function gbChanged() {                                             // refresh whatever shows the saves
+  renderGbPlain();
+  try { if (warm.done && (ui.screen === 'home' || ui.screen === 'guestbook')) { if (ui.save >= gbCount()) ui.save = gbCount() - 1; redraw(); } } catch (e) {}
+}
+function renderGbPlain() {
+  const ul = document.getElementById('gbList'); if (!ul) return; ul.textContent = '';
+  if (GB.status !== 'ok') { const li = document.createElement('li'); li.textContent = GB.status === 'error' ? 'The guestbook could not be loaded right now.' : 'Reading the memory card…'; ul.append(li); return; }
+  if (!GB.saves.length) { const li = document.createElement('li'); li.textContent = 'No saves yet. Be the first.'; ul.append(li); return; }
+  for (const sv of GB.saves) {
+    const li = document.createElement('li'); li.className = 'gbitem'; li.style.setProperty('--c', GB_COLORS[sv.color] || '#999');
+    const b = document.createElement('strong'); b.textContent = sv.name; const t = document.createElement('time'); t.dateTime = sv.createdAt; t.textContent = new Date(sv.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    const p = document.createElement('p'); p.textContent = sv.message; li.append(b, t, p); ul.append(li);
+  }
+}
+
+/* ================= plain version ================= */
 $('#plain').innerHTML = `
   <h1>Matías</h1><p>Placeholder tagline. This is the plain version: the same content as the console, as a normal page.</p>
   <h2>About</h2>${ABOUT.map(t => `<p>${t}</p>`).join('')}
@@ -212,6 +290,7 @@ $('#plain').innerHTML = `
   <h2>Projects &amp; achievements</h2>
   ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3><p>${p.blurb}</p></div>`).join('')}
   <ul>${ACH.map(a => `<li>${a}</li>`).join('')}</ul>
+  <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Saves are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
   <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="#" onclick="return false">${c}</a></li>`).join('')}</ul>`;
 const hintEl = $('#hint');
 
@@ -649,7 +728,7 @@ Promise.all([300, 500, 700].map(w => new FontFace('Quicksand', `url(${FONT_BASE}
   .then(() => { redraw(); }).catch(e => console.warn('[font] Quicksand failed to load, using the fallback stack', e));
 
 const YEL = '#E6E04A', CYAN = '#4FD0E8';
-const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
+const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, save: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
 let hits = [];
 const hit = (x, y, w, h, o) => hits.push({ x, y, w, h, ...o });
 function wrap(c, text, x, y, maxW, lh) {
@@ -792,6 +871,32 @@ function drawBody(c, t) {
       else { c.strokeStyle = 'rgba(255,255,255,.55)'; c.setLineDash([4, 4]); c.lineWidth = 1.5; roundRect(c, cx - 22, cy - 22, 44, 44, 8); c.stroke(); c.setLineDash([]); }
     }
     legend(c, [{ sym: 'x', label: 'Enter', act: 'enter' }, { sym: 'o', label: 'Back', act: 'back' }, { sym: 'tri', label: 'Options', act: 'options' }], true);
+  } else if (s === 'guestbook') {
+    bgWarm(c); header(c, true);
+    const n = GB.saves.length, shown = Math.min(n, GB_SLOTS), cur = ui.save > 0 ? GB.saves[ui.save - 1] : null;
+    c.save(); c.fillStyle = '#fff'; c.font = FONT(24, 700); otext(c, 'Guestbook', 26, 64); c.font = FONT(14, 500); otext(c, GB.status === 'ok' ? `${n} save${n === 1 ? '' : 's'} · ${GB_SLOTS - shown} slots free` : GB.status === 'error' ? 'Memory card not found' : 'Reading memory card…', 26, 84);
+    c.fillStyle = YEL; c.font = FONT(22, 700); c.textAlign = 'right'; otext(c, cur ? cur.name : 'New save', SW - 26, 64); c.font = FONT(14, 500); c.fillStyle = '#fff'; otext(c, 'Memory card', SW - 26, 84); c.restore();
+    for (let i = 0; i < 10; i++) {
+      const col = i % 5, row = (i / 5) | 0, cx = 62 + col * 97, cy = 126 + row * 84, sv = i > 0 ? GB.saves[i - 1] : null, sel = i === ui.save;
+      if (i === 0 || sv) hit(cx - 48, cy - 42, 96, 84, { kind: 'gb', i });
+      if (i === 0) {                                                   // the "new save" slot: a plus
+        c.save(); c.fillStyle = 'rgba(255,255,255,.28)'; roundRect(c, cx - 20, cy - 20, 40, 40, 7); c.fill(); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 2; c.stroke();
+        c.beginPath(); c.moveTo(cx - 9, cy); c.lineTo(cx + 9, cy); c.moveTo(cx, cy - 9); c.lineTo(cx, cy + 9); c.stroke(); c.restore();
+        if (sel) { c.save(); c.strokeStyle = '#fff'; c.lineWidth = 2.5; roundRect(c, cx - 27, cy - 27, 54, 54, 10); c.stroke(); c.fillStyle = CYAN; c.beginPath(); c.moveTo(cx - 7, cy - 36); c.lineTo(cx + 7, cy - 36); c.lineTo(cx, cy - 27); c.fill(); c.restore(); }
+      } else if (sv) {
+        const t = rm() ? 0 : ui.t, bob = sel ? Math.sin(t * 3) * 2 : 0, hex = GB_COLORS[sv.color] || '#999';
+        c.save(); c.translate(cx, cy + bob); c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(0, 26, 20, 4, 0, 0, 6.29); c.fill();
+        const g = c.createLinearGradient(-20, -20, 20, 20); g.addColorStop(0, '#fff'); g.addColorStop(.25, hex); g.addColorStop(1, hex);
+        roundRect(c, -20, -20, 40, 40, 7); c.fillStyle = g; c.fill(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1.5; c.stroke();
+        c.fillStyle = '#fff'; c.font = FONT(18, 700); c.textAlign = 'center'; c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 0; c.fillText([...sv.name][0].toUpperCase(), 0, 6); c.restore();
+        if (sel) { c.save(); c.strokeStyle = '#fff'; c.lineWidth = 2.5; roundRect(c, cx - 27, cy - 27 + bob, 54, 54, 10); c.stroke(); c.fillStyle = CYAN; c.beginPath(); c.moveTo(cx - 7, cy - 36 + bob); c.lineTo(cx + 7, cy - 36 + bob); c.lineTo(cx, cy - 27 + bob); c.fill(); c.restore(); }
+      } else { c.strokeStyle = 'rgba(255,255,255,.55)'; c.setLineDash([4, 4]); c.lineWidth = 1.5; roundRect(c, cx - 20, cy - 20, 40, 40, 7); c.stroke(); c.setLineDash([]); }
+    }
+    c.save(); roundRect(c, 24, 232, SW - 48, 98, 12); c.fillStyle = 'rgba(60,54,42,.55)'; c.fill(); c.fillStyle = '#fff'; c.textAlign = 'left';
+    if (cur) { c.font = FONT(15, 700); c.fillText(cur.name, 40, 256); c.fillStyle = 'rgba(255,255,255,.8)'; c.font = FONT(12, 500); c.textAlign = 'right'; c.fillText(new Date(cur.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }), SW - 40, 256); c.textAlign = 'left'; c.fillStyle = '#fff'; c.font = FONT(14, 500); wrap(c, cur.message, 40, 278, SW - 80, 18); }
+    else { c.font = FONT(14, 500); wrap(c, GB.status === 'error' ? 'The memory card could not be read right now. You can try again in a moment.' : GB.status !== 'ok' ? 'Reading the memory card…' : n ? 'Choose New save to leave your name and a short message. Pick a save to read it.' : 'No saves yet. Choose New save and be the first.', 40, 262, SW - 80, 20); }
+    c.restore();
+    legend(c, [{ sym: 'x', label: ui.save === 0 ? 'New save' : 'Read', act: 'enter' }, { sym: 'o', label: 'Back', act: 'back' }], true);
   } else {
     bgMain(c, t, ringAng * .5, .5); header(c, false);
     const title = { about: 'About', projects: 'Projects', project: PROJECTS[ui.loaded] ? PROJECTS[ui.loaded].name : '', contact: 'Contact' }[s];
@@ -860,7 +965,7 @@ function drawTV() {
   const vg = c.createRadialGradient(SW / 2, SH / 2, SH * .34, SW / 2, SH / 2, SW * .64); vg.addColorStop(0, 'rgba(2,3,10,0)'); vg.addColorStop(1, 'rgba(2,3,10,.4)'); c.fillStyle = vg; c.fillRect(0, 0, SW, SH);
   tvTex.needsUpdate = true;
 }
-const TINT = { standby: [0x101426, .25], boot: [0x4a62ff, .9], home: [0x7566ff, 1.1], skills: [0xe0d8c4, 1.0], projects: [0x7566ff, 1.1], project: [0x7566ff, 1.1], about: [0x7566ff, 1.1], contact: [0x7566ff, 1.1] };
+const TINT = { standby: [0x101426, .25], boot: [0x4a62ff, .9], home: [0x7566ff, 1.1], skills: [0xe0d8c4, 1.0], guestbook: [0xe0d8c4, 1.0], projects: [0x7566ff, 1.1], project: [0x7566ff, 1.1], about: [0x7566ff, 1.1], contact: [0x7566ff, 1.1] };
 function tintTV() { const t = ui.on ? (TINT[ui.screen] || TINT.home) : [0, 0]; tvLight.color.setHex(t[0]); tvLight.intensity = t[1]; glow.visible = ui.on && ui.screen !== 'standby'; }   // the screen lights the room: violet-blue for the menu, warm grey for Skills
 function redraw() { drawTV(); tintTV(); dirty = true; if (typeof updateArrows === 'function') updateArrows(); }
 /* per-tick animation of the screen (ring, cubes, boot timeline); under reduced motion nothing runs: the menu is static */
@@ -998,9 +1103,10 @@ async function pressVisual(name) {
 }
 function nav(d) {
   if (ui.busy || !ui.on || ui.screen === 'boot') return;
-  if (ui.screen === 'home') { const n = Math.max(0, Math.min(3, ui.sel + d)); if (n === ui.sel) return; ui.sel = n; if (rm()) ui.pos = n; }
-  else if (ui.screen === 'projects') { const n = Math.max(0, Math.min(3, ui.disc + d)); if (n === ui.disc) return; ui.disc = n; if (rm()) ui.dpos = n; }
+  if (ui.screen === 'home') { const n = Math.max(0, Math.min(MENU.length - 1, ui.sel + d)); if (n === ui.sel) return; ui.sel = n; if (rm()) ui.pos = n; }
+  else if (ui.screen === 'projects') { const n = Math.max(0, Math.min(PROJECTS.length - 1, ui.disc + d)); if (n === ui.disc) return; ui.disc = n; if (rm()) ui.dpos = n; }
   else if (ui.screen === 'skills') { const n = Math.max(0, Math.min(SKILLS.length - 1, ui.skill + d)); if (n === ui.skill) return; ui.skill = n; }
+  else if (ui.screen === 'guestbook') { const n = Math.max(0, Math.min(gbCount() - 1, ui.save + d)); if (n === ui.save) return; ui.save = n; }
   else return; mark('menu change'); sfx.nav(); redraw();
 }
 async function confirm() {
@@ -1008,6 +1114,7 @@ async function confirm() {
   if (ui.screen === 'home') { ui.screen = MENU[ui.sel].id; ui.msg = ''; sfx.ok(); redraw(); say(MENU[ui.sel].label); }
   else if (ui.screen === 'projects') { sfx.ok(); await insertDisc(ui.disc); }
   else if (ui.screen === 'skills') { sfx.nav(); }
+  else if (ui.screen === 'guestbook') { if (ui.save === 0) { sfx.ok(); openGbForm(); } else sfx.nav(); }
 }
 async function back() {
   if (!ui.on || ui.busy || ui.screen === 'boot') return; firstUse();
@@ -1018,7 +1125,7 @@ async function back() {
 async function resetBtn() {                                      // like the console reset: back to the main menu, disc out
   if (ui.busy || !ui.on) return; firstUse();
   if (ui.screen === 'project') await ejectDisc();
-  ui.sel = 0; ui.pos = 0; ui.disc = 0; ui.dpos = 0; ui.screen = 'home'; ui.msg = ''; redraw(); say('Reset');
+  ui.sel = 0; ui.pos = 0; ui.disc = 0; ui.dpos = 0; ui.save = 0; ui.screen = 'home'; ui.msg = ''; redraw(); say('Reset');
 }
 function power() {
   if (ui.busy) return; firstUse(); ui.on = !ui.on; setHint();
@@ -1056,6 +1163,7 @@ function activate(h, touch) {
   if (h.kind === 'legend') { if (h.act === 'enter') return confirm(); if (h.act === 'back') return back(); if (h.act === 'display') { ui.h24 = !ui.h24; sfx.nav(); return redraw(); } if (h.act === 'options') { sfx.nav(); return; } }
   if (h.kind === 'open') return confirm();
   if (h.kind === 'step') return nav(h.d);
+  if (h.kind === 'gb') { if (ui.save === h.i && h.i === 0) return confirm(); ui.save = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'skill') { ui.skill = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'proj') { if (touch && ui.disc !== h.i) { ui.disc = h.i; sfx.nav(); redraw(); return; } ui.disc = h.i; return confirm(); }
 }
@@ -1095,7 +1203,7 @@ addEventListener('keydown', e => { if (document.body.classList.contains('plain')
   skipBoot(); }, true);   // any key: start (wide shot) or skip the boot
 let pdown = null, pendingMove = null, activeUntil = 0;
 const markActive = (ms = 600) => { activeUntil = performance.now() + ms; };
-const menuScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects' || ui.screen === 'skills');
+const menuScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects' || ui.screen === 'skills' || ui.screen === 'guestbook');
 const dragScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects');
 const spacing = () => (ui.screen === 'projects' ? 132 : 140);
 function pxPerLogical() {                                          // on-screen pixels per canvas-logical unit of the TV screen
@@ -1119,7 +1227,7 @@ canvas.addEventListener('pointermove', e => {
   if (!pdown.dragging && Math.abs(dx) > 8 && Math.abs(dx) > 1.2 * Math.abs(dy)) { pdown.dragging = true; ui.dragging = true; pdown.sc = pxPerLogical() || .4; try { canvas.setPointerCapture(e.pointerId); } catch (_) {} }
   if (pdown.dragging) {
     const now = performance.now(), dtm = Math.max(1, now - pdown.lt); pdown.vx = pdown.vx * .5 + ((e.clientX - pdown.lx) / dtm) * .5; pdown.lx = e.clientX; pdown.lt = now;
-    const pos = Math.max(-.3, Math.min(3.3, pdown.base - dx / (pdown.sc * spacing())));          // follows the finger, a little rubber band at the ends
+    const pos = Math.max(-.3, Math.min((ui.screen === 'projects' ? PROJECTS.length : MENU.length) - .7, pdown.base - dx / (pdown.sc * spacing())));          // follows the finger, a little rubber band at the ends
     if (ui.screen === 'projects') ui.dpos = pos; else ui.pos = pos;
   }
 });
@@ -1128,7 +1236,7 @@ const endDrag = e => {
   if (d.dragging) {
     ui.dragging = false; try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
     const vUnits = -d.vx * 1000 / (d.sc * spacing());                                            // items per second
-    const cur = curPos(), target = Math.max(0, Math.min(3, Math.round(cur + vUnits * .18)));      // inertia: a flick carries on to the next item
+    const cur = curPos(), target = Math.max(0, Math.min((ui.screen === 'projects' ? PROJECTS.length : MENU.length) - 1, Math.round(cur + vUnits * .18)));      // inertia: a flick carries on to the next item
     if (ui.screen === 'projects') { if (target !== ui.disc) sfx.nav(); ui.disc = target; } else { if (target !== ui.sel) sfx.nav(); ui.sel = target; }
     if (rm()) { ui.pos = ui.sel; ui.dpos = ui.disc; } redraw(); return;
   }
@@ -1148,7 +1256,7 @@ const arrL = $('#arrL'), arrR = $('#arrR');
 arrL.addEventListener('click', () => nav(-1)); arrR.addEventListener('click', () => nav(1));
 function updateArrows() {                                          // visibility and end states
   const show = menuScreen() && !document.body.classList.contains('plain') && cam.mode === 'close'; arrL.hidden = arrR.hidden = !show; if (!show) return;
-  const i = ui.screen === 'projects' ? ui.disc : ui.screen === 'skills' ? ui.skill : ui.sel, n = ui.screen === 'skills' ? SKILLS.length - 1 : 3; arrL.disabled = i <= 0; arrR.disabled = i >= n;
+  const i = ui.screen === 'projects' ? ui.disc : ui.screen === 'skills' ? ui.skill : ui.screen === 'guestbook' ? ui.save : ui.sel, n = ui.screen === 'skills' ? SKILLS.length - 1 : ui.screen === 'guestbook' ? gbCount() - 1 : ui.screen === 'projects' ? PROJECTS.length - 1 : MENU.length - 1; arrL.disabled = i <= 0; arrR.disabled = i >= n;
 }
 let arrKey = '';
 const _bx = new THREE.Box3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _p3 = new THREE.Vector3();
@@ -1166,7 +1274,7 @@ function placeArrows() {                                           // never over
 
 addEventListener('keydown', e => {
   markActive();
-  if (document.body.classList.contains('plain') || document.activeElement?.tagName === 'BUTTON' || justSkipped()) return;
+  if (document.body.classList.contains('plain') || document.activeElement?.tagName === 'BUTTON' || gbDlg.open || justSkipped()) return;
   if (cam.mode !== 'close') return;
   if (e.key === 'ArrowLeft') { e.preventDefault(); nav(-1); }                 // one horizontal axis only
   else if (e.key === 'ArrowRight') { e.preventDefault(); nav(1); }
@@ -1408,7 +1516,7 @@ async function warmup() {
   let n = 0; for (const t of texs) { renderer.initTexture(t); if (++n % 6 === 0) await tick(); }
   const keep = { screen: ui.screen, loaded: ui.loaded, ready: ui.ready, prog: ui.prog, on: ui.on };
   ui.loaded = 0; ui.ready = true; ui.on = true;
-  for (const st of ['boot', 'home', 'skills', 'projects', 'project', 'about', 'contact', 'standby']) { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
+  for (const st of ['boot', 'home', 'skills', 'guestbook', 'projects', 'project', 'about', 'contact', 'standby']) { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
   Object.assign(ui, { screen: keep.screen, loaded: keep.loaded, ready: keep.ready, prog: keep.prog, on: keep.on, bootT: 0 }); drawTV(); tintTV();
   discPool.forEach(d => { d.visible = false; });
   kickShadow(); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick();
@@ -1426,6 +1534,42 @@ soundBtn.addEventListener('click', () => {
   snd.on = !snd.on; soundBtn.textContent = 'Sound: ' + (snd.on ? 'on' : 'off'); soundBtn.setAttribute('aria-pressed', String(snd.on));
   if (snd.on) { audioCtx(); sfx.nav(); } else fadeBoot(.2); say('Sound ' + (snd.on ? 'on' : 'off'));
 });
+
+
+/* ================= guestbook form ================= */
+const gbDlg = document.getElementById('gbDlg'), gbForm = document.getElementById('gbForm'), gbErr = document.getElementById('gbErr'), gbSend = document.getElementById('gbSend');
+let gbOpener = null;
+document.getElementById('gbSw').innerHTML = Object.entries(GB_COLORS).map(([k, v]) => `<label><input type="radio" name="color" value="${k}"><span style="--c:${v}"></span><span class="sr">${k}</span></label>`).join('');
+const gbCountEl = document.getElementById('gbCount');
+const gbSyncCount = () => { gbCountEl.textContent = `${[...gbForm.message.value].length} / 140`; };
+gbForm.message.addEventListener('input', gbSyncCount);
+function openGbForm() {
+  gbOpener = document.activeElement; gbForm.reset(); gbErr.textContent = ''; gbSend.disabled = false; gbSend.textContent = 'Save';
+  const radios = [...gbForm.querySelectorAll('input[name=color]')]; radios[Math.floor(Math.random() * radios.length)].checked = true; gbSyncCount();
+  if (!gbDlg.open) gbDlg.showModal(); gbForm.name.focus();
+}
+function closeGbForm() { if (gbDlg.open) gbDlg.close(); }
+gbDlg.addEventListener('close', () => { const o = document.body.classList.contains('plain') ? document.querySelector('.gbopen') : canvas; (o || gbOpener)?.focus?.({ preventScroll: true }); });
+document.getElementById('gbCancel').addEventListener('click', closeGbForm);
+gbDlg.addEventListener('click', e => { if (e.target === gbDlg) closeGbForm(); });             // a click on the backdrop closes it
+gbForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = gbForm.name.value.trim(), message = gbForm.message.value.trim(), color = gbForm.color.value;
+  if (!name) { gbErr.textContent = 'Add a short name or nickname.'; gbForm.name.focus(); return; }
+  if (!message) { gbErr.textContent = 'Write a short message.'; gbForm.message.focus(); return; }
+  gbErr.textContent = ''; gbSend.disabled = true; gbSend.textContent = 'Saving…';
+  try {
+    const r = await gbFetch('/saves', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name, message, color, website: gbForm.website.value }) });
+    let d = null; try { d = await r.json(); } catch (_) {}
+    if (r.status === 201 && d && d.save) {
+      GB.saves.unshift(d.save); GB.status = 'ok'; ui.save = 1; closeGbForm(); gbChanged(); sfx.ok(); say('Saved. Your save is on the memory card.'); return;
+    }
+    gbErr.textContent = r.status === 429 ? ((d && d.message) || 'Too many saves right now. Try again later.') : (d && d.message) || 'Something went wrong. Please try again.';
+  } catch (_) { gbErr.textContent = 'Could not reach the guestbook. Check your connection and try again.'; }
+  gbSend.disabled = false; gbSend.textContent = 'Save';
+});
+document.addEventListener('click', e => { if (e.target.closest?.('.gbopen')) openGbForm(); });
+renderGbPlain(); loadSaves();
 
 /* ================= plain toggle ================= */
 const plainBtn = $('#plainBtn');
