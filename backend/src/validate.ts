@@ -20,6 +20,25 @@ const NAME_OK = /^[\p{L}\p{N} ._'’\-!?]+$/u;
 const LINK = /(https?:\/\/|www\.|[a-z0-9-]+\.(com|net|org|io|cl|ru|xyz|top|ly|me)\b)/i;
 const MARKUP = /[<>]/;
 
+/** Basic filter for the obvious: insults and slurs in Spanish and English. It is only a first net (it is easy to dodge); the real protection is that nothing is public until it is approved. */
+const BAD_WORDS = new Set([
+  'puta', 'puto', 'putas', 'putos', 'puta madre', 'hijueputa', 'hijodeputa', 'hdp', 'ctm', 'ctmre', 'conchetumare', 'conchesumare', 'culiao', 'culiado', 'weon', 'weona', 'aweonao', 'maricon', 'maricón', 'marica', 'mierda', 'pendejo', 'pendeja', 'cabron', 'cabrona', 'chingar', 'chinga', 'verga', 'pija', 'zorra', 'perra', 'imbecil', 'idiota', 'estupido', 'estupida', 'retrasado', 'retrasada', 'mongolo', 'subnormal', 'muerete', 'matate', 'violar', 'violador', 'nazi', 'hitler', 'sudaca', 'negro de mierda', 
+  'fuck', 'fucking', 'fucker', 'motherfucker', 'shit', 'bitch', 'bastard', 'asshole', 'dick', 'cock', 'pussy', 'cunt', 'slut', 'whore', 'fag', 'faggot', 'retard', 'retarded', 'nigger', 'nigga', 'kike', 'chink', 'spic', 'tranny', 'rape', 'rapist', 'kys', 'kill yourself', 'idiot', 'stupid', 'moron', 
+]);
+const LEET: Record<string, string> = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '@': 'a', '$': 's' };
+const normalize = (s: string): string => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[013457@$]/g, (c) => LEET[c] ?? c).replace(/[^a-zñ ]/g, ' ').replace(/(.)\1{2,}/g, '$1$1').replace(/\s+/g, ' ').trim();
+export function isOffensive(text: string): boolean {
+  const n = normalize(text);
+  const words = n.split(' ');
+  const squashed = ` ${n} `;
+  for (const w of BAD_WORDS) {
+    const k = normalize(w);
+    if (k.includes(' ') ? squashed.includes(` ${k} `) : words.includes(k) || words.includes(k + 's')) return true;
+  }
+  const letters = words.length > 2 && words.every((w) => w.length === 1) ? words.join('') : '';          // "p u t a" spelled out
+  return letters !== '' && [...BAD_WORDS].some((w) => !w.includes(' ') && w.length > 3 && letters.includes(normalize(w)));
+}
+
 const fail = (code: string, message: string, status: 400 | 413 = 400): ParseResult => ({ ok: false, status, code, message });
 
 const tidy = (s: string): string => s.normalize('NFC').replace(/\s+/gu, ' ').trim();
@@ -51,6 +70,7 @@ export function parseSave(rawBody: string | null | undefined, isBase64 = false):
   if ([...message].length > LIMITS.messageMax) return fail('message_too_long', `The message can have up to ${LIMITS.messageMax} characters.`);
   if (CONTROL.test(message) || MARKUP.test(message)) return fail('message_invalid', 'The message cannot contain markup or hidden characters.');
   if (LINK.test(message)) return fail('message_links', 'Links are not allowed in the guestbook.');
+  if (isOffensive(name) || isOffensive(message)) return fail('not_friendly', 'Please keep the guestbook friendly: rephrase your message and try again.');
 
   let color: SaveColor;
   if (o.color === undefined || o.color === null || o.color === '') color = COLORS[Math.floor(Math.random() * COLORS.length)] as SaveColor;

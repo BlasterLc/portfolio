@@ -50,9 +50,12 @@ say()  { printf '\n[%s] %s\n' "$(date -u +%H:%M:%SZ)" "$*"; }
   echo '$ OPTIONS /saves from a stranger site (must get no allow-origin)'
   curl -s -D - -o /dev/null -X OPTIONS "$API/saves" -H 'origin: https://evil.example' -H 'access-control-request-method: POST' | grep -i -E "^HTTP|access-control-allow-origin" || echo "(no access-control-allow-origin header: blocked)"
 
-  say "5/5  clean up the smoke-test save (this is also how you moderate: delete an item by key)"
-  SK="$(printf '%s' "$R" | head -1 | python3 -c 'import sys,json; s=json.load(sys.stdin)["save"]; print(s["createdAt"]+"#"+s["id"])')"
-  aws dynamodb delete-item --table-name "$TABLE" --key "{\"pk\":{\"S\":\"SAVE\"},\"sk\":{\"S\":\"$SK\"}}" && echo "deleted SAVE / $SK"
+  say "5/5  clean up the smoke-test save (new saves are PENDING until approved: see deploy/moderate.sh)"
+  aws dynamodb query --table-name "$TABLE" --key-condition-expression 'pk = :p' --expression-attribute-values '{":p":{"S":"PENDING"}}' --output json \
+    | python3 -c 'import sys,json
+for i in json.load(sys.stdin)["Items"]:
+    if i["name"]["S"]=="Smoke test": print(i["sk"]["S"])' \
+    | while read -r SK; do aws dynamodb delete-item --table-name "$TABLE" --key "{\"pk\":{\"S\":\"PENDING\"},\"sk\":{\"S\":\"$SK\"}}" && echo "deleted PENDING / $SK"; done
   say "DONE"
 } 2>&1 | tee "$LOG"
 

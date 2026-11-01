@@ -46,8 +46,8 @@ export function createHandler(deps: Deps) {
           return err(429, 'rate_limited', msg, { 'retry-after': String(limit.retryAfterSec) });
         }
 
-        const save = await deps.saves.put(parsed.value, deps.now());
-        return json(201, { save });
+        await deps.saves.put(parsed.value, deps.now());
+        return json(202, { status: 'pending', message: 'Thanks! Your save will appear on the memory card once it has been reviewed.' });
       }
 
       return err(405, 'method_not_allowed', 'Use GET or POST.', { allow: 'GET, POST' });

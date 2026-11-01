@@ -103,12 +103,13 @@ describe('checkLimits', () => {
 });
 
 function fakeSaves() {
-  const rows: Save[] = [];
+  const rows: Save[] = [], pending: Save[] = [];       // like the real table: new saves are pending and only approved ones are public
   const store: SaveStore = {
-    async put(s, now) { const save = { id: String(rows.length + 1), ...s, createdAt: now.toISOString() }; rows.unshift(save); return save; },
+    async put(s, now) { const save = { id: String(pending.length + rows.length + 1), ...s, createdAt: now.toISOString() }; pending.unshift(save); return save; },
     async list(limit) { return rows.slice(0, limit); },
   };
-  return { store, rows };
+  const approve = () => { rows.unshift(...pending.splice(0)); };
+  return { store, rows, pending, approve };
 }
 
 const ev = (method: string, path: string, over: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
@@ -123,11 +124,14 @@ describe('handler', () => {
     const h = createHandler({ saves: saves.store, counters: counters.store, salt: 's', now: () => new Date('2026-11-02T15:30:10Z') });
     return { h, saves, counters };
   };
-  it('creates a save (201) and lists it newest first (200)', async () => {
-    const { h } = make();
+  it('creates a pending save (202) that is only listed, newest first, once approved', async () => {
+    const { h, saves } = make();
     const created = await h(ev('POST', '/saves', { body: body({ name: 'Ana', message: 'hello', color: 'pink' }) }));
-    expect(created).toMatchObject({ statusCode: 201 });
+    expect(created).toMatchObject({ statusCode: 202 });
     await h(ev('POST', '/saves', { body: body({ name: 'Beto', message: 'second' }), requestContext: { http: { method: 'POST', path: '/saves', protocol: 'HTTP/1.1', sourceIp: '198.51.100.8', userAgent: 't' } } as APIGatewayProxyEventV2['requestContext'] }));
+    const before = await h(ev('GET', '/saves'));
+    expect(JSON.parse(String((before as { body: string }).body)).saves).toEqual([]);
+    saves.approve();
     const list = await h(ev('GET', '/saves'));
     const data = JSON.parse(String((list as { body: string }).body));
     expect(list).toMatchObject({ statusCode: 200 });
@@ -161,5 +165,18 @@ describe('handler', () => {
     const r = await h(ev('POST', '/saves', { body: body({ name: 'Ana', message: 'hello' }) })) as { statusCode: number; body: string };
     expect(r.statusCode).toBe(500);
     expect(r.body).not.toContain('secret');
+  });
+});
+
+describe('friendly-language filter', () => {
+  it.each(['eres un idiota', 'fuck you', 'p u t a', 'ID1OT', 'hijueputa!!', 'kill yourself'])('rejects %s', (m) => {
+    const r = parseSave(JSON.stringify({ name: 'Ana', message: m }));
+    expect(r).toMatchObject({ ok: false, code: 'not_friendly' });
+  });
+  it('rejects an offensive name too', () => {
+    expect(parseSave(JSON.stringify({ name: 'puto', message: 'hola' }))).toMatchObject({ ok: false, code: 'not_friendly' });
+  });
+  it.each(['Great work, loved the room!', 'Me encantó la PS2, muy nostálgico', 'Classic Scunthorpe and Dickens', 'Cono de helado'])('lets %s through', (m) => {
+    expect(parseSave(JSON.stringify({ name: 'Ana', message: m }))).toMatchObject({ ok: true });
   });
 });

@@ -7,10 +7,12 @@ import type { NewSave, SaveColor } from './validate.js';
 
 /**
  * Key layout (table `pk` + `sk`, TTL attribute `expiresAt`):
- *   saves      pk = "SAVE"           sk = "<ISO time>#<id>"   -> newest first with a descending query
+ *   pending    pk = "PENDING"        sk = "<ISO time>#<id>"   -> new saves wait here until the owner approves them (deploy/moderate.sh)
+ *   saves      pk = "SAVE"           sk = "<ISO time>#<id>"   -> approved saves, the only ones the public list returns
  *   counters   pk = "RL#..."         sk = "-"                 -> usage limits, deleted by TTL
  */
 export const SAVE_TTL_DAYS = 60;
+export const PENDING_TTL_DAYS = 14;                                // an unreviewed save disappears on its own
 
 export interface Save {
   id: string;
@@ -21,7 +23,7 @@ export interface Save {
 }
 
 export interface SaveStore {
-  put(save: NewSave, now: Date): Promise<Save>;
+  put(save: NewSave, now: Date): Promise<Save>;     // stores it as pending: it is NOT public until approved
   list(limit: number): Promise<Save[]>;
 }
 
@@ -31,7 +33,7 @@ export function createStores(tableName: string, client: DynamoDBDocumentClient =
       async put(save, now) {
         const id = randomUUID().slice(0, 8);
         const createdAt = now.toISOString();
-        const item = { pk: 'SAVE', sk: `${createdAt}#${id}`, id, ...save, createdAt, expiresAt: Math.floor(now.getTime() / 1000) + SAVE_TTL_DAYS * 86400 };
+        const item = { pk: 'PENDING', sk: `${createdAt}#${id}`, id, ...save, createdAt, expiresAt: Math.floor(now.getTime() / 1000) + PENDING_TTL_DAYS * 86400 };
         await client.send(new PutCommand({ TableName: tableName, Item: item }));
         return { id, name: save.name, message: save.message, color: save.color, createdAt };
       },

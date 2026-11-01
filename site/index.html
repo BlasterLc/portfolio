@@ -64,6 +64,8 @@
   .gbhp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   #gbCount { font-weight: 400; font-size: 12px; color: var(--soft); justify-self: end; }
   #gbErr { color: #ffb4a8; min-height: 1.2em; }
+  #gbForm.done > p:first-of-type, #gbForm.done label, #gbForm.done fieldset, #gbForm.done #gbCancel { display: none; }
+  #gbForm.done #gbErr { color: #bff0c8; font-size: 1.05em; }
   .gbbtns { display: flex; gap: 8px; justify-content: flex-end; }
   .gbbtns button, .gbopen { min-height: 44px; padding: 0 18px; border: 1px solid var(--line); background: #3a4968; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
   .gbbtns button[type=submit] { background: #e6e3dc; color: #1c2436; }
@@ -142,7 +144,7 @@
 <dialog id="gbDlg" aria-labelledby="gbT">
   <form id="gbForm" method="dialog" novalidate>
     <h2 id="gbT">New save</h2>
-    <p>Leave your name and a short message on the memory card. No links, please. Saves are deleted after 60 days.</p>
+    <p>Leave your name and a short message on the memory card. No links, please, and keep it friendly. Messages are reviewed before they appear, and are deleted after 60 days.</p>
     <label>Name or nickname <input type="text" name="name" maxlength="20" autocomplete="nickname" required></label>
     <label>Message <textarea name="message" maxlength="140" rows="3" required></textarea><span id="gbCount" aria-hidden="true">0 / 140</span></label>
     <fieldset><legend>Icon colour</legend><div class="gbswatches" id="gbSw"></div></fieldset>
@@ -290,7 +292,7 @@ $('#plain').innerHTML = `
   <h2>Projects &amp; achievements</h2>
   ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3><p>${p.blurb}</p></div>`).join('')}
   <ul>${ACH.map(a => `<li>${a}</li>`).join('')}</ul>
-  <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Saves are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
+  <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
   <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="#" onclick="return false">${c}</a></li>`).join('')}</ul>`;
 const hintEl = $('#hint');
 
@@ -1546,7 +1548,7 @@ const gbCountEl = document.getElementById('gbCount');
 const gbSyncCount = () => { gbCountEl.textContent = `${[...gbForm.message.value].length} / 140`; };
 gbForm.message.addEventListener('input', gbSyncCount);
 function openGbForm() {
-  gbOpener = document.activeElement; gbForm.reset(); gbErr.textContent = ''; gbSend.disabled = false; gbSend.textContent = 'Save';
+  gbOpener = document.activeElement; gbForm.reset(); gbForm.classList.remove('done'); gbErr.textContent = ''; gbSend.disabled = false; gbSend.textContent = 'Save';
   const radios = [...gbForm.querySelectorAll('input[name=color]')]; radios[Math.floor(Math.random() * radios.length)].checked = true; gbSyncCount();
   if (!gbDlg.open) gbDlg.showModal(); gbForm.name.focus();
 }
@@ -1556,6 +1558,7 @@ document.getElementById('gbCancel').addEventListener('click', closeGbForm);
 gbDlg.addEventListener('click', e => { if (e.target === gbDlg) closeGbForm(); });             // a click on the backdrop closes it
 gbForm.addEventListener('submit', async e => {
   e.preventDefault();
+  if (gbForm.classList.contains('done')) { closeGbForm(); return; }
   const name = gbForm.name.value.trim(), message = gbForm.message.value.trim(), color = gbForm.color.value;
   if (!name) { gbErr.textContent = 'Add a short name or nickname.'; gbForm.name.focus(); return; }
   if (!message) { gbErr.textContent = 'Write a short message.'; gbForm.message.focus(); return; }
@@ -1563,8 +1566,9 @@ gbForm.addEventListener('submit', async e => {
   try {
     const r = await gbFetch('/saves', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name, message, color, website: gbForm.website.value }) });
     let d = null; try { d = await r.json(); } catch (_) {}
-    if (r.status === 201 && d && d.save) {
-      GB.saves.unshift(d.save); GB.status = 'ok'; ui.save = 1; closeGbForm(); gbChanged(); sfx.ok(); say('Saved. Your save is on the memory card.'); return;
+    if (r.status === 202) {                                        // accepted but pending review: it is not on the card yet
+      const t = (d && d.message) || 'Thanks! Your save will appear once it has been reviewed.';
+      gbForm.classList.add('done'); gbErr.textContent = t; gbSend.disabled = false; gbSend.textContent = 'Close'; gbSend.focus(); sfx.ok(); say(t); return;
     }
     gbErr.textContent = r.status === 429 ? ((d && d.message) || 'Too many saves right now. Try again later.') : (d && d.message) || 'Something went wrong. Please try again.';
   } catch (_) { gbErr.textContent = 'Could not reach the guestbook. Check your connection and try again.'; }
