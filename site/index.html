@@ -231,13 +231,12 @@ const MENU = [
   { id: 'contact', label: 'Contact', sub: 'Say hello', val: '3 links' },
 ];
 const PROJECTS = [
-  { name: 'Rumbo a Casa', main: true, c1: '#8d9db8', c2: '#b6a98b', blurb: 'Placeholder. Main disc. Inserting it will later open a scene with the routes DS49, DS1, DS19 and DS52, and the rules engine behind them.' },
+  { name: 'Rumbo a Casa', main: true, c1: '#8d9db8', c2: '#b6a98b', award: ['Winner \u00b7 Zero to Shipped', 'AWS Builder Center hackathon, 2026'], blurb: 'Placeholder. Main disc. Inserting it will later open a scene with the routes DS49, DS1, DS19 and DS52, and the rules engine behind them.' },
   { name: 'FitTrack', c1: '#8aa39d', c2: '#9aa6bd', blurb: 'Placeholder description of FitTrack. Replace with the real case study.' },
-  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', blurb: 'Placeholder description of Minuto Cero. Replace with the real case study.' },
+  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026'], blurb: 'Placeholder description of Minuto Cero. Replace with the real case study.' },
   { name: 'JequeBot', c1: '#9a9fbd', c2: '#a9a28f', blurb: 'Placeholder description of JequeBot. Replace with the real case study.' },
 ];
 const SKILLS = ['Python', 'JavaScript', 'Node', 'Next.js', 'FastAPI', 'Supabase', 'Testing', 'GitHub Actions'];
-const ACH = ['Placeholder wording: 1st place, Social Impact, Rally de Innovación 2026', 'Placeholder wording: winner, AWS Zero to Shipped'];
 const ABOUT = ['I\u2019m Mat\u00edas, a fourth-year Computer Science Engineering student at Universidad San Sebasti\u00e1n in Santiago, graduating in 2027. I\u2019m doing my internship at Lexinnova, a legal-tech company.', 'I learn one technology at a time, tied to a real project, and I want to understand why something works before I ship it. I also verify what AI writes for me.'];
 const CONTACT = ['Email (placeholder)', 'GitHub (placeholder)', 'LinkedIn (placeholder)'];
 
@@ -290,8 +289,7 @@ $('#plain').innerHTML = `
   <h2>About</h2>${ABOUT.map(t => `<p>${t}</p>`).join('')}
   <h2>Skills</h2><ul>${SKILLS.map(s => `<li>${s}</li>`).join('')}</ul>
   <h2>Projects &amp; achievements</h2>
-  ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3><p>${p.blurb}</p></div>`).join('')}
-  <ul>${ACH.map(a => `<li>${a}</li>`).join('')}</ul>
+  ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}</p>` : ''}<p>${p.blurb}</p></div>`).join('')}
   <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
   <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="#" onclick="return false">${c}</a></li>`).join('')}</ul>`;
 const hintEl = $('#hint');
@@ -909,7 +907,9 @@ function drawBody(c, t) {
     else if (s === 'projects') {
       const sp = 132;
       PROJECTS.forEach((p, i) => { const dx = i - ui.dpos, cx = SW / 2 + dx * sp; if (cx < -70 || cx > SW + 70) return; const k = Math.max(0, 1 - Math.abs(dx)); discIcon(c, p, cx, 168 - 4 * k, 38 + 24 * k, .55 + .45 * k); hit(cx - sp / 2, 90, sp, 190, { kind: 'proj', i }); });
-      const p = PROJECTS[ui.disc]; c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = FONT(26, 700); c.fillText(p.name, SW / 2, 262); c.fillStyle = ui.msg ? '#fff' : CYAN; c.font = FONT(14, 500); c.fillText(ui.msg || 'Enter to insert the disc', SW / 2, 286); c.textAlign = 'left';
+      const p = PROJECTS[ui.disc]; c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = FONT(26, 700); const aw = p.award, ny = aw ? 250 : 262; c.fillText(p.name, SW / 2, ny);
+      if (aw) { c.fillStyle = YEL; c.font = FONT(15, 700); c.fillText(aw[0], SW / 2, 272); c.fillStyle = 'rgba(255,255,255,.8)'; c.font = FONT(12, 500); c.fillText(aw[1], SW / 2, 289); }
+      c.fillStyle = ui.msg ? '#fff' : CYAN; c.font = FONT(14, 500); c.fillText(ui.msg || 'Enter to insert the disc', SW / 2, aw ? 312 : 286); c.textAlign = 'left';
     } else if (s === 'project') {
       const p = PROJECTS[ui.loaded];
       if (!ui.ready) {
