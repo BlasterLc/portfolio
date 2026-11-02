@@ -1146,8 +1146,12 @@ async function ejectDisc() {
   const d = curDisc;
   if (con.hasTray) {
     await con.openTray(1);
-    if (d) { conG.attach(d); const x0 = d.position.x, y0 = d.position.y, z0 = d.position.z;
-      await tween(.7, k => { d.position.set(x0, y0 + .2 * k, z0 + .05 * k); d.scale.setScalar(1 - .4 * k); d.rotation.x = .6 * k; }, ease.io); }
+    if (d) {                                         // the insertion path in reverse: a low arc toward the viewer, never up into the TV (a vertical rise hid the disc behind the CRT), fading out at the end
+      conG.attach(d); _land.copy(con.land); _start.copy(_land).add(_p0.set(.014, .1, .24));
+      const from = d.position.clone(), ry0 = d.rotation.y, mats = d.userData.mats;
+      mats.forEach(m => { m.transparent = true; m.needsUpdate = true; });
+      await tween(.9, k => { d.position.lerpVectors(from, _start, k); d.position.y += Math.sin(k * Math.PI) * .04; d.rotation.set(.7 * k, ry0 * (1 - k), .4 * k); mats.forEach(m => { m.opacity = k < .6 ? 1 : 1 - (k - .6) / .4; }); }, ease.io);
+      mats.forEach(m => { m.opacity = 1; m.transparent = false; m.needsUpdate = true; }); }
     await con.openTray(0);
   } else if (d) {
     d.visible = true; updateClip(); const z0 = d.position.z;
