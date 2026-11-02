@@ -72,3 +72,7 @@ Meta de Matías: que se sienta **inmersivo y nostálgico**; lo que sería un fra
 
 ## Concurso (pasa/falla)
 Portafolio en AWS Amplify Hosting (About / Skills / Projects), una feature creativa con pista visible, versión móvil, repo público de GitHub, texto en Builder Center con capturas de la consola AWS. Backend AWS pequeño real aún sin construir. Detalle en `docs/reglas-hackathon.md`.
+
+## Pendiente (2 nov)
+- **Bug: al sacar el CD de la PS2, el CD desaparece** (pedido de Matías). Revisar la animación de la bandeja/expulsión de los discos.
+- Certificado del Rally enmarcado en la pared izquierda (clic abre el diálogo grande, `#certDlg`). Falta pulir su visual junto con el resto de la pieza; el nombre completo y el QR de verificación aparecen en la imagen (preguntar si se tapan).
