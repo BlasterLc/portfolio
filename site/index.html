@@ -239,7 +239,7 @@ const MENU = [
   { id: 'skills', label: 'Skills', sub: 'Memory card', get val() { return SKILLS.length + ' saves'; } },
   { id: 'projects', label: 'Projects', sub: 'Discs', val: '4 discs' },
   { id: 'guestbook', label: 'Guestbook', sub: 'Memory card', get val() { return gbVal(); } },
-  { id: 'contact', label: 'Contact', sub: 'Say hello', val: '3 links' },
+  { id: 'contact', label: 'Contact', sub: 'Say hello', get val() { return CONTACT.length + ' links'; } },
 ];
 const PROJECTS = [
   { name: 'Rumbo a Casa', main: true, c1: '#8d9db8', c2: '#b6a98b', award: ['Winner \u00b7 Social Good', 'AWS Zero to Shipped hackathon, 2026'],
@@ -267,7 +267,12 @@ const SKILLS = [
   { id: 'anthropic', name: 'Anthropic SDK / RAG', abbr: 'AI', rgb: [200, 105, 75], what: 'Assistants built on the Anthropic SDK, and a RAG pipeline of my own.' },
 ];
 const ABOUT = ['I\u2019m Mat\u00edas, a fourth-year Computer Science Engineering student at Universidad San Sebasti\u00e1n in Santiago, graduating in 2027. I\u2019m doing my internship at Lexinnova, a legal-tech company.', 'I learn one technology at a time, tied to a real project, and I want to understand why something works before I ship it. I also verify what AI writes for me.'];
-const CONTACT = ['Email (placeholder)', 'GitHub (placeholder)', 'LinkedIn (placeholder)'];
+const LINKEDIN_URL = 'https://www.linkedin.com/in/matias-rodr%C3%ADguez-gutierrez-07b365342';   // the row only appears when this is set
+const CONTACT = [
+  { label: 'Email', text: 'matiasrodriguezgz@gmail.com', url: 'mailto:matiasrodriguezgz@gmail.com' },
+  { label: 'GitHub', text: 'github.com/BlasterLc', url: 'https://github.com/BlasterLc' },
+  { label: 'LinkedIn', text: 'LinkedIn profile', url: LINKEDIN_URL },
+].filter(c => c.url);
 
 const $ = s => document.querySelector(s);
 const rm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -320,7 +325,7 @@ $('#plain').innerHTML = `
   <h2>Projects &amp; achievements</h2>
   ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}</p>` : ''}<p>${p.blurb}</p><p><small>${p.stack}</small></p>${p.links.length ? `<p>${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join(' \u00b7 ')}</p>` : ''}</div>`).join('')}
   <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
-  <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="#" onclick="return false">${c}</a></li>`).join('')}</ul>`;
+  <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="${c.url}"${c.url.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${c.label}: ${c.text}</a></li>`).join('')}</ul>`;
 const hintEl = $('#hint');
 
 function renderCredits(loaded) {
@@ -763,7 +768,7 @@ Promise.all([300, 500, 700].map(w => new FontFace('Quicksand', `url(${FONT_BASE}
   .then(() => { redraw(); }).catch(e => console.warn('[font] Quicksand failed to load, using the fallback stack', e));
 
 const YEL = '#E6E04A', CYAN = '#4FD0E8';
-const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, save: 0, skillMenu: 0, pmenu: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
+const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, contact: 0, save: 0, skillMenu: 0, pmenu: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
 let hits = [];
 const hit = (x, y, w, h, o) => hits.push({ x, y, w, h, ...o });
 function wrap(c, text, x, y, maxW, lh) {
@@ -963,7 +968,7 @@ function drawBody(c, t) {
     c.textAlign = 'right'; c.fillStyle = YEL; c.font = FONT(26, 700); c.fillText(title, SW - 26, 72); c.textAlign = 'left';
     const panel = () => { roundRect(c, 24, 88, SW - 48, 196, 14); c.fillStyle = 'rgba(16,12,52,.55)'; c.fill(); c.strokeStyle = 'rgba(160,215,245,.3)'; c.lineWidth = 1; c.stroke(); };
     if (s === 'about') { panel(); c.fillStyle = '#fff'; c.font = FONT(16, 500); let y = 122; ABOUT.forEach(tx => { y = wrap(c, tx, 44, y, 424, 23) + 10; }); }
-    else if (s === 'contact') { panel(); CONTACT.forEach((tx, i) => { c.fillStyle = CYAN; c.fillRect(44, 118 + i * 52, 4, 28); c.fillStyle = '#fff'; c.font = FONT(19, 500); c.fillText(tx, 60, 140 + i * 52); }); }
+    else if (s === 'contact') { panel(); CONTACT.forEach((ct, i) => { const sel = ui.contact === i, y = 104 + i * 56; roundRect(c, 36, y, SW - 72, 46, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.1)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : CYAN; c.font = FONT(13, 700); c.fillText(ct.label.toUpperCase(), 52, y + 19); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(17, 500); c.fillText(ct.text + ' \u2197', 52, y + 38); hit(36, y, SW - 72, 46, { kind: 'contact', i }); }); }
     else if (s === 'projects') {
       const sp = 132;
       PROJECTS.forEach((p, i) => { const dx = i - ui.dpos, cx = SW / 2 + dx * sp; if (cx < -70 || cx > SW + 70) return; const k = Math.max(0, 1 - Math.abs(dx)); discIcon(c, p, cx, 168 - 4 * k, 38 + 24 * k, .55 + .45 * k); hit(cx - sp / 2, 90, sp, 190, { kind: 'proj', i }); });
@@ -982,7 +987,7 @@ function drawBody(c, t) {
         p.links.forEach((l, n) => { const x = 122 + n * 118, sel = ui.pmenu === n; roundRect(c, x, 240, 106, 32, 9); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.14)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(15, 700); c.textAlign = 'center'; c.fillText(l.label + ' \u2197', x + 53, 261); c.textAlign = 'left'; hit(x, 236, 106, 40, { kind: 'plink', i: n }); });
       }
     }
-    legend(c, [{ sym: 'x', label: s === 'projects' ? 'Insert' : 'Enter', act: 'enter' }, { sym: 'o', label: s === 'project' ? 'Eject' : 'Back', act: 'back' }]);
+    legend(c, [{ sym: 'x', label: s === 'projects' ? 'Insert' : s === 'contact' ? 'Open' : 'Enter', act: 'enter' }, { sym: 'o', label: s === 'project' ? 'Eject' : 'Back', act: 'back' }]);
   }
 }
 const drawLog = [];
@@ -1176,6 +1181,7 @@ function nav(d) {
   else if (ui.screen === 'project') { const m = PROJECTS[ui.loaded].links.length; if (m < 2) return; const n = Math.max(0, Math.min(m - 1, ui.pmenu + d)); if (n === ui.pmenu) return; ui.pmenu = n; }
   else if (ui.screen === 'skill') { const n = Math.max(0, Math.min(1, ui.skillMenu + d)); if (n === ui.skillMenu) return; ui.skillMenu = n; }
   else if (ui.screen === 'guestbook') { const n = Math.max(0, Math.min(gbCount() - 1, ui.save + d)); if (n === ui.save) return; ui.save = n; }
+  else if (ui.screen === 'contact') { const n = Math.max(0, Math.min(CONTACT.length - 1, ui.contact + d)); if (n === ui.contact) return; ui.contact = n; }
   else return; mark('menu change'); sfx.nav(); redraw();
 }
 async function confirm() {
@@ -1186,6 +1192,7 @@ async function confirm() {
   else if (ui.screen === 'skills') { ui.screen = 'skill'; ui.skillMenu = 0; sfx.ok(); redraw(); say(SKILLS[ui.skill].name); }
   else if (ui.screen === 'skill') { sfx.ok(); if (ui.skillMenu === 0) { ui.screen = 'projects'; redraw(); say('Projects'); } else { ui.screen = 'skills'; redraw(); say('Skills'); } }
   else if (ui.screen === 'guestbook') { if (ui.save === 0) { sfx.ok(); openGbForm(); } else sfx.nav(); }
+  else if (ui.screen === 'contact') { const ct = CONTACT[ui.contact]; if (ct) { sfx.ok(); if (ct.url.startsWith('mailto:')) location.href = ct.url; else window.open(ct.url, '_blank', 'noopener'); } }
 }
 async function back() {
   if (!ui.on || ui.busy || ui.screen === 'boot') return; firstUse();
@@ -1242,6 +1249,7 @@ function activate(h, touch) {
   if (h.kind === 'step') return nav(h.d);
   if (h.kind === 'gb') { if (ui.save === h.i && h.i === 0) return confirm(); ui.save = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'plink') { ui.pmenu = h.i; return confirm(); }
+  if (h.kind === 'contact') { if (touch && ui.contact !== h.i) { ui.contact = h.i; sfx.nav(); return redraw(); } ui.contact = h.i; return confirm(); }
   if (h.kind === 'skmenu') { ui.skillMenu = h.i; return confirm(); }
   if (h.kind === 'skill') { if (ui.skill === h.i) return confirm(); ui.skill = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'proj') { if (touch && ui.disc !== h.i) { ui.disc = h.i; sfx.nav(); redraw(); return; } ui.disc = h.i; return confirm(); }
@@ -1284,7 +1292,7 @@ addEventListener('keydown', e => { if (document.body.classList.contains('plain')
   skipBoot(); }, true);   // any key: start (wide shot) or skip the boot
 let pdown = null, pendingMove = null, activeUntil = 0;
 const markActive = (ms = 600) => { activeUntil = performance.now() + ms; };
-const menuScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects' || ui.screen === 'skills' || ui.screen === 'skill' || ui.screen === 'guestbook');
+const menuScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects' || ui.screen === 'skills' || ui.screen === 'skill' || ui.screen === 'guestbook' || ui.screen === 'contact');
 const dragScreen = () => cam.mode === 'close' && ui.on && !ui.busy && (ui.screen === 'home' || ui.screen === 'projects');
 const spacing = () => (ui.screen === 'projects' ? 132 : 140);
 function pxPerLogical() {                                          // on-screen pixels per canvas-logical unit of the TV screen
