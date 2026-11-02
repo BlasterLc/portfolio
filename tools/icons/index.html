@@ -25,13 +25,15 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 const FR = 48, CELL = 128, COLS = 8, ROWS = 6, SS = 2;                       // 48 frames (7.5 degrees apart), 128 px cells (rendered at 2x and downscaled), 8x6 atlas
 const ICONS = [
   { id: 'python', file: 'python', name: 'Python', color: '#3776AB' },
-  { id: 'javascript', file: 'javascript', name: 'JavaScript', color: '#F7DF1E' },
+  { id: 'javascript', file: 'javascript', name: 'JavaScript', color: '#F7DF1E', evenodd: true },
   { id: 'node', file: 'nodedotjs', name: 'Node', color: '#5FA04E' },
   { id: 'nextjs', file: 'nextdotjs', name: 'Next.js', color: '#E8E8EE' },       // brand colour is black: lightened so it reads on dark backgrounds
   { id: 'fastapi', file: 'fastapi', name: 'FastAPI', color: '#009688' },
   { id: 'supabase', file: 'supabase', name: 'Supabase', color: '#3FCF8E' },
   { id: 'testing', file: 'jest', name: 'Testing', color: '#C21325' },
   { id: 'githubactions', file: 'githubactions', name: 'GitHub Actions', color: '#2088FF' },
+  { id: 'typescript', file: 'typescript', name: 'TypeScript', color: '#3178C6', evenodd: true },
+  { id: 'github', file: 'github', name: 'Git / GitHub', color: '#E8E8EE' },       // brand colour is black: lightened so it reads on dark backgrounds
   { id: 'aws', file: 'aws', name: 'AWS', color: '#FF9900' },
   { id: 'selfhosting', file: 'digitalocean', name: 'Self-hosting (DigitalOcean)', color: '#0080FF' },
   { id: 'anthropic', file: 'anthropic', name: 'Anthropic', color: '#D97757' },       // brand colour is black: Claude terracotta instead
@@ -45,11 +47,17 @@ const key = new THREE.DirectionalLight(0xffffff, 2.1); key.position.set(-2.5, 3,
 
 async function build(ic) {
   const txt = await (await fetch(`svg/${ic.file}.svg`)).text(), data = new SVGLoader().parse(txt), shapes = [];
-  for (const p of data.paths) shapes.push(...SVGLoader.createShapes(p));
+  for (const p of data.paths) { if (ic.evenodd) p.userData.style.fillRule = 'evenodd'; shapes.push(...SVGLoader.createShapes(p)); }       // evenodd: the letters of the JS / TS logos are cut-outs of the square
   const geo = new THREE.ExtrudeGeometry(shapes, { depth: 3.2, bevelEnabled: true, bevelThickness: .55, bevelSize: .45, bevelSegments: 4, curveSegments: 14 });
-  geo.scale(1, -1, 1); geo.computeBoundingBox(); const bb = geo.boundingBox, c = bb.getCenter(new THREE.Vector3()); geo.translate(-c.x, -c.y, -c.z);
+  geo.rotateX(Math.PI); geo.computeBoundingBox();       // SVG is y-down: a half turn (not a mirror, which would turn the triangles inside out and show the inside of the logo)
+   const bb = geo.boundingBox, c = bb.getCenter(new THREE.Vector3()); geo.translate(-c.x, -c.y, -c.z);
   const s = 3.1 / Math.max(bb.max.x - bb.min.x, bb.max.y - bb.min.y); geo.scale(s, s, s); geo.computeVertexNormals();
-  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: ic.color, roughness: .34, metalness: .22, envMapIntensity: 1.0 }));
+  // A dark floor inside the body: holes (the letters of JS and TS, the N of Next.js...) become blind pockets with a dark bottom, as in the real logo, instead of see-through windows.
+  const outers = shapes.map(sh => new THREE.Shape(sh.getPoints(14))), fgeo = new THREE.ExtrudeGeometry(outers, { depth: 1.6, bevelEnabled: false, curveSegments: 14 });
+  fgeo.rotateX(Math.PI); fgeo.translate(-c.x, -c.y, -.3); fgeo.scale(.985, .985, 1); fgeo.scale(s, s, s); fgeo.computeVertexNormals();
+  const mesh = new THREE.Group();
+  mesh.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: ic.color, roughness: .34, metalness: .22, envMapIntensity: 1.0 })));
+  mesh.add(new THREE.Mesh(fgeo, new THREE.MeshStandardMaterial({ color: new THREE.Color(ic.color).multiplyScalar(.16), roughness: .6, metalness: 0, envMapIntensity: .5 })));
   return mesh;
 }
 const out = {}; const grid = document.getElementById('grid');
@@ -57,10 +65,10 @@ for (const ic of ICONS) {
   const mesh = await build(ic); scene.add(mesh);
   const atlas = document.createElement('canvas'); atlas.width = CELL * COLS; atlas.height = CELL * ROWS; const g = atlas.getContext('2d'); g.imageSmoothingQuality = 'high';
   for (let f = 0; f < FR; f++) {
-    mesh.rotation.set(-.12, (f / FR) * Math.PI * 2, 0); renderer.render(scene, cam);
+    mesh.rotation.set(-.12, Math.sin((f / FR) * Math.PI * 2) * .95, 0);   /* a sway of about +-54 degrees, never the back: the logo is always readable and its text is never mirrored */ renderer.render(scene, cam);
     g.drawImage(renderer.domElement, (f % COLS) * CELL, Math.floor(f / COLS) * CELL, CELL, CELL);
   }
-  scene.remove(mesh); mesh.geometry.dispose();
+  scene.remove(mesh); mesh.children.forEach(m => m.geometry.dispose());
   out[ic.id] = atlas.toDataURL('image/png');
   const cell = document.createElement('div'); cell.className = 'cell'; const pv = document.createElement('canvas'); pv.className = 'p'; pv.width = pv.height = CELL; cell.append(pv, ic.name); grid.append(cell);
   const pc = pv.getContext('2d'); let k = 0; setInterval(() => { pc.clearRect(0, 0, CELL, CELL); pc.drawImage(atlas, (k % COLS) * CELL, Math.floor(k / COLS) * CELL, CELL, CELL, 0, 0, CELL, CELL); k = (k + 1) % FR; }, 70);
