@@ -325,8 +325,8 @@ const canvas = $('#gl');
 const QUALITY_PARAM = ['auto', 'high', 'low'].includes(params.get('quality')) ? params.get('quality') : 'auto';
 const DEBUG = params.has('debug');
 const PROFILES = {
-  high: { tvFps: 24, tvScale: 1.25, bars: 12, cubes: 5, shadows: true, film: false, budget: 1.5e6, prCap: 1.25 },
-  low: { tvFps: 20, tvScale: 1.0, bars: 8, cubes: 3, shadows: false, film: false, budget: 1.2e6, prCap: 1 },
+  high: { tvFps: 90, tvScale: 1.25, bars: 12, cubes: 5, shadows: true, film: false, budget: 1.5e6, prCap: 1.25 },
+  low: { tvFps: 45, tvScale: 1.0, bars: 8, cubes: 3, shadows: false, film: false, budget: 1.2e6, prCap: 1 },
 };
 const Q = Object.assign({ name: 'high' }, PROFILES.high);
 if (QUALITY_PARAM === 'low') Object.assign(Q, PROFILES.low, { name: 'low' });
@@ -1742,9 +1742,9 @@ function frame() {
     if (conBlue) conBlue.material.emissiveIntensity = .55 + Math.sin(t * 1.1) * .2;
   } else if (dirty) { camera.position.copy(fitState.T).addScaledVector(fitState.dir, fitState.d); camera.lookAt(fitState.T); }
   updateStandbyCue(t, still);
-  const want = still ? dirty : (dirty || active || now - lastRender >= 30);
+  const want = still ? dirty : (dirty || active || drewTV || now - lastRender >= 30);   // a redrawn TV screen is only seen if the scene is rendered with it
   if (want) {
-    if (Q.shadows && (shadowKick > 0 || tws.length)) { renderer.shadowMap.needsUpdate = true; if (shadowKick > 0) shadowKick--; }
+    if (Q.shadows && (shadowKick > 0 || (tws.length && ui.busy))) {   /* static shadows: only a disc/tray sequence (ui.busy) moves a caster; the dolly and the menu tweens do not */ renderer.shadowMap.needsUpdate = true; if (shadowKick > 0) shadowKick--; }
     const a = PERF ? performance.now() : 0, gq = DEBUG ? gpuBegin() : null; renderer.render(scene, camera); gpuEnd(gq); dirty = false; lastRender = now; renderCount++; if (PERF) PERF.render.push(performance.now() - a);
     adaptRes(ivl, prevRendered); prevRendered = true;
   } else prevRendered = false;
