@@ -831,7 +831,7 @@ function bgWarm(c) {                                                 // warm gre
 }
 
 /* small icon vocabulary: every glyph is drawn here */
-const iconSheets = {};                                              // prerendered 3D spin: 24 frames of 128 px in a 6 x 4 sheet (tools/icons)
+const iconSheets = {};                                              // prerendered 3D spin: 48 frames of 128 px in an 8 x 6 sheet (tools/icons)
 function iconSheet(id) {
   let im = iconSheets[id]; if (!im) { im = iconSheets[id] = new Image(); im.onload = () => { if (ui.screen === 'skills' || ui.screen === 'skill') redraw(); }; im.src = 'assets/icons/' + id + '.png'; }
   return im.complete && im.naturalWidth ? im : null;
@@ -839,9 +839,10 @@ function iconSheet(id) {
 function skillIcon(c, sk, i, cx, cy, s, t, sel) {
   const im = iconSheet(sk.id);
   if (im) {
-    const f = rm() ? 0 : Math.floor(t * 5 + i * 7) % 24, d = s * 1.7;
+    const ph = rm() ? 0 : ((t / 4 + i * .13) % 1) * 48, f0 = Math.floor(ph) % 48, f1 = (f0 + 1) % 48, mixK = ph - Math.floor(ph), d = s * 1.7;   // one turn every 4 s; the next frame is faded in so the spin is continuous
     c.save(); c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(cx, cy + s * .72, s * .5, s * .11, 0, 0, 6.29); c.fill(); c.restore();
-    c.drawImage(im, (f % 6) * 128, ((f / 6) | 0) * 128, 128, 128, cx - d / 2, cy - d / 2, d, d);
+    c.drawImage(im, (f0 % 8) * 128, ((f0 / 8) | 0) * 128, 128, 128, cx - d / 2, cy - d / 2, d, d);
+    if (mixK > .02) { c.save(); c.globalAlpha = mixK; c.drawImage(im, (f1 % 8) * 128, ((f1 / 8) | 0) * 128, 128, 128, cx - d / 2, cy - d / 2, d, d); c.restore(); }
     if (sel) { c.save(); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 2.5; roundRect(c, cx - s * .66, cy - s * .66, s * 1.32, s * 1.32, s * .2); c.stroke(); c.restore(); }
     return;
   }
