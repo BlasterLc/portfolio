@@ -215,7 +215,7 @@ const MODEL_CFG = {
       // Power, reset and eject are parts of ONE mesh, so they are told apart by where it is hit (top / middle / bottom, see split).
       split: { node: 'front_but', rules: [['power', 0.84], ['reset', 0.7], ['eject', 0]] },   // measured by ray scan: the top cap spans y 0.72-1.0 of the mesh box (power icon above, RESET label below), the bottom cap 0.0-0.4
       recolor: [['front_port_frontpanel', 0x24262b]],                       // the model's USB/i.LINK door is bright blue: it read as a glitch next to the tray, so it is repainted graphite
-      trayNode: 'disk_drive', trayLogos: ['logo', 'logo.001'], trayPlate: { w: 0.13, d: 0.125 }, travel: 0.125,   // the door strip slides out together with a procedural plate (the model has no tray plate)
+      trayNode: 'disk_drive', trayPlate: { w: 0.13, d: 0.125 }, travel: 0.125,   // the door strip slides out together with a procedural plate (the model has no tray plate)
       changes: 'Changes: scaled and re-centered; a procedural disc tray plate was added behind the tray door.',
     },
     'ps2.glb': { changes: 'Changes: textures reduced to 1024 px and mesh optimized; the controllers and memory cards were removed from the scene.' },
@@ -1487,7 +1487,6 @@ async function tryLoadConsole() {
   let trayNode = null; if (cfg.trayNode) holder.traverse(o => { if (!trayNode && o.name === cfg.trayNode) trayNode = o; }); if (!trayNode) trayNode = findNode(holder, cfg, 'tray');
   if (trayNode) {
     conG.updateMatrixWorld(true);
-    if (cfg.trayLogos) { const ls = []; holder.traverse(o => { if (cfg.trayLogos.includes(o.name)) ls.push(o); }); ls.forEach(o => trayNode.attach(o)); }   // the PlayStation emblem is a separate mesh on the door: it must slide with it (it stayed behind and the door cut through it)
     const tb = new THREE.Box3().setFromObject(trayNode, true), toLocal = p => conG.worldToLocal(p.clone());
     const c0 = toLocal(tb.getCenter(new THREE.Vector3())), top = toLocal(new THREE.Vector3(tb.max.x, tb.max.y, tb.max.z)).y;
     const tl = toLocal(new THREE.Vector3(tb.min.x, tb.min.y, tb.min.z)), th = toLocal(new THREE.Vector3(tb.max.x, tb.max.y, tb.max.z));
