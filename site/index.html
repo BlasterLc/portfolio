@@ -1770,6 +1770,7 @@ function gpuStrings() {
 function debugData() {
   const i = renderer.info, cv = renderer.domElement, g = gpuStrings(), at = renderer.getContextAttributes();
   return {
+    ...(benchOut ? { bench_gpu_ms: JSON.stringify(benchOut) } : {}),
     fps_avg_2s: +STAT.fpsAvg.toFixed(1), fps_min_2s: +STAT.fpsMin.toFixed(1), rendered_frames_per_s: +STAT.renders.toFixed(1), cpu_ms_per_frame_avg: +STAT.cpuAvg.toFixed(2), cpu_ms_max: +STAT.cpuMax.toFixed(2),
     gpu_ms_per_frame_avg: STAT.gpuAvg == null ? (gpuExt ? 'collecting…' : 'n/a (EXT_disjoint_timer_query_webgl2 not available)') : +STAT.gpuAvg.toFixed(2),
     draw_calls: i.render.calls, triangles: i.render.triangles, textures: i.memory.textures, geometries: i.memory.geometries,
@@ -1779,6 +1780,26 @@ function debugData() {
     quality_param: QUALITY_PARAM, quality_now: Q.name, auto_switch: autoReason || '-', model_file: con.file || '(procedural)', model_mode: con.mode,
     gpu: g.gpu, gpu_vendor: g.vendor, software_renderer: g.software, webgl_version: g.webgl, userAgent: navigator.userAgent, viewport: `${innerWidth}x${innerHeight}`, reduced_motion: rm(),
   };
+}
+/* ---- ?debug Bench: measures, on the visitor's own GPU, what each effect costs (GPU ms per frame), by switching it off for ~2 s at a time. Run it in the TV menu. ---- */
+let benchOut = null;
+async function runBench(say) {
+  const sleep = ms => new Promise(r => setTimeout(r, ms)), refresh = () => scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); });
+  const lights = [lampLight, tvLight, bayLight], keep = { sh: renderer.shadowMap.enabled, ks: key.castShadow, noScreen: FL.noScreen, pr: PR }, hidden = [], res = {};
+  const measure = async label => { say(label); await sleep(1300); gpuMs.length = 0; await sleep(2200); gpuPoll(); res[label] = gpuMs.length ? +(gpuMs.reduce((a, b) => a + b, 0) / gpuMs.length).toFixed(2) : null; };
+  ADA.lastChange = Infinity;                                        // freeze the dynamic resolution while measuring
+  try {
+    await measure('baseline');
+    renderer.shadowMap.enabled = false; key.castShadow = false; refresh(); await measure('no shadows'); renderer.shadowMap.enabled = keep.sh; key.castShadow = keep.ks; refresh();
+    lights.forEach(l => { l.visible = false; }); await measure('no point lights (lamp, tv, shelf)'); lights.forEach(l => { l.visible = true; });
+    scene.traverse(o => { if (o.isMesh && o.visible && o.material && !Array.isArray(o.material) && o.material.transparent) { o.visible = false; hidden.push(o); } }); await measure(`no transparent meshes (${hidden.length}: glass, beams, glow, dust)`); hidden.forEach(o => { o.visible = true; });
+    FL.noScreen = true; await measure('TV screen not redrawn'); FL.noScreen = keep.noScreen;
+    renderer.setPixelRatio(keep.pr * .5); renderer.setSize(innerWidth, innerHeight, false); await measure('half resolution'); renderer.setPixelRatio(keep.pr); renderer.setSize(innerWidth, innerHeight, false);
+  } finally {
+    renderer.shadowMap.enabled = keep.sh; key.castShadow = keep.ks; lights.forEach(l => { l.visible = true; }); hidden.forEach(o => { o.visible = true; }); FL.noScreen = keep.noScreen;
+    renderer.setPixelRatio(keep.pr); renderer.setSize(innerWidth, innerHeight, false); ADA.lastChange = performance.now(); refresh(); dirty = true; kickShadow();
+  }
+  benchOut = { ...res, screen: ui.screen, camera: cam.mode, pixelRatio: keep.pr, draw_calls: renderer.info.render.calls, triangles: renderer.info.render.triangles }; return benchOut;
 }
 function paintDebug() { if (!dbgPre) return; const d = debugData(); dbgPre.textContent = Object.entries(d).filter(([k]) => k !== 'userAgent').map(([k, v]) => `${k.padEnd(24)} ${v}`).join('\n'); }
 if (DEBUG) {
@@ -1791,7 +1812,9 @@ if (DEBUG) {
   const qb = document.createElement('button'); qb.textContent = 'Quality: ' + QUALITY_PARAM; qb.title = 'auto > high > low (reloads the page: antialias and the model textures are chosen at load time)';
   qb.addEventListener('click', () => { const u = new URL(location.href), n = { auto: 'high', high: 'low', low: 'auto' }[QUALITY_PARAM]; u.searchParams.set('quality', n); location.href = u.toString(); });
   const tg = document.createElement('button'); tg.textContent = 'Hide'; tg.addEventListener('click', () => { const h = dbgPre.style.display === 'none'; dbgPre.style.display = h ? '' : 'none'; tg.textContent = h ? 'Hide' : 'Show'; });
-  box.append(copy, qb, tg); document.body.appendChild(box); window.__dbg = debugData; if (innerWidth < 760) { dbgPre.style.display = 'none'; tg.textContent = 'Show'; }
+  const bb = document.createElement('button'); bb.textContent = 'Bench'; bb.title = 'Measures what each effect costs on this GPU (about 15 s). Run it in the TV menu, then press Copy.';
+  bb.addEventListener('click', async () => { if (bb.disabled) return; bb.disabled = true; try { await runBench(t => { bb.textContent = 'Bench: ' + t.slice(0, 22); }); bb.textContent = 'Bench done: press Copy'; } catch (e) { bb.textContent = 'Bench failed'; console.error(e); } bb.disabled = false; });
+  box.append(copy, bb, qb, tg); document.body.appendChild(box); window.__dbg = debugData; if (innerWidth < 760) { dbgPre.style.display = 'none'; tg.textContent = 'Show'; }
 }
 
 
