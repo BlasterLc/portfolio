@@ -41,6 +41,12 @@
 
   #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; outline: none; }   /* horizontal drags are ours, vertical ones pass to the page */
   #gl.hover { cursor: pointer; }
+  #certDlg { border: 1px solid var(--line); background: var(--panel-solid); color: var(--text); padding: 12px; width: min(960px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; }
+  #certDlg::backdrop { background: rgba(10,14,22,.75); }
+  #certDlg img { display: block; width: auto; max-width: 100%; max-height: calc(100vh - 150px); height: auto; margin: 0 auto; }
+  #certDlg figcaption { margin: 10px 2px 2px; font-size: 14px; color: var(--muted, #b8c0d4); }
+  #certClose { margin-top: 10px; min-height: 44px; padding: 0 18px; border: 1px solid var(--line); background: #3a4968; color: var(--text); font-weight: 600; }
+  #certClose:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   body.plain #gl, body.plain .hud, body.plain .film { display: none; }
 
 
@@ -141,6 +147,11 @@
 <button id="stepBack" class="hud" type="button" hidden>‹ Step back</button>
 <button id="arrL" class="navarrow hud" type="button" aria-label="Previous item" hidden>‹</button><button id="arrR" class="navarrow hud" type="button" aria-label="Next item" hidden>›</button>
 
+<dialog id="certDlg" aria-label="Certificate">
+  <figure style="margin:0"><img src="assets/props/certificate.jpg" alt="Certificate: first place in the Social Impact category, Rally Latinoamericano de Innovación 2026, team Helix, USS site in Chile, 20 October 2026" width="1100" height="850">
+  <figcaption>First place, Social Impact category, with team Helix (USS site, Chile). Rally Latinoamericano de Innovación 2026, 16-17 October, held in 11 countries.</figcaption></figure>
+  <button type="button" id="certClose">Close</button>
+</dialog>
 <dialog id="gbDlg" aria-labelledby="gbT">
   <form id="gbForm" method="dialog" novalidate>
     <h2 id="gbT">New save</h2>
@@ -520,7 +531,7 @@ glow.position.set(0, .03, .12); glow.userData.blob = true; tvProc.add(glow);   /
 
 /* ================= the room: a low-cost procedural living room (carpet, wall with baseboard, window with curtains, shelving with generic game cases, floor lamp, cushions, loose discs, cables).
    Everything static is merged per material; contact shadows are fake blobs; no brands, no text. ================= */
-const roomG = new THREE.Group(); scene.add(roomG);
+const roomG = new THREE.Group(); scene.add(roomG); let certMesh = null;
 const FLOOR_Y = 0, BACK_Z = -1.05, SIDE_X = 2.7;
 function buildRoom() {
   const rr = rand(404);
@@ -632,8 +643,14 @@ function buildRoom() {
     const pts = []; for (let i = 0; i <= 30; i++) { const u = i / 30, k = Math.min(2, Math.floor(u * 3)), v = u * 3 - k, x = SW_[k][0] + (SW_[k + 1][0] - SW_[k][0]) * v; pts.push([x, 2.55 - Math.sin(v * Math.PI) * .16, zz]); }
     props.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), 90, .004, 4), matBlack); }
   { const poster = (z, y, w, h, c1, c2, c3) => { props.add(rbG(.03, h + .06, w + .06, .004, 1), matVC, -SIDE_X + .02, y, z, 0, 0, 0, 0xf2e3c4); props.add(rbG(.034, h, w, .003, 1), matVC, -SIDE_X + .024, y, z, 0, 0, 0, c1); props.add(new THREE.CylinderGeometry(w * .28, w * .28, .036, 20).rotateZ(Math.PI / 2), matVC, -SIDE_X + .03, y + h * .12, z, 0, 0, 0, c2); props.add(rbG(.036, h * .3, w * .86, .003, 1), matVC, -SIDE_X + .03, y - h * .32, z, 0, 0, 0, c3); };
-    poster(.45, 1.55, .5, .7, 0x3f6670, 0xe27a4a, 0xd9a441); poster(1.25, 1.45, .38, .52, 0xc0583e, 0xecd7a8, 0x4a7f6a); }
-  props.build(roomG, false, false); beads.build(roomG, false, false);
+    poster(1.3, 1.5, .5, .7, 0x3f6670, 0xe27a4a, 0xd9a441); }
+  props.build(roomG, false, false);
+  { const cw = .62, ch = cw * 850 / 1100, cy = 1.5, cz = .42;                          // the Rally certificate, framed on the left wall (takes the nearer poster spot)
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(.03, ch + .05, cw + .05), new THREE.MeshStandardMaterial({ color: 0x2b2118, roughness: .6 }));
+    frame.position.set(-SIDE_X + .02, cy, cz); roomG.add(frame);
+    const certTex = new THREE.TextureLoader().load('assets/props/certificate.jpg'); certTex.colorSpace = THREE.SRGBColorSpace; certTex.anisotropy = aniso();
+    const cert = new THREE.Mesh(new THREE.PlaneGeometry(cw, ch), new THREE.MeshStandardMaterial({ map: certTex, roughness: .7 }));
+    cert.rotation.y = Math.PI / 2; cert.position.set(-SIDE_X + .037, cy, cz); roomG.add(cert); certMesh = cert; } beads.build(roomG, false, false);
   walls.build(roomG, false, false); wood.build(roomG, false, false); cases.build(roomG, false, false); d.build(roomG, false, true); lamp.build(roomG, false, false); cab.build(roomG, false, true);
 
   // ---- lived-in clutter (generic, brandless): controller, toy robot, blocks, plush bear, magazines, cup with straw ----
@@ -1204,6 +1221,11 @@ function pickScreen(e) {                                           // -> hit rec
   const cx = h.uv.x * SW, cy = (1 - h.uv.y) * SH;
   return hits.find(r => cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h) || null;
 }
+function pickCert(e) { if (!certMesh) return false; setRay(e); return !!ray.intersectObject(certMesh, false)[0]; }   // the framed certificate on the left wall
+const certDlg = document.getElementById('certDlg');
+function openCert() { if (!certDlg.open) certDlg.showModal(); }
+document.getElementById('certClose').addEventListener('click', () => certDlg.close());
+certDlg.addEventListener('click', e => { if (e.target === certDlg) certDlg.close(); });
 function pickButton(e) {
   const r = setRay(e); const hitObj = ray.intersectObjects(clickables, false)[0]; if (hitObj) { const f = hitObj.object.userData.btnFn; return f ? f(hitObj.point) : hitObj.object.userData.btn; }
   let best = null, bd = 24;                                          // fingertip fallback toward the console buttons
@@ -1244,7 +1266,8 @@ function wideAction() { if (ui.on) startSystem(); else approachTV(); }
 function startSystem() { if (cam.mode !== 'wide' || cam.busy || !warm.done) return; cam.auto = false; ui.skipT = performance.now(); ui.started = true; sfx.ok(); dolly(1); }
 function stepBack() { if (cam.mode !== 'close' || cam.busy) return; sfx.back(); dolly(0); }
 hintEl.addEventListener('click', () => { if (cam.mode === 'close' && !ui.on) power(); else wideAction(); }); stepBtn.addEventListener('click', stepBack);
-addEventListener('pointerdown', e => { if (document.body.classList.contains('plain') || e.target.closest?.('#plainBtn,#soundBtn,#hint,#stepBack,#dbg')) return; if (cam.mode === 'wide') {
+addEventListener('pointerdown', e => { if (document.body.classList.contains('plain') || certDlg.open || e.target.closest?.('#plainBtn,#soundBtn,#hint,#stepBack,#dbg')) return; if (cam.mode === 'wide') {
+      if (pickCert(e)) { e.preventDefault(); e.stopImmediatePropagation(); openCert(); return; }
       if (ui.on) { startSystem(); return; }
       const b = pickButton(e); let hitTv = b === 'tvpower'; if (!hitTv && screenMesh) { setRay(e); hitTv = !!ray.intersectObject(screenMesh, false)[0]; }
       if (hitTv) { e.preventDefault(); approachTV(); } return;
@@ -1252,7 +1275,7 @@ addEventListener('pointerdown', e => { if (document.body.classList.contains('pla
     if (cam.mode === 'close' && !ui.on) return;                       // TV off: a click on the room does nothing (the power button handles itself)
     skipBoot(); }, true);   // any tap: start (wide shot) or skip the boot
 const ignoredKey = e => e.isComposing || /^(Audio|Media|Volume|Launch|Browser|Shift|Alt|Control|Meta|OS|CapsLock|NumLock|ScrollLock|Fn|F\d+|Tab|Dead|Unidentified|PrintScreen|ContextMenu)/.test(e.key);   // volume/media keys, modifiers and F-keys are not a key press: they must not start the TV or skip the boot
-addEventListener('keydown', e => { if (document.body.classList.contains('plain') || e.metaKey || e.ctrlKey || ignoredKey(e)) return; if (cam.mode === 'wide') { if (!e.target.closest?.('button') && (ui.on || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); wideAction(); } return; }
+addEventListener('keydown', e => { if (document.body.classList.contains('plain') || certDlg.open || e.metaKey || e.ctrlKey || ignoredKey(e)) return; if (cam.mode === 'wide') { if (!e.target.closest?.('button') && (ui.on || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); wideAction(); } return; }
   if (cam.mode === 'close' && !ui.on) { if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest?.('button')) { e.preventDefault(); power(); } return; }
   skipBoot(); }, true);   // any key: start (wide shot) or skip the boot
 let pdown = null, pendingMove = null, activeUntil = 0;
@@ -1726,7 +1749,7 @@ function frame() {
   if (AUTO.winStart && ivl > 0 && ivl < 1000) AUTO.iv.push(ivl);
   for (let i = tws.length - 1; i >= 0; i--) { const w = tws[i]; w.t += dt; const k = Math.min(1, w.t / w.d); w.fn(w.e(k)); if (k >= 1) { tws.splice(i, 1); w.res(); } }
   const active = tws.length > 0 || now < activeUntil || ui.dragging || ui.screen === 'boot';   // interactions and transitions: every frame; ambient motion: ~30 fps
-  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e))); }
+  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e) || (cam.mode === 'wide' && pickCert(e)))); }
   let drewTV = false;
   if (!still && ui.on && !FL.noScreen) {                                  // the TV texture: Q.tvFps ambient, every frame while dragging
     scrAcc += Math.min(raw, .25);
