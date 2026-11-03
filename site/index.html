@@ -242,7 +242,7 @@ const MENU = [
   { id: 'contact', label: 'Contact', sub: 'Say hello', get val() { return CONTACT.length + ' links'; } },
 ];
 const PROJECTS = [
-  { name: 'Rumbo a Casa', main: true, c1: '#8d9db8', c2: '#b6a98b', award: ['Winner \u00b7 Social Good', 'AWS Zero to Shipped hackathon, 2026'],
+  { name: 'Rumbo a Casa', main: true, c1: '#8d9db8', c2: '#b6a98b', award: ['Winner \u00b7 Social Good', 'AWS Zero to Shipped hackathon, 2026', 'One of 5 winners among ~3,800 participants'],
     blurb: 'Which Chilean housing subsidy fits your family, and the exact papers to bring. A rules engine cites the decree behind every answer.',
     stack: 'TypeScript \u00b7 AWS: CloudFront, Lambda, Bedrock, DynamoDB, Polly',
     links: [{ label: 'Live app', url: 'https://d26duk07atmc3z.cloudfront.net' }, { label: 'Code', url: 'https://github.com/BlasterLc/rumbo-a-casa' }] },
@@ -250,7 +250,7 @@ const PROJECTS = [
     blurb: 'Workouts and nutrition in one app, on your phone or in the browser. Describe a meal by text, photo or voice and Claude estimates the macros.',
     stack: 'Expo \u00b7 FastAPI \u00b7 Supabase \u00b7 Claude API',
     links: [{ label: 'Code', url: 'https://github.com/BlasterLc/fittrack' }] },
-  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026'], blurb: 'Decision support for Chile’s emergency committees after a disaster. From minute zero, before the first field report, it scores each zone from 0 to 100, proposes which to attend first and cites the norm behind every recommendation. A zone that goes silent rises in priority, and a person always makes the final call.', stack: 'Designed as an MCP server with fixed, citable rules (Ley 21.364) · proposal and prototypes, not implemented', links: [{ label: 'Video', url: 'https://www.youtube.com/watch?v=IWBO8NThL7A' }] },
+  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026', 'Organised by ANFEI, ACOFI and CONFEDI \u00b7 platform Sirli'], blurb: 'Decision support for Chile’s emergency committees after a disaster. From minute zero, before the first field report, it scores each zone from 0 to 100, proposes which to attend first and cites the norm behind every recommendation. A zone that goes silent rises in priority, and a person always makes the final call.', stack: 'Designed as an MCP server with fixed, citable rules (Ley 21.364) · proposal and prototypes, not implemented', links: [{ label: 'Video', url: 'https://www.youtube.com/watch?v=IWBO8NThL7A' }] },
   { name: 'JequeBot', c1: '#9a9fbd', c2: '#a9a28f',
     blurb: 'A Discord music bot: plays YouTube and SoundCloud in voice channels, with slash commands and playback buttons.',
     stack: 'Python \u00b7 yt-dlp \u00b7 Docker \u00b7 Railway', links: [] },
@@ -323,7 +323,7 @@ $('#plain').innerHTML = `
   <h2>About</h2>${ABOUT.map(t => `<p>${t}</p>`).join('')}
   <h2>Skills</h2><ul>${SKILLS.map(k => `<li><strong>${k.name}</strong> \u2014 ${k.what}</li>`).join('')}</ul>
   <h2>Projects &amp; achievements</h2>
-  ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}</p>` : ''}<p>${p.blurb}</p><p><small>${p.stack}</small></p>${p.links.length ? `<p>${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join(' \u00b7 ')}</p>` : ''}</div>`).join('')}
+  ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}. ${p.award[2]}.</p>` : ''}<p>${p.blurb}</p><p><small>${p.stack}</small></p>${p.links.length ? `<p>${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join(' \u00b7 ')}</p>` : ''}</div>`).join('')}
   <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
   <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="${c.url}"${c.url.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${c.label}: ${c.text}</a></li>`).join('')}</ul>`;
 const hintEl = $('#hint');
@@ -973,8 +973,8 @@ function drawBody(c, t) {
       const sp = 132;
       PROJECTS.forEach((p, i) => { const dx = i - ui.dpos, cx = SW / 2 + dx * sp; if (cx < -70 || cx > SW + 70) return; const k = Math.max(0, 1 - Math.abs(dx)); discIcon(c, p, cx, 168 - 4 * k, 38 + 24 * k, .55 + .45 * k); hit(cx - sp / 2, 90, sp, 190, { kind: 'proj', i }); });
       const p = PROJECTS[ui.disc]; c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = FONT(26, 700); const aw = p.award, ny = aw ? 250 : 262; c.fillText(p.name, SW / 2, ny);
-      if (aw) { c.fillStyle = YEL; c.font = FONT(15, 700); c.fillText(aw[0], SW / 2, 272); c.fillStyle = 'rgba(255,255,255,.8)'; c.font = FONT(12, 500); c.fillText(aw[1], SW / 2, 289); }
-      c.fillStyle = ui.msg ? '#fff' : CYAN; c.font = FONT(14, 500); c.fillText(ui.msg || 'Enter to insert the disc', SW / 2, aw ? 312 : 286); c.textAlign = 'left';
+      if (aw) { c.fillStyle = YEL; c.font = FONT(15, 700); c.fillText(aw[0], SW / 2, 272); c.fillStyle = 'rgba(255,255,255,.8)'; c.font = FONT(12, 500); c.fillText(aw[1], SW / 2, 289); c.fillStyle = 'rgba(255,255,255,.65)'; c.font = FONT(11, 500); c.fillText(aw[2], SW / 2, 306); }
+      c.fillStyle = ui.msg ? '#fff' : CYAN; c.font = FONT(14, 500); c.fillText(ui.msg || 'Enter to insert the disc', SW / 2, aw ? 334 : 286); c.textAlign = 'left';
     } else if (s === 'project') {
       const p = PROJECTS[ui.loaded];
       if (!ui.ready) {
