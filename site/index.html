@@ -133,6 +133,24 @@
   #plain .proj { background: #3c4c6b; border: 1px solid var(--line); padding: 14px 16px; margin: 0 0 10px; }
   #plain .proj h3 { margin: 0 0 4px; font-size: 19px; }
   #plain a { color: var(--text); text-decoration: underline; }
+
+  /* ---- PS2-menu look for the page buttons: rounded glass-blue plates with a soft glow, Dosis lettering (SIL OFL, credited in the footer) ---- */
+  @font-face { font-family: "Dosis"; src: url("assets/fonts/Dosis.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
+  :root { --ps2-a: rgba(74,102,196,.92); --ps2-b: rgba(22,30,86,.94); --ps2-edge: rgba(168,196,255,.6); --ps2-glow: rgba(96,140,255,.38); }
+  #plainBtn, #soundBtn, #stepBack, #certClose, #hint.start, .gbbtns button {
+    font-family: "Dosis","Trebuchet MS",sans-serif; font-weight: 700; font-size: 17px; letter-spacing: .1em; text-transform: uppercase; color: #f2f5ff;
+    border: 1px solid var(--ps2-edge); border-radius: 12px; background: linear-gradient(180deg, var(--ps2-a), var(--ps2-b));
+    box-shadow: 0 0 14px var(--ps2-glow), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -8px 14px rgba(8,10,40,.35); text-shadow: 0 1px 2px rgba(0,0,0,.55);
+    transition: box-shadow .15s ease, transform .15s ease, filter .15s ease;
+  }
+  #plainBtn:hover, #soundBtn:hover, #stepBack:hover, #certClose:hover, #hint.start:hover, .gbbtns button:hover { background: linear-gradient(180deg, #5f82e6, #2a3a9a); box-shadow: 0 0 22px rgba(120,164,255,.65), inset 0 1px 0 rgba(255,255,255,.45); transform: translateY(-1px); }
+  #plainBtn:active, #soundBtn:active, #stepBack:active, #certClose:active { transform: translateY(1px); filter: brightness(.92); }
+  #soundBtn[aria-pressed=true] { border-color: #9fe6ff; box-shadow: 0 0 18px rgba(100,220,255,.5), inset 0 1px 0 rgba(255,255,255,.4); }
+  #soundBtn[aria-pressed=false] { filter: saturate(.45) brightness(.85); }
+  .navarrow { width: 58px; height: 58px; border-radius: 16px; border: 1px solid var(--ps2-edge); background: linear-gradient(180deg, var(--ps2-a), var(--ps2-b)); color: #f2f5ff; box-shadow: 0 0 14px var(--ps2-glow), inset 0 1px 0 rgba(255,255,255,.35); text-shadow: 0 1px 2px rgba(0,0,0,.55); }
+  .navarrow:not(:disabled):hover { background: linear-gradient(180deg, #5f82e6, #2a3a9a); box-shadow: 0 0 22px rgba(120,164,255,.65); }
+  #hint { font-family: "Dosis","Trebuchet MS",sans-serif; font-weight: 600; font-size: 17px; letter-spacing: .08em; border-radius: 12px; border: 1px solid var(--ps2-edge); background: linear-gradient(180deg, rgba(40,56,128,.82), rgba(14,20,64,.86)); box-shadow: 0 0 12px var(--ps2-glow); color: #f2f5ff; }
+  .brand { font-family: "Dosis","Trebuchet MS",sans-serif; font-weight: 700; letter-spacing: .06em; text-shadow: 0 0 12px var(--ps2-glow); }
 </style>
 </head>
 <body class="warming">
@@ -165,7 +183,7 @@
   </form>
 </dialog>
 <main id="plain" aria-label="Plain version"></main>
-<footer id="foot"><b>Throwaway prototype (spike).</b> Not the site. All text is placeholder. <span id="credits"></span></footer>
+<footer id="foot"><span id="credits"></span></footer>
 <div class="sr" id="live" aria-live="polite"></div>
 
 <script type="importmap">
@@ -331,7 +349,7 @@ const hintEl = $('#hint');
 function renderCredits(loaded) {
   const A = (h, t) => h ? `<a href="${h}" target="_blank" rel="noopener">${t}</a>` : t;
   const f = k => { const c = CREDITS[k]; return `${A(c.url, '“' + c.title + '”')} by ${A(c.authorUrl, c.author)}, licensed under ${A(c.licenseUrl, c.license)}. ${c.changes}`; };
-  $('#credits').innerHTML = 'Credits: ' + (loaded.length ? loaded.map(k => `${k === 'ps2' ? 'Console model' : 'TV model'}: ${f(k)}`).join(' · ') : 'no external model loaded (procedural console and TV). The console model is credited here (title, author, license, link) when it is used.') + (PROPS_GLB ? ' · Room props: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> models (CC0; thanks to James Ray Cock, Plat251, Serhii Khromov, Thomas Paul Mouilleron and Yann Kervran).' : '') + ' · Skill icons: logo paths from <a href="https://simpleicons.org" target="_blank" rel="noopener">simple-icons</a> (CC0); the logos belong to their owners and are used only to name technologies.';
+  $('#credits').innerHTML = 'Credits: ' + (loaded.length ? loaded.map(k => `${k === 'ps2' ? 'Console model' : 'TV model'}: ${f(k)}`).join(' · ') : 'no external model loaded (procedural console and TV). The console model is credited here (title, author, license, link) when it is used.') + (PROPS_GLB ? ' · Room props: <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a> models (CC0; thanks to James Ray Cock, Plat251, Serhii Khromov, Thomas Paul Mouilleron and Yann Kervran).' : '') + ' · Lettering: <a href="https://fonts.google.com/specimen/Dosis" target="_blank" rel="noopener">Dosis</a> (SIL OFL) · Skill icons: logo paths from <a href="https://simpleicons.org" target="_blank" rel="noopener">simple-icons</a> (CC0); the logos belong to their owners and are used only to name technologies.';
 }
 renderCredits([]);
 

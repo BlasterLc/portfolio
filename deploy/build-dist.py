@@ -53,6 +53,7 @@ shutil.copy(os.path.join(SRC, 'assets/props/credits.json'), os.path.join(OUT, 'a
 os.makedirs(os.path.join(OUT, 'assets/icons'))
 for iid in re.findall(r"id: '([a-z]+)', name: '[^']+', abbr:", html):          # the 3D skill icons the SKILLS list uses
     shutil.copy(os.path.join(SRC, 'assets/icons', iid + '.png'), os.path.join(OUT, 'assets/icons', iid + '.png'))
+os.makedirs(os.path.join(OUT, 'assets/fonts')); shutil.copy(os.path.join(SRC, 'assets/fonts/Dosis.ttf'), os.path.join(OUT, 'assets/fonts/Dosis.ttf'))          # Dosis (SIL OFL) for the buttons
 shutil.copy(os.path.join(SRC, 'assets/props/certificate.jpg'), os.path.join(OUT, 'assets/props/certificate.jpg'))          # the framed Rally certificate on the wall
 
 n = 0
