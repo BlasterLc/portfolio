@@ -76,7 +76,7 @@
   .gbbtns button, .gbopen { min-height: 44px; padding: 0 18px; border: 1px solid var(--line); background: #3a4968; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
   .gbbtns button[type=submit] { background: #e6e3dc; color: #1c2436; }
   .gbbtns button:disabled { opacity: .6; cursor: default; }
-  #plain .gbitem { list-style: none; margin: 0 0 10px; padding: 12px 16px; background: #3c4c6b; border: 1px solid var(--line); border-left: 6px solid var(--c); }
+  #plain .gbitem { list-style: none; margin: 0 0 10px; padding: 12px 16px; background: #fff7e6; border-radius: 8px; border: 1px solid var(--line); border-left: 6px solid var(--c); }
   #plain .gbitem p { margin: 4px 0 0; }
   #plain .gbitem time { margin-left: 10px; font-size: 13px; color: var(--soft); }
   #plain #gbList { padding: 0; }
@@ -125,15 +125,43 @@
   @media (max-width: 760px) { #foot { font-size: 10px; line-height: 1.35; } #hint { bottom: 112px; } }
   @media (prefers-reduced-motion: reduce) { #hint { animation: none; } }
 
-  /* plain version (unchanged from the previous spike) */
-  #plain { display: none; max-width: 760px; margin: 0 auto; padding: 96px 20px 40px; }
+  /* plain version: the room's palette (cream wall, wood, orange curtains, teal rug), Dosis headings */
+  body.plain { height: auto; min-height: 100%; background: linear-gradient(180deg, #e9d2a8 0, #f1e2c2 340px) no-repeat #f1e2c2; }
+  body.plain .brand { color: #2b2118; text-shadow: none; }
+  #plain .gbopen { border: 0; border-radius: 10px; background: linear-gradient(180deg, #e8833f, #b4501f); color: #fff7e6; font: 700 18px "Dosis",sans-serif; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(90,50,20,.25); }
+  #plain .gbopen:hover { filter: brightness(1.08); }
+  #plain, body.plain #foot { --text: #2b2118; --soft: #6b5640; --line: rgba(43,33,24,.22); color: var(--text); }
+  #plain { display: none; max-width: 860px; margin: 0 auto; padding: 96px 20px 40px; }
   body.plain #plain { display: block; }
-  #plain h1 { font-size: clamp(34px,7vw,56px); margin: 0 0 8px; letter-spacing: -.03em; }
-  #plain h2 { font-size: 26px; margin: 40px 0 10px; letter-spacing: -.02em; border-top: 1px solid var(--line); padding-top: 18px; }
+  #plain h1, #plain h2, #plain h3 { font-family: "Dosis","Trebuchet MS",sans-serif; }
+  #plain h1 { font-size: clamp(48px,10vw,88px); font-weight: 800; margin: 0; line-height: .95; letter-spacing: -.01em; color: #2b2118; }
+  #plain .tag { font-size: clamp(18px,2.6vw,23px); line-height: 1.4; margin: 14px 0 0; max-width: 34em; color: #4a3a2a; }
+  #plain .tag b { color: #b4501f; }
+  #plain h2 { font-size: 30px; font-weight: 700; margin: 52px 0 14px; padding: 0 0 8px; border-bottom: 3px solid #3f7f84; display: inline-block; letter-spacing: .01em; }
   #plain p, #plain li { line-height: 1.6; font-size: 17px; }
-  #plain .proj { background: #3c4c6b; border: 1px solid var(--line); padding: 14px 16px; margin: 0 0 10px; }
-  #plain .proj h3 { margin: 0 0 4px; font-size: 19px; }
-  #plain a { color: var(--text); text-decoration: underline; }
+  #plain a { color: #9a3f14; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  #plain a:hover { color: #6e2a0a; }
+  #plain .wins { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 30px; }
+  #plain .win { position: relative; padding: 16px 18px 16px 22px; background: #fff7e6; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 18px rgba(90,50,20,.12); }
+  #plain .win::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; border-radius: 10px 0 0 10px; background: linear-gradient(180deg, #e8833f, #b4501f); }
+  #plain .win small { display: block; font: 700 13px "Dosis",sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #b4501f; }
+  #plain .win strong { display: block; font: 700 26px/1.1 "Dosis",sans-serif; margin: 4px 0 6px; }
+  #plain .win span { font-size: 15px; line-height: 1.45; color: #4a3a2a; }
+  #plain .cert { display: flex; gap: 16px; align-items: center; margin: 22px 0 0; padding: 12px; background: #fff7e6; border: 1px solid var(--line); border-radius: 10px; }
+  #plain .cert button { flex: none; padding: 0; border: 6px solid #2b2118; background: #2b2118; cursor: zoom-in; box-shadow: 0 6px 16px rgba(60,30,10,.3); }
+  #plain .cert img { display: block; width: 150px; height: auto; }
+  #plain .cert p { margin: 0; font-size: 15px; color: #4a3a2a; }
+  #plain .skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; padding: 0; margin: 0; list-style: none; }
+  #plain .skills li { padding: 12px 14px; background: rgba(255,247,230,.7); border: 1px solid var(--line); border-radius: 8px; font-size: 15px; line-height: 1.45; }
+  #plain .skills b { display: flex; align-items: center; gap: 8px; font: 700 19px "Dosis",sans-serif; margin-bottom: 2px; }
+  #plain .skills i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); flex: none; }
+  #plain .proj { background: #fff7e6; border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0 0 12px; box-shadow: 0 4px 14px rgba(90,50,20,.08); }
+  #plain .proj.main { border-color: #b4501f; }
+  #plain .proj h3 { margin: 0 0 4px; font-size: 26px; font-weight: 700; }
+  #plain .proj .award { display: inline-block; margin: 0 0 6px; padding: 3px 10px; border-radius: 999px; background: #b4501f; color: #fff7e6; font: 700 14px "Dosis",sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+  #plain .proj .stack { font-size: 14px; color: var(--soft); }
+  #plain .proj p { margin: 6px 0; }
+  @media (max-width: 560px) { #plain .cert { flex-direction: column; align-items: flex-start; } #plain .cert img { width: 100%; max-width: 260px; } }
 
   /* ---- PS2-menu look for the page buttons: rounded glass-blue plates with a soft glow, Dosis lettering (SIL OFL, credited in the footer) ---- */
   @font-face { font-family: "Dosis"; src: url("assets/fonts/Dosis.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
@@ -339,11 +367,14 @@ function renderGbPlain() {
 
 /* ================= plain version ================= */
 $('#plain').innerHTML = `
-  <h1>Matías</h1><p>Placeholder tagline. This is the plain version: the same content as the console, as a normal page.</p>
+  <h1>Matías</h1>
+  <p class="tag">Computer Science Engineering student in Santiago. I learn <b>one technology at a time</b>, tied to a real project, and I check what AI writes for me.</p>
+  <div class="wins">${PROJECTS.filter(p => p.award).map(p => `<div class="win"><small>${p.award[0]}</small><strong>${p.name}</strong><span>${p.award[1]}. ${p.award[2]}.</span></div>`).join('')}</div>
+  <div class="cert"><button type="button" id="plainCert" aria-label="Open the certificate, first place in Social Impact, Rally Latinoamericano de Innovación 2026"><img src="assets/props/certificate.jpg" alt="" width="1100" height="850" loading="lazy"></button><p><strong>Certificate.</strong> First place in Social Impact, Rally Latinoamericano de Innovación 2026, with team Helix. Click to enlarge.</p></div>
   <h2>About</h2>${ABOUT.map(t => `<p>${t}</p>`).join('')}
-  <h2>Skills</h2><ul>${SKILLS.map(k => `<li><strong>${k.name}</strong> \u2014 ${k.what}</li>`).join('')}</ul>
-  <h2>Projects &amp; achievements</h2>
-  ${PROJECTS.map(p => `<div class="proj"><h3>${p.name}</h3>${p.award ? `<p><strong>${p.award[0]}</strong> \u2014 ${p.award[1]}. ${p.award[2]}.</p>` : ''}<p>${p.blurb}</p><p><small>${p.stack}</small></p>${p.links.length ? `<p>${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join(' \u00b7 ')}</p>` : ''}</div>`).join('')}
+  <h2>Skills</h2><ul class="skills">${SKILLS.map(k => `<li><b><i style="--c:rgb(${k.rgb})"></i>${k.name}</b>${k.what}</li>`).join('')}</ul>
+  <h2>Projects</h2>
+  ${PROJECTS.map(p => `<div class="proj${p.main ? ' main' : ''}"><h3>${p.name}</h3>${p.award ? `<span class="award">${p.award[0]}</span>` : ''}${p.award ? `<p><strong>${p.award[1]}.</strong> ${p.award[2]}.</p>` : ''}<p>${p.blurb}</p><p class="stack">${p.stack}</p>${p.links.length ? `<p>${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join(' · ')}</p>` : ''}</div>`).join('')}
   <h2>Guestbook</h2><p>Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><p><button type="button" class="gbopen">Leave a save</button></p><ul id="gbList"></ul>
   <h2>Contact</h2><ul>${CONTACT.map(c => `<li><a href="${c.url}"${c.url.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${c.label}: ${c.text}</a></li>`).join('')}</ul>`;
 const hintEl = $('#hint');
@@ -1252,7 +1283,7 @@ function tvUnder(e) { if (!screenMesh) return false; setRay(e); return !!ray.int
 function pickCert(e) { if (!certMesh) return false; setRay(e); return !!ray.intersectObject(certMesh, false)[0]; }   // the framed certificate on the left wall
 const certDlg = document.getElementById('certDlg');
 function openCert() { if (!certDlg.open) certDlg.showModal(); }
-document.getElementById('certClose').addEventListener('click', () => certDlg.close());
+document.getElementById('certClose').addEventListener('click', () => certDlg.close()); document.getElementById('plainCert').addEventListener('click', openCert);
 certDlg.addEventListener('click', e => { if (e.target === certDlg) certDlg.close(); });
 function pickButton(e) {
   const r = setRay(e); const hitObj = ray.intersectObjects(clickables, false)[0]; if (hitObj) { const f = hitObj.object.userData.btnFn; return f ? f(hitObj.point) : hitObj.object.userData.btn; }
