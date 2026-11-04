@@ -121,8 +121,8 @@
   #foot summary { display: none; cursor: pointer; list-style: none; padding: 4px 0; }
   #foot summary::-webkit-details-marker { display: none; }
   @media (max-width: 760px) { #foot { font-size: 10px; line-height: 1.35; } #hint { bottom: 76px; }
-    body:not(.plain) #foot summary { display: block; font-weight: 600; text-decoration: underline; }   /* 3D view on a phone: credits fold into one line so they never cover the hint button; the plain version always shows them */
-    body:not(.plain) #foot details[open] { background: rgba(10,13,19,.92); margin: -8px calc(-1 * clamp(16px,3vw,32px)) 0; padding: 8px clamp(16px,3vw,32px); } }
+    #foot summary { display: block; font-weight: 600; text-decoration: underline; }   /* 3D view on a phone: credits fold into one line so they never cover the hint button; the plain version always shows them */
+    #foot details[open] { background: rgba(6,10,62,.97); margin: -8px calc(-1 * clamp(16px,3vw,32px)) 0; padding: 8px clamp(16px,3vw,32px); } }
   @media (prefers-reduced-motion: reduce) { #hint { animation: none; } }
 
   /* plain version = the PS2 browser: a cross-bar of icon tiles, one screen at a time, each with its own structure; a fixed orb behind it all is the compass (see plainFx). */
@@ -143,13 +143,16 @@
   @keyframes pcube { to { transform: translateY(-26px) skewY(-8deg); } }
   @keyframes pspin { to { transform: rotate(360deg); } }
   @keyframes pcore { to { transform: scale(1.06); } }
+  body.plain::after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 70px; z-index: 12; pointer-events: none; background: linear-gradient(180deg, rgba(3,5,31,0), rgba(3,5,31,.85)); }
+  body.plain #soundBtn, body.plain #plainBtn { min-height: 38px; font-size: 14px; padding: 0 12px; }
   #plainProg { display: none; position: fixed; z-index: 22; left: 0; top: 0; height: 3px; width: 100%; background: linear-gradient(90deg, #86dcff, #e8e464); transform-origin: 0 50%; transform: scaleX(var(--prog, 0)); transition: transform .6s cubic-bezier(.16,1,.3,1); }
   body.plain #plainProg { display: block; }
 
   #plain, body.plain #foot { --text: #eef2ff; --soft: #c6d2f6; --line: rgba(168,196,255,.3); --gold: #e8e464; --cyan: #86dcff; color: var(--text); }
   #plain { position: relative; z-index: 1; display: none; max-width: 1120px; margin: 0 auto; padding: 66px 24px 40px; font-family: "Quicksand","Nunito","Helvetica Neue",Arial,sans-serif; }
   body.plain #plain { display: block; }
-  body.plain #foot { position: relative; z-index: 1; font-size: 12.5px; line-height: 1.5; }
+  body.plain #foot { position: relative; z-index: 1; font: 12.5px/1.5 "Quicksand",sans-serif; color: var(--soft); opacity: .85; }
+  body.plain #foot a { color: var(--soft); text-underline-offset: 3px; }
   #plain h1, #plain h2, #plain h3, #plain .dos { font-family: "Dosis","Trebuchet MS",sans-serif; }
   #plain p, #plain li { line-height: 1.65; font-size: 18px; text-shadow: 0 1px 14px rgba(4,7,48,.85); }
   #plain a { color: var(--cyan); text-decoration-thickness: 1px; text-underline-offset: 4px; }
@@ -158,7 +161,7 @@
   #plain .ps2btn { display: inline-flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 26px; border: 1px solid var(--ps2-edge); border-radius: 14px; background: linear-gradient(180deg, var(--ps2-a), var(--ps2-b)); color: #f2f5ff; font: 700 19px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,40,.45), inset 0 1px 0 rgba(255,255,255,.4); transition: transform .25s cubic-bezier(.16,1,.3,1), filter .2s; }
   #plain .ps2btn:hover { filter: brightness(1.2); transform: translateY(-3px); color: #fff; }
   #plain .ps2btn.ghost { background: rgba(10,16,90,.4); }
-  #plain .ps2btn .x { font-size: 22px; line-height: 1; color: #9fc2ff; }
+  #plain .ps2btn .cube { width: 22px; height: 22px; fill: none; stroke: #9fc2ff; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
 
   /* the cross-bar: seven glass icon tiles; the selected one lifts, scales and glows */
   #plain .xbar { position: sticky; top: 62px; z-index: 15; display: flex; justify-content: center; gap: 16px; padding: 22px 0 14px; margin: 0 -24px; }
@@ -263,12 +266,12 @@
   @media (prefers-reduced-motion: reduce) { #plainBg i, #plainBg .bigorb .spin, #plainBg .bigorb .core, #plain h1 span, #plain .pdetail .disc { animation: none; } #plainBg .bigorb { transform: none; } #plainBg i { translate: none; } #plain .scr.enter { animation: none; } #plain .xtab .ico, #plainProg { transition: none; } #plain .certbox button { transform: rotate(-2.5deg); } }
 
   @media (max-width: 979px) {
-    #plain .xbar { position: fixed; top: auto; bottom: 10px; left: 12px; right: 12px; margin: 0; padding: 8px; gap: 4px; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; border: 1px solid var(--line); border-radius: 24px; background: rgba(6,10,62,.97); backdrop-filter: blur(10px); }
+    #plain .xbar { position: fixed; top: auto; bottom: 10px; left: 10px; right: 10px; margin: 0; padding: 8px 4px; gap: 0; justify-content: space-between; overflow-x: auto; scrollbar-width: none; border: 1px solid var(--line); border-radius: 24px; background: rgba(6,10,62,.97); backdrop-filter: blur(10px); }
     body.plain #foot { padding-bottom: 104px; }
     #plain .xbar::-webkit-scrollbar { display: none; }
-    #plain .xtab { flex: none; width: 68px; gap: 4px; font-size: 13px; }
-    #plain .xtab .ico { width: 46px; height: 46px; border-radius: 15px; }
-    #plain .xtab svg { width: 24px; height: 24px; }
+    #plain .xtab { flex: 1 1 0; min-width: 0; width: auto; gap: 4px; font-size: 11px; letter-spacing: 0; }
+    #plain .xtab .ico { width: 40px; height: 40px; border-radius: 13px; }
+    #plain .xtab svg { width: 22px; height: 22px; }
     #plain .xtab[aria-selected="true"] .ico { transform: translateY(-2px) scale(1.08); }
     #plain { padding-bottom: 110px; padding-top: 74px; }
   }
@@ -519,7 +522,7 @@ $('#plain').innerHTML = `
     <div>
       <h1 aria-label="Matías">${[...'Matías'].map((c, k) => `<span aria-hidden="true" style="--i:${k}">${c}</span>`).join('')}</h1>
       <p class="tag">Computer Science Engineering student in Santiago. I learn <b>one technology at a time</b>, tied to a real project, and I check what AI writes for me.</p>
-      <div class="cta"><button type="button" class="ps2btn" data-go="projects">See my projects</button><button type="button" class="ps2btn ghost" data-go="contact">Get in touch</button><button type="button" class="ps2btn ghost" id="plainBack"><span class="x" aria-hidden="true">✕</span> Enter the 3D room</button></div>
+      <div class="cta"><button type="button" class="ps2btn" data-go="projects">See my projects</button><button type="button" class="ps2btn ghost" data-go="contact">Get in touch</button><button type="button" class="ps2btn ghost" id="plainBack"><svg class="cube" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg> Enter the 3D room</button></div>
       <ul class="badges" aria-label="Achievements">${PROJECTS.filter(p => p.award).map(p => `<li><b>${p.award[0]}</b> ${p.name}</li>`).join('')}</ul>
     </div>
   </section>
@@ -1912,7 +1915,7 @@ renderGbPlain(); loadSaves();
 
 /* ---- credits: always open on desktop and in the plain version; folded on a phone in the 3D view (tap "Credits & licences") ---- */
 const phoneMQ = matchMedia('(max-width: 760px)'), creditsBox = $('#creditsBox');
-function syncCredits() { creditsBox.open = !phoneMQ.matches || document.body.classList.contains('plain'); }
+function syncCredits() { creditsBox.open = !phoneMQ.matches; }
 phoneMQ.addEventListener('change', syncCredits); syncCredits();
 /* ================= plain toggle ================= */
 const plainBtn = $('#plainBtn');
