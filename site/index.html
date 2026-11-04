@@ -76,7 +76,7 @@
   .gbbtns button, .gbopen { min-height: 44px; padding: 0 18px; border: 1px solid var(--line); background: #3a4968; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
   .gbbtns button[type=submit] { background: #e6e3dc; color: #1c2436; }
   .gbbtns button:disabled { opacity: .6; cursor: default; }
-  #plain .gbitem { list-style: none; margin: 0 0 10px; padding: 12px 16px; background: #fff7e6; border-radius: 8px; border: 1px solid var(--line); border-left: 6px solid var(--c); }
+  #plain .gbitem { list-style: none; margin: 0 0 10px; border-left: 6px solid var(--c); }
   #plain .gbitem p { margin: 4px 0 0; }
   #plain .gbitem time { margin-left: 10px; font-size: 13px; color: var(--soft); }
   #plain #gbList { padding: 0; }
@@ -129,42 +129,51 @@
     body:not(.plain) #foot details[open] { background: rgba(10,13,19,.92); margin: -8px calc(-1 * clamp(16px,3vw,32px)) 0; padding: 8px clamp(16px,3vw,32px); } }
   @media (prefers-reduced-motion: reduce) { #hint { animation: none; } }
 
-  /* plain version: the room's palette (cream wall, wood, orange curtains, teal rug), Dosis headings */
-  body.plain { height: auto; min-height: 100%; background: linear-gradient(180deg, #e9d2a8 0, #f1e2c2 340px) no-repeat #f1e2c2; }
-  body.plain .brand { color: #2b2118; text-shadow: none; }
-  #plain .gbopen { border: 0; border-radius: 10px; background: linear-gradient(180deg, #e8833f, #b4501f); color: #fff7e6; font: 700 18px "Dosis",sans-serif; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(90,50,20,.25); }
-  #plain .gbopen:hover { filter: brightness(1.08); }
-  #plain, body.plain #foot { --text: #2b2118; --soft: #6b5640; --line: rgba(43,33,24,.22); color: var(--text); }
-  #plain { display: none; max-width: 860px; margin: 0 auto; padding: 96px 20px 40px; }
+  /* plain version: the PS2 menu look of the TV (deep blue, glass cubes, rounded glass panels, gold titles, cyan accents) */
+  body.plain { height: auto; min-height: 100%; background: radial-gradient(ellipse at 50% 18%, #1c2c9c 0%, #0d1468 38%, #060a3a 75%, #03051f 100%) fixed; }
+  #plainBg { display: none; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  body.plain #plainBg { display: block; }
+  #plainBg i { position: absolute; width: var(--s); height: var(--s); left: var(--x); top: var(--y); border: 1px solid rgba(160,190,255,.55); border-radius: 6px; background: linear-gradient(135deg, rgba(120,150,255,.28), rgba(60,80,210,.08)); box-shadow: 0 0 22px rgba(90,130,255,.35), inset 0 0 14px rgba(170,200,255,.25); transform: rotate(var(--r)) skewY(-8deg); animation: pcube 14s ease-in-out infinite alternate; animation-delay: var(--d); }
+  #plainBg b { position: absolute; width: 14px; height: 70vh; top: -10vh; left: var(--x); background: linear-gradient(180deg, transparent, rgba(150,190,255,.35), transparent); filter: blur(5px); transform: rotate(var(--r)); }
+  @keyframes pcube { to { transform: translateY(-26px) rotate(calc(var(--r) + 14deg)) skewY(-8deg); } }
+  @media (prefers-reduced-motion: reduce) { #plainBg i { animation: none; } }
+  body.plain .brand { color: #eef2ff; }
+  #plain, body.plain #foot { --text: #eef2ff; --soft: #aab8e8; --line: rgba(168,196,255,.38); --gold: #e3e060; --cyan: #7fd8ff; color: var(--text); }
+  #plain { position: relative; z-index: 1; display: none; max-width: 860px; margin: 0 auto; padding: 96px 20px 40px; }
   body.plain #plain { display: block; }
+  body.plain #foot { position: relative; z-index: 1; }
   #plain h1, #plain h2, #plain h3 { font-family: "Dosis","Trebuchet MS",sans-serif; }
-  #plain h1 { font-size: clamp(48px,10vw,88px); font-weight: 800; margin: 0; line-height: .95; letter-spacing: -.01em; color: #2b2118; }
-  #plain .tag { font-size: clamp(18px,2.6vw,23px); line-height: 1.4; margin: 14px 0 0; max-width: 34em; color: #4a3a2a; }
-  #plain .tag b { color: #b4501f; }
-  #plain h2 { font-size: 30px; font-weight: 700; margin: 52px 0 14px; padding: 0 0 8px; border-bottom: 3px solid #3f7f84; display: inline-block; letter-spacing: .01em; }
+  #plain h1 { font-size: clamp(52px,11vw,96px); font-weight: 800; margin: 0; line-height: .95; letter-spacing: .01em; color: #fff; text-shadow: 0 0 28px rgba(120,164,255,.7), 0 2px 0 rgba(0,0,40,.6); }
+  #plain .tag { font-size: clamp(18px,2.6vw,23px); line-height: 1.45; margin: 14px 0 0; max-width: 34em; color: #dbe4ff; }
+  #plain .tag b { color: var(--gold); font-weight: 600; }
+  #plain h2 { font-size: 34px; font-weight: 700; font-style: italic; margin: 54px 0 14px; color: var(--gold); letter-spacing: .02em; text-shadow: 0 0 16px rgba(227,224,96,.35); }
   #plain p, #plain li { line-height: 1.6; font-size: 17px; }
-  #plain a { color: #9a3f14; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  #plain a:hover { color: #6e2a0a; }
+  #plain a { color: var(--cyan); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  #plain a:hover { color: #fff; }
+  #plain .glass, #plain .win, #plain .cert, #plain .skills li, #plain .proj, #plain .gbitem { background: linear-gradient(180deg, rgba(34,48,150,.55), rgba(8,12,64,.68)); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 0 18px rgba(80,120,255,.22), inset 0 1px 0 rgba(200,220,255,.28); backdrop-filter: blur(3px); }
   #plain .wins { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 30px; }
-  #plain .win { position: relative; padding: 16px 18px 16px 22px; background: #fff7e6; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 18px rgba(90,50,20,.12); }
-  #plain .win::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; border-radius: 10px 0 0 10px; background: linear-gradient(180deg, #e8833f, #b4501f); }
-  #plain .win small { display: block; font: 700 13px "Dosis",sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #b4501f; }
-  #plain .win strong { display: block; font: 700 26px/1.1 "Dosis",sans-serif; margin: 4px 0 6px; }
-  #plain .win span { font-size: 15px; line-height: 1.45; color: #4a3a2a; }
-  #plain .cert { display: flex; gap: 16px; align-items: center; margin: 22px 0 0; padding: 12px; background: #fff7e6; border: 1px solid var(--line); border-radius: 10px; }
-  #plain .cert button { flex: none; padding: 0; border: 6px solid #2b2118; background: #2b2118; cursor: zoom-in; box-shadow: 0 6px 16px rgba(60,30,10,.3); }
+  #plain .win { position: relative; padding: 16px 18px 16px 24px; overflow: hidden; }
+  #plain .win::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: linear-gradient(180deg, #f3ee7a, #c8a82a); box-shadow: 0 0 14px rgba(240,230,100,.6); }
+  #plain .win small { display: block; font: 700 13px "Dosis",sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  #plain .win strong { display: block; font: 700 28px/1.1 "Dosis",sans-serif; margin: 4px 0 6px; color: #fff; }
+  #plain .win span { font-size: 15px; line-height: 1.45; color: #cfd9ff; }
+  #plain .cert { display: flex; gap: 16px; align-items: center; margin: 16px 0 0; padding: 12px; }
+  #plain .cert button { flex: none; padding: 0; border: 3px solid rgba(190,210,255,.7); border-radius: 6px; overflow: hidden; background: #fff; cursor: zoom-in; box-shadow: 0 0 18px rgba(120,164,255,.5); }
   #plain .cert img { display: block; width: 150px; height: auto; }
-  #plain .cert p { margin: 0; font-size: 15px; color: #4a3a2a; }
+  #plain .cert p { margin: 0; font-size: 15px; color: #cfd9ff; }
   #plain .skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; padding: 0; margin: 0; list-style: none; }
-  #plain .skills li { padding: 12px 14px; background: rgba(255,247,230,.7); border: 1px solid var(--line); border-radius: 8px; font-size: 15px; line-height: 1.45; }
-  #plain .skills b { display: flex; align-items: center; gap: 8px; font: 700 19px "Dosis",sans-serif; margin-bottom: 2px; }
-  #plain .skills i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); flex: none; }
-  #plain .proj { background: #fff7e6; border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0 0 12px; box-shadow: 0 4px 14px rgba(90,50,20,.08); }
-  #plain .proj.main { border-color: #b4501f; }
-  #plain .proj h3 { margin: 0 0 4px; font-size: 26px; font-weight: 700; }
-  #plain .proj .award { display: inline-block; margin: 0 0 6px; padding: 3px 10px; border-radius: 999px; background: #b4501f; color: #fff7e6; font: 700 14px "Dosis",sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+  #plain .skills li { padding: 12px 16px; font-size: 15px; line-height: 1.45; color: #cfd9ff; }
+  #plain .skills b { display: flex; align-items: center; gap: 8px; font: 700 20px "Dosis",sans-serif; margin-bottom: 2px; color: var(--cyan); }
+  #plain .skills i { width: 12px; height: 12px; border-radius: 3px; transform: rotate(45deg); background: var(--c); box-shadow: 0 0 10px var(--c); flex: none; }
+  #plain .proj { padding: 16px 20px; margin: 0 0 12px; }
+  #plain .proj.main { border-color: rgba(227,224,96,.7); box-shadow: 0 0 22px rgba(227,224,96,.22), inset 0 1px 0 rgba(200,220,255,.28); }
+  #plain .proj h3 { margin: 0 0 4px; font-size: 28px; font-weight: 700; color: #fff; }
+  #plain .proj .award { display: inline-block; margin: 0 0 6px; padding: 3px 12px; border-radius: 999px; background: linear-gradient(180deg, #f3ee7a, #c8a82a); color: #1b1650; font: 700 14px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; }
   #plain .proj .stack { font-size: 14px; color: var(--soft); }
-  #plain .proj p { margin: 6px 0; }
+  #plain .proj p { margin: 6px 0; color: #e3e9ff; }
+  #plain .gbitem { padding: 12px 16px; }
+  #plain .gbopen { border: 1px solid var(--ps2-edge); border-radius: 12px; background: linear-gradient(180deg, var(--ps2-a), var(--ps2-b)); color: #f2f5ff; font: 700 18px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 0 14px var(--ps2-glow), inset 0 1px 0 rgba(255,255,255,.35); }
+  #plain .gbopen:hover { filter: brightness(1.15); }
   @media (max-width: 560px) { #plain .cert { flex-direction: column; align-items: flex-start; } #plain .cert img { width: 100%; max-width: 260px; } }
 
   /* ---- PS2-menu look for the page buttons: rounded glass-blue plates with a soft glow, Dosis lettering (SIL OFL, credited in the footer) ---- */
@@ -216,6 +225,7 @@
     <div class="gbbtns"><button type="button" id="gbCancel">Cancel</button><button type="submit" id="gbSend">Save</button></div>
   </form>
 </dialog>
+<div id="plainBg" aria-hidden="true"><b style="--x:18%;--r:18deg"></b><b style="--x:72%;--r:-14deg"></b><i style="--s:62px;--x:6%;--y:16%;--r:12deg;--d:-2s"></i><i style="--s:44px;--x:88%;--y:10%;--r:-20deg;--d:-6s"></i><i style="--s:84px;--x:92%;--y:58%;--r:28deg;--d:-4s"></i><i style="--s:52px;--x:3%;--y:64%;--r:-8deg;--d:-9s"></i><i style="--s:38px;--x:46%;--y:86%;--r:34deg;--d:-1s"></i></div>
 <main id="plain" aria-label="Plain version"></main>
 <footer id="foot"><details id="creditsBox" open><summary>Credits &amp; licences</summary><span id="credits"></span></details></footer>
 <div class="sr" id="live" aria-live="polite"></div>
