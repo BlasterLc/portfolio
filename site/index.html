@@ -411,12 +411,12 @@ const PROJECTS = [
     stack: 'Expo \u00b7 FastAPI \u00b7 Supabase \u00b7 Claude API',
     links: [{ label: 'Code', url: 'https://github.com/BlasterLc/fittrack' }] },
   { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026', 'Organised by ANFEI, ACOFI and CONFEDI \u00b7 platform Sirli'], blurb: 'Decision support for Chile’s emergency committees after a disaster. From minute zero, before the first field report, it scores each zone from 0 to 100, proposes which to attend first and cites the norm behind every recommendation. A zone that goes silent rises in priority, and a person always makes the final call.', stack: 'Designed as an MCP server with fixed, citable rules (Ley 21.364) · proposal and prototypes, not implemented', links: [{ label: 'Video', url: 'https://www.youtube.com/watch?v=IWBO8NThL7A' }] },
-  { name: 'JequeBot', c1: '#9a9fbd', c2: '#a9a28f',
-    blurb: 'A Discord music bot: plays YouTube and SoundCloud in voice channels, with slash commands and playback buttons.',
-    stack: 'Python \u00b7 yt-dlp \u00b7 Docker \u00b7 Railway', links: [] },
+  { name: 'Alexa-PC', c1: '#9a9fbd', c2: '#a9a28f',
+    blurb: 'Control your PC and YouTube Music by voice from an Amazon Echo. Alexa Cloud calls a FastAPI server on my own PC through an outbound Cloudflare tunnel, so no ports are open. Handlers press media keys, drive the open YouTube Music window through the Chrome DevTools Protocol, open apps and lock the screen; shutdown asks for a spoken confirmation.',
+    stack: 'Python \u00b7 FastAPI \u00b7 Alexa Skills Kit \u00b7 Cloudflare Tunnel \u00b7 pytest', links: [] },
 ];
 const SKILLS = [
-  { id: 'python', name: 'Python', abbr: 'Py', rgb: [55, 118, 171], what: 'Backend, scripts and bots: FastAPI services, a Discord music bot and an Alexa-controlled music player.' },
+  { id: 'python', name: 'Python', abbr: 'Py', rgb: [55, 118, 171], what: 'Backend, scripts and automation: FastAPI services, and an Alexa skill that controls my PC by voice.' },
   { id: 'javascript', name: 'JavaScript / Node', abbr: 'JS', rgb: [190, 160, 30], what: 'The language of this very site: the 3D room in your browser and the Lambda functions behind its guestbook.' },
   { id: 'nextjs', name: 'Next.js', abbr: 'Nx', rgb: [105, 110, 135], what: 'My framework of choice for full web apps.' },
   { id: 'supabase', name: 'Supabase', abbr: 'Sb', rgb: [40, 150, 105], what: 'Postgres, auth and storage as the backend of a web app.' },
