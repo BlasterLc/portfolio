@@ -31,7 +31,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
-    background: radial-gradient(ellipse at 50% 38%, #1f2733 0%, #141a23 52%, #0c1016 100%);
+    background: linear-gradient(180deg, #3a2112 0%, #2b1b13 50%, #2b1d17 100%);   /* warm browns: the room does not fill a portrait screen and cold navy read as a hole */
     color: var(--text); font-family: "Archivo","Helvetica Neue",Arial,sans-serif; overflow: hidden;
   }
   body.plain { overflow: auto; background: #4a5c7e; }
@@ -492,7 +492,7 @@ function tween(sec, fn, e = ease.io) {
 }
 
 scene.background = canvasTex(256, 256, (g, w, h) => {                  // same look as the old CSS gradient, but inside the (now opaque) canvas
-  const gr = g.createRadialGradient(w * .5, h * .38, 0, w * .5, h * .38, w * .85); gr.addColorStop(0, '#1f2733'); gr.addColorStop(.52, '#141a23'); gr.addColorStop(1, '#0c1016'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#3a2112'); gr.addColorStop(.5, '#2b1b13'); gr.addColorStop(1, '#2b1d17');   // warm browns (ceiling above, floor below): on a phone the room does not fill the height and the cold navy read as a hole g.fillStyle = gr; g.fillRect(0, 0, w, h);
 });
 /* ================= static geometry merging: many small parts -> one draw call per material ================= */
 function MB() {
