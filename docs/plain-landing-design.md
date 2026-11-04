@@ -29,3 +29,7 @@ Critic's verdict: same left-title/right-list layout in every section, no scale c
 - Each screen has its own structure: Home (poster + orb), Wins (two plates + big certificate), About (small paragraph + huge pull statement), Skills (tile grid), Projects (disc select: row of discs + one big spinning disc and details), Guestbook (memory-card slots), Contact (big rows).
 - The fixed orb is the compass: each screen snaps it 30 degrees and changes its glow; it dims on dense screens. Progress line = position along the cross-bar. Mobile: the cross-bar is a bottom tab bar.
 - Accessibility: tablist/tab/tabpanel roles, arrow keys, inactive panels hidden, all content in the DOM.
+
+## Round 3 (critic 6.6): each screen gets its own composition
+- Skills: file browser (list of saves, the chosen one huge in its own colour; up/down keys). Guestbook: eight memory-card slots, the first is always "New save", error state keeps the grid. Contact: the address is the poster (copy button, GitHub and LinkedIn as buttons).
+- Every desktop screen fits an 800 px viewport; mobile has a seven-tab bottom bar and folded credits; the orb is dimmer on dense screens; two decorative cubes removed.
