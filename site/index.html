@@ -114,7 +114,8 @@
     background: rgba(36,48,72,.82); border: 1px solid var(--line); font-weight: 600; letter-spacing: .04em; font-size: 13px; pointer-events: none;
     animation: pulse 2.6s ease-in-out infinite;
   }
-  #hint.calm { animation: none; opacity: .85; }
+  #hint.calm { animation: none; opacity: .85; transition: opacity 1s ease; }
+  #hint.calm.gone { opacity: 0; }
   @keyframes pulse { 50% { opacity: .55; } }
   #foot { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; padding: 8px clamp(16px,3vw,32px); font-size: 11px; line-height: 1.4; color: var(--soft); background: linear-gradient(to top, rgba(10,13,19,.75), transparent); }
   #foot b { color: var(--text); }
@@ -1251,6 +1252,7 @@ function pickScreen(e) {                                           // -> hit rec
   const cx = h.uv.x * SW, cy = (1 - h.uv.y) * SH;
   return hits.find(r => cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h) || null;
 }
+function tvUnder(e) { if (!screenMesh) return false; setRay(e); return !!ray.intersectObject(screenMesh, false)[0]; }   // wide shot, TV off: the TV body is what a click approaches, so the cursor says so
 function pickCert(e) { if (!certMesh) return false; setRay(e); return !!ray.intersectObject(certMesh, false)[0]; }   // the framed certificate on the left wall
 const certDlg = document.getElementById('certDlg');
 function openCert() { if (!certDlg.open) certDlg.showModal(); }
@@ -1281,7 +1283,9 @@ const warm = { done: false, readyAt: 0 };
 const stepBtn = $('#stepBack');
 function setHint() {
   hintEl.textContent = !warm.done ? 'Loading…' : cam.mode === 'wide' ? (ui.on ? 'Press Start' : (coarse ? 'Tap the TV to get closer' : 'Click the TV to get closer')) : !ui.on ? (coarse ? 'Tap the power button to turn the TV on' : 'Click the power button to turn the TV on') : coarse ? 'Swipe or tap' : 'Drag, scroll or click  ·  ← → Enter';
-  hintEl.classList.toggle('start', warm.done && cam.mode === 'wide'); hintEl.classList.toggle('calm', warm.done && cam.mode !== 'wide' && ui.started && ui.on);
+  const calm = warm.done && cam.mode !== 'wide' && ui.started && ui.on;
+  hintEl.classList.toggle('start', warm.done && cam.mode === 'wide'); hintEl.classList.toggle('calm', calm);
+  clearTimeout(hintEl._t); if (!calm) hintEl.classList.remove('gone'); else if (cam.mode === 'close') hintEl._t = setTimeout(() => hintEl.classList.add('gone'), 7000);   // the how-to is shown once: it fades 7 s after the menu is up and comes back only after Step back
   stepBtn.hidden = !(cam.mode === 'close') || document.body.classList.contains('plain');
 }
 async function dolly(to) {
@@ -1422,7 +1426,7 @@ function applyCamK(k) {
 function layout() {
   placeConsole(); fit(); applyCamK(cam.k); kickShadow(); dirty = true; if (typeof placeArrows === 'function') { arrKey = ''; placeArrows(); }
 }
-const CLOSE_ZOOM = 1;
+const CLOSE_ZOOM = 1.05;
 function fit() {
   root.updateMatrixWorld(true);
   const portrait = innerWidth / innerHeight < 1.05, box = new THREE.Box3(), mb = new THREE.Box3(), corners = [];
@@ -1785,7 +1789,7 @@ function frame() {
   if (AUTO.winStart && ivl > 0 && ivl < 1000) AUTO.iv.push(ivl);
   for (let i = tws.length - 1; i >= 0; i--) { const w = tws[i]; w.t += dt; const k = Math.min(1, w.t / w.d); w.fn(w.e(k)); if (k >= 1) { tws.splice(i, 1); w.res(); } }
   const active = tws.length > 0 || now < activeUntil || ui.dragging || ui.screen === 'boot';   // interactions and transitions: every frame; ambient motion: ~30 fps
-  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e) || (cam.mode === 'wide' && pickCert(e)))); }
+  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e) || (cam.mode === 'wide' && warm.done && (pickCert(e) || ui.on || tvUnder(e))))); }
   let drewTV = false;
   if (!still && ui.on && !FL.noScreen) {                                  // the TV texture: Q.tvFps ambient, every frame while dragging
     scrAcc += Math.min(raw, .25);
