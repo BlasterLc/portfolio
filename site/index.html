@@ -208,8 +208,9 @@
   /* about: one column, one left edge: the statement huge, the bio under a hairline */
   #plain .about { max-width: 880px; padding-top: 2vh; }
   #plain .about .pull { margin: 0; font: italic 700 clamp(30px, 4.1vw, 52px)/1.1 "Dosis",sans-serif; color: #fff; text-shadow: 0 0 26px rgba(120,164,255,.5); }
-  #plain .about .pull small { display: block; margin-top: 16px; font: 500 normal clamp(19px, 2.1vw, 24px)/1.5 "Quicksand",sans-serif; color: var(--gold); text-shadow: none; }
-  #plain .about .lede { margin: 26px 0 0; padding-top: 20px; border-top: 1px solid var(--line); max-width: 34em; font-size: clamp(18px, 1.9vw, 21px); line-height: 1.65; color: #dfe7ff; }
+  #plain .about .bio { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--line); max-width: 36em; }
+  #plain .about .bio p { margin: 0 0 18px; font-size: clamp(19px, 2vw, 23px); line-height: 1.65; color: #e4ebff; }
+  #plain .about .bio p:last-child { margin-bottom: 0; }
 
   /* skills: a file browser. A list of saves on the left; the chosen one is huge on the right, in its own colour */
   #plain .sk { display: grid; grid-template-columns: 330px 1fr; gap: 28px 48px; align-items: stretch; }
@@ -549,7 +550,7 @@ $('#plain').innerHTML = `
   </section>
   <section class="scr" id="scr-wins" role="tabpanel" aria-labelledby="tab-wins" hidden><h2>Wins</h2><div class="wins"><div>${PROJECTS.filter(p => p.award).map(p => `<div class="win"><h3>${p.name}</h3><span class="rank">${p.award[0]}</span>${bigOf(p) ? `<span class="big">${bigOf(p)}</span>` : ''}<p>${p.award[1]}.${bigOf(p) ? '' : ' ' + p.award[2] + '.'}</p></div>`).join('')}</div>
     <figure class="certbox"><button type="button" id="plainCert" aria-label="Open the certificate: first place in Social Impact, Rally Latinoamericano de Innovación 2026"><img src="assets/props/certificate.jpg" alt="" width="1100" height="850" loading="lazy"></button><figcaption>First place, Social Impact, with team Helix. Click to enlarge.</figcaption></figure></div></section>
-  <section class="scr" id="scr-about" role="tabpanel" aria-labelledby="tab-about" hidden><h2>About</h2><div class="about"><p class="pull">${abtSentences[0]}${abtSentences[1] ? `<small>${abtSentences.slice(1).join(' ')}</small>` : ''}</p><p class="lede">${ABOUT[0]}</p></div></section>
+  <section class="scr" id="scr-about" role="tabpanel" aria-labelledby="tab-about" hidden><h2>About</h2><div class="about"><p class="pull">${abtSentences[0]}</p><div class="bio"><p>${ABOUT[0]}</p>${abtSentences.length > 1 ? `<p>${abtSentences.slice(1).join(' ')}</p>` : ''}</div></div></section>
   <section class="scr" id="scr-skills" role="tabpanel" aria-labelledby="tab-skills" hidden><h2>Skills</h2>
     <div class="sk"><div class="sklist" role="tablist" aria-orientation="vertical" aria-label="Skills">${SKILLS.map((k, n) => `<button class="skrow" role="tab" id="sk-${n}" data-skill="${n}" aria-controls="skdet" aria-selected="${n === 0}" tabindex="${n === 0 ? 0 : -1}" style="--c:rgb(${k.rgb})"><i aria-hidden="true"></i>${k.name}</button>`).join('')}</div>
     <div class="skdet" id="skdet" role="tabpanel" aria-live="polite" style="--c:rgb(${SKILLS[0].rgb})"><i class="skbig" aria-hidden="true"></i><h3>${SKILLS[0].name}</h3><p>${SKILLS[0].what}</p></div></div></section>
