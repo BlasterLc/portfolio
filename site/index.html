@@ -596,7 +596,9 @@ function buildRoom() {
   wood.add(new THREE.CylinderGeometry(.015, .015, 2.2, 10).rotateZ(Math.PI / 2), matMetal, WX, WY + WH / 2 + .28, BACK_Z + .09);
   walls.add(plane(WW, WH, 0, 0, WX, WY, BACK_Z + .005), matGlass);
   // curtains: two panels with folds (vertex displacement)
-  for (const cx of [WX - WW / 2 - .1, WX + WW / 2 + .1]) { const g = new THREE.PlaneGeometry(.5, 1.75, 14, 1), p = g.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin(p.getX(i) * 22) * .025); g.computeVertexNormals(); g.translate(cx, 1.12, BACK_Z + .11); walls.add(g, matCurtain); }
+  for (const cx of [WX - WW / 2 - .1, WX + WW / 2 + .1]) { const g = new THREE.PlaneGeometry(.5, 2.15, 14, 1), p = g.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin(p.getX(i) * 22) * .025); g.computeVertexNormals(); g.translate(cx, 1.2, BACK_Z + .11); walls.add(g, matCurtain);   // top edge on the rod (2.28 m), hem 12 cm off the floor
+    for (let k = 0; k < 5; k++) wood.add(new THREE.TorusGeometry(.027, .006, 6, 14).rotateY(Math.PI / 2), matMetal, cx - .2 + k * .1, WY + WH / 2 + .28, BACK_Z + .09); }   // rings on the rod
+  for (const sx of [-1, 1]) wood.add(new THREE.SphereGeometry(.03, 10, 8), matMetal, WX + sx * 1.1, WY + WH / 2 + .28, BACK_Z + .09);   // rod finials
   // shelving unit (right of the TV) with generic game cases: spines only, muted colours, no text
   const SX = 1.75, SZ = BACK_Z + .22, SWd = 1.0, SH2 = 1.8, shelfY = [.06, .55, 1.0, 1.45, SH2];
   wood.add(rbG(.04, SH2, .34, .006, 1), matWood, SX - SWd / 2, SH2 / 2, SZ); wood.add(rbG(.04, SH2, .34, .006, 1), matWood, SX + SWd / 2, SH2 / 2, SZ);
