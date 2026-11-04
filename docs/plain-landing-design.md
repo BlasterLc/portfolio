@@ -22,3 +22,10 @@ Pick: **3**, with the save-slot idea from 1 for projects (each project is a disc
 - Type: Dosis (display, bundled), Quicksand (body, already loaded by the page).
 - Driver: one `plainFx` module. Inputs: scroll position, pointer, current chapter. Outputs: orb rotation/offset, glow colour, nav indicator, progress line, cube parallax. No constant loop: rAF runs only while something is still moving. Idle life comes from a slow CSS spin on the orb group. Everything is off under `prefers-reduced-motion` except the instant chapter colour change.
 - Honest content: all copy comes from the page's own data. Nothing invented.
+
+## Round 2 (critic score 6.5): the page becomes the PS2 browser
+Critic's verdict: same left-title/right-list layout in every section, no scale contrast, concept (menu, discs, memory card) not used structurally. Bold move adopted: **screens, not a long scroll**.
+- A cross-bar of seven glass icon tiles (Home, Wins, About, Skills, Projects, Guestbook, Contact) like the PS2 browser. The selected tile lifts, scales and glows gold; keys left/right and the tiles switch screens; a screen change settles in from the side (direction follows the move), instant under reduced motion.
+- Each screen has its own structure: Home (poster + orb), Wins (two plates + big certificate), About (small paragraph + huge pull statement), Skills (tile grid), Projects (disc select: row of discs + one big spinning disc and details), Guestbook (memory-card slots), Contact (big rows).
+- The fixed orb is the compass: each screen snaps it 30 degrees and changes its glow; it dims on dense screens. Progress line = position along the cross-bar. Mobile: the cross-bar is a bottom tab bar.
+- Accessibility: tablist/tab/tabpanel roles, arrow keys, inactive panels hidden, all content in the DOM.
