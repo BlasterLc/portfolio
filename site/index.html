@@ -125,132 +125,151 @@
     body:not(.plain) #foot details[open] { background: rgba(10,13,19,.92); margin: -8px calc(-1 * clamp(16px,3vw,32px)) 0; padding: 8px clamp(16px,3vw,32px); } }
   @media (prefers-reduced-motion: reduce) { #hint { animation: none; } }
 
-  /* plain version: the PS2 system-menu look of the TV (deep blue, the radial-bar orb, glass cubes, gold italic titles, cyan accents).
-     Structure: hero with the orb, proof (wins + certificate), About, Skills as menu rows, Projects as rows (one featured), Guestbook, Contact as big rows. */
+  /* plain version: the page is read through the PS2 menu orb. A fixed orb sits behind everything; scroll turns it, each chapter snaps it one step and changes its glow (see plainFx). */
   body.plain { height: auto; min-height: 100%; background: radial-gradient(ellipse at 50% 12%, #1c2c9c 0%, #0d1468 36%, #060a3a 72%, #03051f 100%) fixed; scroll-behavior: smooth; }
   html:has(body.plain) { scrollbar-color: #5f82e6 #060a3a; }
   body.plain ::selection { background: #e3e060; color: #1b1650; }
-  @media (prefers-reduced-motion: reduce) { body.plain { scroll-behavior: auto; } }
-  #plainBg { display: none; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-  body.plain #plainBg { display: block; }
-  #plainBg i { position: absolute; width: var(--s); height: var(--s); left: var(--x); top: var(--y); border: 1px solid rgba(160,190,255,.5); border-radius: 6px; background: linear-gradient(135deg, rgba(120,150,255,.26), rgba(60,80,210,.06)); box-shadow: 0 0 22px rgba(90,130,255,.3), inset 0 0 14px rgba(170,200,255,.22); transform: rotate(var(--r)) skewY(-8deg); animation: pcube 14s ease-in-out infinite alternate; animation-delay: var(--d); }
-  #plainBg b { position: absolute; width: 14px; height: 70vh; top: -10vh; left: var(--x); background: linear-gradient(180deg, transparent, rgba(150,190,255,.3), transparent); filter: blur(5px); transform: rotate(var(--r)); }
-  @keyframes pcube { to { transform: translateY(-26px) rotate(calc(var(--r) + 14deg)) skewY(-8deg); } }
   body.plain .brand { color: #eef2ff; }
+  body.plain .top { background: linear-gradient(180deg, rgba(5,8,50,.94) 55%, rgba(5,8,50,0)); padding-bottom: 14px; }
 
+  #plainBg { --px: 0; --py: 0; --glow: rgba(110,140,255,.55); display: none; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  body.plain #plainBg { display: block; }
+  #plainBg .glow { position: absolute; inset: -20%; background: radial-gradient(circle at 72% 46%, var(--glow), transparent 46%); transition: background .9s ease; }
+  #plainBg .bigorb { position: absolute; width: min(118vmin, 1100px); aspect-ratio: 1; right: -30vmin; top: 50%; margin-top: calc(min(118vmin, 1100px) / -2); opacity: .45; will-change: transform; transform: translate3d(calc(var(--px) * -26px), calc(var(--py) * -20px), 0) rotate(var(--rot, 0deg)); }
+  #plainBg .bigorb svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  #plainBg .bigorb .spin { transform-box: fill-box; transform-origin: center; animation: pspin 120s linear infinite; }
+  #plainBg .bigorb .core { transform-box: fill-box; transform-origin: center; animation: pcore 6s ease-in-out infinite alternate; }
+  #plainBg i { position: absolute; width: var(--s); height: var(--s); left: var(--x); top: var(--y); border: 1px solid rgba(160,190,255,.5); border-radius: 6px; background: linear-gradient(135deg, rgba(120,150,255,.26), rgba(60,80,210,.06)); box-shadow: 0 0 22px rgba(90,130,255,.3), inset 0 0 14px rgba(170,200,255,.22); rotate: var(--r); translate: calc(var(--px) * var(--z) * 1px) calc(var(--py) * var(--z) * 1px); animation: pcube 14s ease-in-out infinite alternate; animation-delay: var(--d); }
+  @keyframes pcube { to { transform: translateY(-26px) skewY(-8deg); } }
+  @keyframes pspin { to { transform: rotate(360deg); } }
+  @keyframes pcore { to { transform: scale(1.06); } }
+  #plainProg { display: none; position: fixed; z-index: 22; left: 0; top: 0; height: 3px; width: 100%; background: linear-gradient(90deg, var(--cyan, #86dcff), #e8e464); transform-origin: 0 50%; transform: scaleX(var(--prog, 0)); }
+  body.plain #plainProg { display: block; }
+
+  .pnav { display: none; --cyan: #86dcff; --line: rgba(168,196,255,.3); }
   #plain, body.plain #foot { --text: #eef2ff; --soft: #b4c2ee; --line: rgba(168,196,255,.3); --gold: #e8e464; --cyan: #86dcff; color: var(--text); }
-  #plain { position: relative; z-index: 1; display: none; max-width: 1080px; margin: 0 auto; padding: 0 24px 40px; font-family: "Quicksand","Nunito","Helvetica Neue",Arial,sans-serif; }
+  #plain { position: relative; z-index: 1; display: none; max-width: 1120px; margin: 0 auto; padding: 0 24px 40px; font-family: "Quicksand","Nunito","Helvetica Neue",Arial,sans-serif; }
   body.plain #plain { display: block; }
   body.plain #foot { position: relative; z-index: 1; }
   #plain h1, #plain h2, #plain h3, #plain .dos { font-family: "Dosis","Trebuchet MS",sans-serif; }
-  #plain p, #plain li { line-height: 1.65; font-size: 18px; }
+  #plain p, #plain li { line-height: 1.65; font-size: 18px; text-shadow: 0 1px 14px rgba(4,7,48,.85); }
   #plain a { color: var(--cyan); text-decoration-thickness: 1px; text-underline-offset: 4px; }
   #plain a:hover { color: #fff; }
   #plain :is(a, button):focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
 
-  /* top nav (desktop): a glass pill between the brand and the buttons */
-  #plain .pnav { position: fixed; z-index: 21; top: 14px; left: 50%; transform: translateX(-50%); display: none; gap: 4px; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: rgba(8,14,80,.6); backdrop-filter: blur(10px); }
-  #plain .pnav a { padding: 8px 16px; border-radius: 999px; color: #dbe4ff; text-decoration: none; font: 600 17px "Dosis",sans-serif; letter-spacing: .06em; }
-  #plain .pnav a:hover { background: rgba(120,164,255,.28); color: #fff; }
-  @media (min-width: 980px) { #plain .pnav { display: flex; } }
+  /* nav: glass pill with a sliding highlight on the current chapter */
+  body.plain .pnav { position: fixed; z-index: 23; top: 14px; left: 50%; transform: translateX(-50%); display: none; gap: 2px; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: rgba(8,14,80,.62); backdrop-filter: blur(10px); }
+  body.plain .pnav .ind { position: absolute; left: 0; top: 5px; bottom: 5px; width: 100px; transform-origin: 0 50%; border-radius: 999px; background: linear-gradient(180deg, rgba(110,150,255,.55), rgba(40,60,190,.5)); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 16px rgba(110,150,255,.4); transform: translateX(var(--x, 0px)) scaleX(var(--w, 0)); transition: transform .55s cubic-bezier(.16,1,.3,1), opacity .3s; opacity: var(--o, 0); }
+  body.plain .pnav a { position: relative; padding: 8px 16px; border-radius: 999px; color: #dbe4ff; text-decoration: none; font: 600 17px "Dosis",sans-serif; letter-spacing: .06em; transition: color .3s; }
+  body.plain .pnav a:hover, body.plain .pnav a.on { color: #fff; }
+  @media (min-width: 980px) { body.plain .pnav { display: flex; } }
 
-  /* hero */
-  #plain .hero { display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 12px; min-height: min(82vh, 700px); padding-top: 84px; }
-  #plain h1 { font-size: clamp(60px, 13vw, 6rem); font-weight: 800; margin: 0; line-height: .92; letter-spacing: .005em; color: #fff; text-shadow: 0 0 34px rgba(120,164,255,.75), 0 2px 0 rgba(0,0,40,.55); }
-  #plain .tag { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.5; margin: 18px 0 0; max-width: 28em; color: #dfe7ff; font-weight: 500; }
+  /* hero: the name is the poster */
+  #plain .hero { display: flex; align-items: center; min-height: min(86vh, 760px); padding-top: 84px; }
+  #plain .hero > div { max-width: 640px; }
+  #plain h1 { font-size: clamp(72px, 17vw, 9.5rem); font-weight: 800; margin: 0; line-height: .86; letter-spacing: -.01em; color: #fff; text-shadow: 0 0 40px rgba(120,164,255,.8), 0 3px 0 rgba(0,0,40,.55); }
+  #plain h1 span { display: inline-block; animation: plift 1s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(var(--i) * 70ms + 120ms); }
+  @keyframes plift { from { opacity: 0; transform: translateY(.5em) rotate(4deg); filter: blur(8px); } }
+  #plain .tag { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.5; margin: 22px 0 0; max-width: 28em; color: #e4ebff; font-weight: 500; animation: pfade 1s .6s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes pfade { from { opacity: 0; translate: 0 14px; } }
   #plain .tag b { color: var(--gold); font-weight: 700; }
-  #plain .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-  #plain .ps2btn { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 24px; border: 1px solid var(--ps2-edge); border-radius: 14px; background: linear-gradient(180deg, var(--ps2-a), var(--ps2-b)); color: #f2f5ff; font: 700 19px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,40,.45), inset 0 1px 0 rgba(255,255,255,.4); transition: transform .2s cubic-bezier(.16,1,.3,1), filter .2s; }
-  #plain .ps2btn:hover { filter: brightness(1.18); transform: translateY(-2px); color: #fff; }
-  #plain .ps2btn.ghost { background: rgba(10,16,90,.35); }
-  #plain .orb { position: relative; justify-self: center; width: min(100%, 440px); aspect-ratio: 1; }
-  #plain .orb svg { width: 100%; height: 100%; display: block; overflow: visible; }
-  #plain .orb .spin { transform-box: fill-box; transform-origin: center; animation: pspin 90s linear infinite; }
-  #plain .orb .core { animation: pcore 5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
-  @keyframes pspin { to { transform: rotate(360deg); } }
-  @keyframes pcore { to { transform: scale(1.06); } }
+  #plain .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; animation: pfade 1s .8s cubic-bezier(.16,1,.3,1) both; }
+  #plain .ps2btn { display: inline-flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 26px; border: 1px solid var(--ps2-edge); border-radius: 14px; background: linear-gradient(180deg, var(--ps2-a), var(--ps2-b)); color: #f2f5ff; font: 700 19px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,40,.45), inset 0 1px 0 rgba(255,255,255,.4); transition: transform .25s cubic-bezier(.16,1,.3,1), filter .2s; }
+  #plain .ps2btn:hover { filter: brightness(1.2); transform: translateY(-3px); color: #fff; }
+  #plain .ps2btn.ghost { background: rgba(10,16,90,.4); }
+  #plain .hero .scrollcue { position: absolute; left: 24px; bottom: 28px; font: 600 14px "Dosis",sans-serif; letter-spacing: .24em; text-transform: uppercase; color: var(--soft); }
 
-  /* section frame: gold italic Dosis title on the left, content on the right */
-  #plain .sec { display: grid; grid-template-columns: 220px 1fr; gap: 12px 40px; padding: 72px 0 0; scroll-margin-top: 70px; }
-  #plain .sec > h2 { margin: 0; font-size: clamp(36px, 5vw, 52px); font-weight: 700; font-style: italic; line-height: 1; color: var(--gold); letter-spacing: .01em; text-shadow: 0 0 18px rgba(232,228,100,.3); align-self: start; position: sticky; top: 76px; }
+  /* chapters */
+  #plain .sec { display: grid; grid-template-columns: 230px 1fr; gap: 12px 40px; padding: 84px 0 0; scroll-margin-top: 70px; }
+  #plain .sec > h2 { margin: 0; font-size: clamp(40px, 5.4vw, 60px); font-weight: 700; font-style: italic; line-height: 1; color: var(--gold); text-shadow: 0 0 18px rgba(232,228,100,.3); align-self: start; position: sticky; top: 76px; }
   #plain .sec > :not(h2) { grid-column: 2; }
-  #plain .sec.full { display: block; }
 
-  /* proof: the two wins as rows, and the certificate framed beside them */
-  #plain .proof { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; padding-top: 24px; }
-  #plain .win { padding: 22px 0; border-top: 1px solid var(--line); }
+  /* proof */
+  #plain .proof { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding-top: 24px; position: relative; }
+  #plain .win { padding: 26px 0; border-top: 1px solid var(--line); }
   #plain .win:first-child { border-top: 0; padding-top: 0; }
-  #plain .win h3 { margin: 0; font-size: clamp(34px, 4.6vw, 48px); font-weight: 700; line-height: 1; color: #fff; }
-  #plain .win .rank { display: inline-block; margin: 10px 0 8px; padding: 4px 14px; border-radius: 999px; background: linear-gradient(180deg, #f3ee7a, #c9a92b); color: #1b1650; font: 700 17px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+  #plain .win h3 { margin: 0; font-size: clamp(38px, 5vw, 56px); font-weight: 700; line-height: 1; color: #fff; }
+  #plain .win .rank { display: inline-block; margin: 12px 0 10px; padding: 4px 14px; border-radius: 999px; background: linear-gradient(180deg, #f3ee7a, #c9a92b); color: #1b1650; font: 700 17px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; }
   #plain .win p { margin: 0; font-size: 17px; color: #d3dcff; max-width: 34em; }
-  #plain .certbox { margin: 0; justify-self: center; text-align: center; }
-  #plain .certbox button { display: block; padding: 0; border: 4px solid rgba(200,218,255,.85); border-radius: 6px; overflow: hidden; background: #fff; cursor: zoom-in; transform: rotate(-2.5deg); box-shadow: 0 22px 40px rgba(0,0,30,.55), 0 0 30px rgba(120,164,255,.45); transition: transform .35s cubic-bezier(.16,1,.3,1); }
-  #plain .certbox button:hover { transform: rotate(-1deg) scale(1.03); }
-  #plain .certbox img { display: block; width: min(100%, 400px); height: auto; }
+  #plain .win .big { display: block; margin-bottom: 6px; font: italic 700 clamp(24px, 3vw, 32px)/1.15 "Dosis",sans-serif; color: var(--gold); }
+  #plain .certbox { margin: 0; justify-self: center; text-align: center; perspective: 900px; }
+  #plain .certbox button { display: block; padding: 0; border: 4px solid rgba(200,218,255,.85); border-radius: 6px; overflow: hidden; background: #fff; cursor: zoom-in; transform: rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg)) rotate(-2.5deg); box-shadow: 0 26px 46px rgba(0,0,30,.6), 0 0 34px rgba(120,164,255,.45); transition: transform .5s cubic-bezier(.16,1,.3,1); }
+  #plain .certbox img { display: block; width: min(100%, 420px); height: auto; }
   #plain .certbox figcaption { margin-top: 16px; font-size: 15px; color: var(--soft); }
 
-  /* about */
-  #plain .about p { margin: 0 0 18px; font-size: clamp(19px, 2vw, 22px); line-height: 1.6; max-width: 36em; color: #e8eeff; font-weight: 500; }
+  #plain .about p { margin: 0 0 18px; font-size: clamp(20px, 2.1vw, 24px); line-height: 1.6; max-width: 36em; color: #e8eeff; font-weight: 500; }
   #plain .about p:first-child::first-line { color: #fff; font-weight: 700; }
 
-  /* skills: menu rows */
+  /* skills: menu rows, the row lights up like a menu selection */
   #plain .skills { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36px; margin: 0; padding: 0; list-style: none; }
-  #plain .skills li { padding: 16px 0 16px 30px; border-top: 1px solid var(--line); font-size: 16px; line-height: 1.5; color: #cfd9ff; position: relative; }
-  #plain .skills li::before { content: ""; position: absolute; left: 4px; top: 25px; width: 11px; height: 11px; border-radius: 2px; transform: rotate(45deg); background: var(--c); box-shadow: 0 0 12px var(--c); }
-  #plain .skills b { display: block; font: 700 24px "Dosis",sans-serif; letter-spacing: .02em; color: var(--cyan); }
+  #plain .skills li { padding: 18px 12px 18px 38px; border-top: 1px solid var(--line); font-size: 16px; line-height: 1.5; color: #cfd9ff; position: relative; border-radius: 10px; transition: background .35s, border-color .35s; }
+  #plain .skills li:hover { background: linear-gradient(90deg, rgba(90,130,255,.28), rgba(90,130,255,0)); border-top-color: rgba(168,196,255,.7); }
+  #plain .skills li::before { content: ""; position: absolute; left: 10px; top: 28px; width: 11px; height: 11px; border-radius: 2px; transform: rotate(45deg); background: var(--c); box-shadow: 0 0 12px var(--c); transition: transform .5s cubic-bezier(.16,1,.3,1); }
+  #plain .skills li:hover::before { transform: rotate(225deg) scale(1.35); }
+  #plain .skills b { display: block; font: 700 26px "Dosis",sans-serif; letter-spacing: .02em; color: var(--cyan); }
 
-  /* projects: rows, the first one featured in a glass panel */
-  #plain .proj { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 8px 36px; padding: 30px 0; border-top: 1px solid var(--line); }
-  #plain .proj h3 { margin: 0; font-size: clamp(32px, 4vw, 44px); font-weight: 700; line-height: 1.02; color: #fff; }
+  /* projects: save slots; each project is a disc painted with its own colours (the same discs as the TV's Projects screen) */
+  #plain .proj { display: grid; grid-template-columns: 112px minmax(0, .75fr) minmax(0, 1.25fr); gap: 8px 32px; align-items: start; padding: 34px 0; border-top: 1px solid var(--line); }
+  #plain .disc { position: relative; width: 100px; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(from 30deg, var(--c1), var(--c2), var(--c1), var(--c2), var(--c1)); box-shadow: 0 10px 24px rgba(0,0,40,.55), inset 0 0 0 2px rgba(255,255,255,.35); transition: transform 1.1s cubic-bezier(.16,1,.3,1); }
+  #plain .disc::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,.55), transparent 42%, transparent 62%, rgba(255,255,255,.2)); }
+  #plain .disc::after { content: ""; position: absolute; inset: 36%; border-radius: 50%; background: radial-gradient(circle, #0a1050 38%, rgba(255,255,255,.75) 42%, rgba(255,255,255,.75) 55%, rgba(255,255,255,.12) 58%); }
+  #plain .proj:hover .disc { transform: rotate(300deg); }
+  #plain .proj h3 { margin: 0; font-size: clamp(32px, 3.8vw, 44px); font-weight: 700; line-height: 1.02; color: #fff; }
   #plain .proj .rank { display: inline-block; margin-top: 10px; padding: 3px 12px; border-radius: 999px; background: linear-gradient(180deg, #f3ee7a, #c9a92b); color: #1b1650; font: 700 15px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; }
   #plain .proj p { margin: 0 0 10px; font-size: 17px; color: #e0e7ff; }
   #plain .proj .win-line { font-weight: 700; color: #fff; }
   #plain .proj .stack { font: 600 16px "Dosis",sans-serif; letter-spacing: .05em; color: var(--soft); }
   #plain .proj .links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
-  #plain .proj .links a { padding: 7px 18px; border: 1px solid var(--ps2-edge); border-radius: 999px; font: 700 17px "Dosis",sans-serif; letter-spacing: .06em; text-decoration: none; background: rgba(40,60,170,.35); }
-  #plain .proj .links a:hover { background: rgba(110,150,255,.5); }
-  #plain .proj.main { padding: 34px 32px; margin: 0 0 12px; border: 1px solid rgba(232,228,100,.55); border-radius: 22px; background: linear-gradient(180deg, rgba(40,56,160,.5), rgba(8,12,66,.7)); box-shadow: 0 18px 40px rgba(0,0,40,.4), inset 0 1px 0 rgba(210,224,255,.3); }
-  #plain .proj.main h3 { font-size: clamp(38px, 5vw, 58px); }
+  #plain .proj .links a { padding: 7px 18px; border: 1px solid var(--ps2-edge); border-radius: 999px; font: 700 17px "Dosis",sans-serif; letter-spacing: .06em; text-decoration: none; background: rgba(40,60,170,.35); transition: background .25s, transform .25s cubic-bezier(.16,1,.3,1); }
+  #plain .proj .links a:hover { background: rgba(110,150,255,.55); transform: translateY(-2px); }
+  #plain .proj.main { padding: 36px 32px; margin: 0 0 12px; border: 1px solid rgba(232,228,100,.55); border-radius: 24px; background: linear-gradient(180deg, rgba(40,56,160,.5), rgba(8,12,66,.72)); box-shadow: 0 18px 40px rgba(0,0,40,.4), inset 0 1px 0 rgba(210,224,255,.3); }
+  #plain .proj.main .disc { width: 100px; }
+  #plain .proj.main h3 { font-size: clamp(38px, 4.6vw, 54px); }
 
   /* guestbook */
   #plain .gbintro { margin: 0 0 16px; max-width: 34em; color: #d3dcff; }
   #plain #gbList { padding: 0; margin: 22px 0 0; display: grid; gap: 10px; }
+  #plain #gbList li:not(.gbitem) { list-style: none; color: var(--soft); font-size: 16px; }
   #plain .gbitem { position: relative; list-style: none; margin: 0; padding: 14px 18px 14px 50px; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, rgba(34,48,150,.5), rgba(8,12,64,.65)); }
   #plain .gbitem::before { content: ""; position: absolute; left: 18px; top: 20px; width: 16px; height: 16px; border-radius: 4px; background: var(--c); box-shadow: 0 0 14px var(--c); }
   #plain .gbitem p { margin: 4px 0 0; font-size: 16px; }
-  #plain #gbList li:not(.gbitem) { list-style: none; color: var(--soft); font-size: 16px; }
-  body.plain .top { background: linear-gradient(180deg, rgba(5,8,50,.94) 55%, rgba(5,8,50,0)); padding-bottom: 14px; }   /* the fixed bar must not sit on top of scrolling text */
   #plain .gbitem time { margin-left: 10px; font-size: 13px; color: var(--soft); }
 
-  /* contact: big rows */
+  /* contact */
   #plain .contact { margin: 0; padding: 0; list-style: none; }
   #plain .contact li { border-top: 1px solid var(--line); }
   #plain .contact li:last-child { border-bottom: 1px solid var(--line); }
-  #plain .contact a { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 18px 4px; text-decoration: none; color: #fff; font: 600 clamp(22px, 3.4vw, 34px) "Dosis",sans-serif; letter-spacing: .02em; transition: transform .3s cubic-bezier(.16,1,.3,1), color .2s; }
+  #plain .contact a { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 20px 4px; text-decoration: none; color: #fff; font: 600 clamp(26px, 4vw, 40px) "Dosis",sans-serif; letter-spacing: .02em; transition: transform .35s cubic-bezier(.16,1,.3,1), color .2s; }
   #plain .contact a span { margin-left: auto; font: 500 16px "Quicksand",sans-serif; color: var(--soft); overflow-wrap: anywhere; text-align: right; }
   #plain .contact a::after { content: "\2192"; color: var(--gold); margin-left: 8px; }
-  #plain .contact a:hover { transform: translateX(12px); color: var(--gold); }
-  #plain .back { margin: 56px 0 0; text-align: center; }
-  #plain .back p { margin: 0 0 14px; color: var(--soft); }
+  #plain .contact a:hover { transform: translateX(14px); color: var(--gold); }
 
-  /* one authored moment: sections rise into view (scroll-driven where supported; visible by default everywhere else) */
+  /* closing: the way back into the room, with the PS2 cross */
+  #plain .back { margin: 96px 0 0; padding: 56px 20px 64px; text-align: center; border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(180deg, rgba(34,48,150,.45), rgba(8,12,64,.6)); box-shadow: inset 0 1px 0 rgba(200,220,255,.25); }
+  #plain .back h2 { margin: 0 0 8px; font: italic 700 clamp(44px, 8vw, 84px)/1 "Dosis",sans-serif; color: var(--gold); text-shadow: 0 0 24px rgba(232,228,100,.35); }
+  #plain .back p { margin: 0 0 26px; color: var(--soft); }
+  #plain .back .ps2btn .x { font-size: 24px; line-height: 1; color: #9fc2ff; }
+
+  /* one authored reveal: chapters rise into view (scroll-driven where supported; visible by default everywhere else) */
   @supports (animation-timeline: view()) { @media (prefers-reduced-motion: no-preference) {
-    #plain .rv { animation: prise linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
-    @keyframes prise { from { opacity: 0; translate: 0 28px; } to { opacity: 1; translate: 0 0; } } } }
-  @media (prefers-reduced-motion: reduce) { #plainBg i, #plain .orb .spin, #plain .orb .core { animation: none; } }
+    #plain .rv { animation: prise linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
+    @keyframes prise { from { opacity: 0; translate: 0 32px; } to { opacity: 1; translate: 0 0; } } } }
+  @media (prefers-reduced-motion: reduce) { body.plain { scroll-behavior: auto; } #plainBg i, #plainBg .bigorb .spin, #plainBg .bigorb .core, #plain h1 span, #plain .tag, #plain .cta { animation: none; } #plainBg .bigorb { transform: none; } #plainBg i { translate: none; } body.plain .pnav .ind { transition: none; } #plain .certbox button { transform: rotate(-2.5deg); } }
 
   @media (max-width: 860px) {
-    #plain .hero { grid-template-columns: 1fr; padding-top: 74px; min-height: 0; gap: 0; }
-    #plain .orb { order: -1; width: min(70%, 300px); margin: 0 auto -6px; }
-    #plain .sec { grid-template-columns: 1fr; padding-top: 56px; }
+    #plainBg .bigorb { right: -38vmin; top: 28%; margin-top: 0; width: 120vmin; opacity: .4; }
+    #plain .hero { min-height: 0; padding-top: 96px; padding-bottom: 8px; }
+    #plain .sec { grid-template-columns: 1fr; padding-top: 60px; }
     #plain .sec > h2 { position: static; margin-bottom: 14px; }
     #plain .sec > :not(h2) { grid-column: 1; }
     #plain .proof { grid-template-columns: 1fr; gap: 28px; }
     #plain .skills { grid-template-columns: 1fr; }
-    #plain .proj { grid-template-columns: 1fr; }
+    #plain .proj { grid-template-columns: 1fr; gap: 14px; }
+    #plain .disc { width: 84px; }
     #plain .proj.main { padding: 24px 20px; }
     #plain .contact a { flex-direction: column; gap: 2px; }
     #plain .contact a span { margin-left: 0; text-align: left; }
+    #plain .hero .scrollcue { display: none; }
   }
 
   /* ---- PS2-menu look for the page buttons: rounded glass-blue plates with a soft glow, Dosis lettering (SIL OFL, credited in the footer) ---- */
@@ -302,7 +321,9 @@
     <div class="gbbtns"><button type="button" id="gbCancel">Cancel</button><button type="submit" id="gbSend">Save</button></div>
   </form>
 </dialog>
-<div id="plainBg" aria-hidden="true"><b style="--x:18%;--r:18deg"></b><b style="--x:72%;--r:-14deg"></b><i style="--s:62px;--x:6%;--y:16%;--r:12deg;--d:-2s"></i><i style="--s:44px;--x:88%;--y:10%;--r:-20deg;--d:-6s"></i><i style="--s:84px;--x:92%;--y:58%;--r:28deg;--d:-4s"></i><i style="--s:52px;--x:3%;--y:64%;--r:-8deg;--d:-9s"></i><i style="--s:38px;--x:46%;--y:86%;--r:34deg;--d:-1s"></i></div>
+<div id="plainBg" aria-hidden="true"></div>
+<div id="plainProg" aria-hidden="true"></div>
+<nav id="plainNav" class="pnav" aria-label="Sections"></nav>
 <main id="plain" aria-label="Plain version"></main>
 <footer id="foot"><details id="creditsBox" open><summary>Credits &amp; licences</summary><span id="credits"></span></details></footer>
 <div class="sr" id="live" aria-live="polite"></div>
@@ -459,34 +480,62 @@ function renderGbPlain() {
 /* ================= plain version ================= */
 const ORB = (() => { const bars = [[0, 118], [30, 150], [60, 104], [90, 140], [120, 112], [150, 152], [180, 120], [210, 146], [240, 106], [270, 144], [300, 114], [330, 150]]
   return `<svg viewBox="0 0 400 400" aria-hidden="true" focusable="false"><defs><linearGradient id="oBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d6e4ff"/><stop offset=".55" stop-color="#6f8cff"/><stop offset="1" stop-color="#3347c8" stop-opacity=".1"/></linearGradient>
-  <radialGradient id="oCore" cx=".38" cy=".34" r=".75"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#bcd0ff"/><stop offset=".7" stop-color="#4c68e6"/><stop offset="1" stop-color="#1a2590"/></radialGradient>
-  <radialGradient id="oHalo"><stop offset="0" stop-color="#7fa0ff" stop-opacity=".55"/><stop offset="1" stop-color="#7fa0ff" stop-opacity="0"/></radialGradient></defs>
-  <circle cx="200" cy="200" r="198" fill="url(#oHalo)"/>
-  <g class="spin">${bars.map(([a, h]) => `<rect x="193" y="${200 - 70 - h}" width="14" height="${h}" rx="7" fill="url(#oBar)" transform="rotate(${a} 200 200)" opacity=".92"/>`).join('')}
-  <rect x="62" y="96" width="34" height="34" rx="5" fill="rgba(130,160,255,.22)" stroke="#a9c0ff" stroke-opacity=".7" transform="rotate(18 79 113)"/><rect x="318" y="86" width="26" height="26" rx="4" fill="rgba(130,160,255,.2)" stroke="#a9c0ff" stroke-opacity=".7" transform="rotate(-24 331 99)"/><rect x="300" y="300" width="40" height="40" rx="6" fill="rgba(130,160,255,.18)" stroke="#a9c0ff" stroke-opacity=".6" transform="rotate(28 320 320)"/><rect x="70" y="292" width="24" height="24" rx="4" fill="rgba(130,160,255,.2)" stroke="#a9c0ff" stroke-opacity=".6" transform="rotate(-12 82 304)"/></g>
+  <radialGradient id="oCore" cx=".38" cy=".34" r=".75"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#bcd0ff"/><stop offset=".7" stop-color="#4c68e6"/><stop offset="1" stop-color="#1a2590"/></radialGradient></defs>
+  <g class="spin">${bars.map(([a, h]) => `<rect x="193" y="${200 - 70 - h}" width="14" height="${h}" rx="7" fill="url(#oBar)" transform="rotate(${a} 200 200)" opacity=".92"/>`).join('')}</g>
   <circle class="core" cx="200" cy="200" r="64" fill="url(#oCore)"/><circle cx="200" cy="200" r="64" fill="none" stroke="#e4eeff" stroke-opacity=".6" stroke-width="1.5"/></svg>`; })();
+$('#plainBg').innerHTML = `<div class="glow"></div><div class="bigorb">${ORB}</div>
+  <i style="--s:62px;--x:6%;--y:16%;--r:12deg;--d:-2s;--z:30"></i><i style="--s:44px;--x:88%;--y:10%;--r:-20deg;--d:-6s;--z:-24"></i><i style="--s:84px;--x:92%;--y:58%;--r:28deg;--d:-4s;--z:46"></i><i style="--s:52px;--x:3%;--y:64%;--r:-8deg;--d:-9s;--z:-36"></i><i style="--s:38px;--x:46%;--y:86%;--r:34deg;--d:-1s;--z:22"></i>`;
+$('#plainNav').innerHTML = '<i class="ind"></i><a href="#p-about">About</a><a href="#p-skills">Skills</a><a href="#p-projects">Projects</a><a href="#p-guestbook">Guestbook</a><a href="#p-contact">Contact</a>';
 const stackText = p => p.stack.split(' · ').join('  ·  ');
+const bigOf = p => (p.award[2].match(/^One of (\d+) winners among ~([\d,]+) participants$/) ? `One of 5 winners among ~3,800` : '');
 $('#plain').innerHTML = `
-  <nav class="pnav" aria-label="Sections"><a href="#p-about">About</a><a href="#p-skills">Skills</a><a href="#p-projects">Projects</a><a href="#p-guestbook">Guestbook</a><a href="#p-contact">Contact</a></nav>
-  <header class="hero">
+  <header class="hero" data-chap="hero">
     <div>
-      <h1>Matías</h1>
+      <h1 aria-label="Matías">${[...'Matías'].map((c, k) => `<span aria-hidden="true" style="--i:${k}">${c}</span>`).join('')}</h1>
       <p class="tag">Computer Science Engineering student in Santiago. I learn <b>one technology at a time</b>, tied to a real project, and I check what AI writes for me.</p>
       <div class="cta"><a class="ps2btn" href="#p-projects">See my projects</a><a class="ps2btn ghost" href="#p-contact">Get in touch</a></div>
     </div>
-    <div class="orb">${ORB}</div>
   </header>
-  <section class="proof rv" aria-label="Achievements">
-    <div>${PROJECTS.filter(p => p.award).map(p => `<div class="win"><h3>${p.name}</h3><span class="rank">${p.award[0]}</span><p>${p.award[1]}. ${p.award[2]}.</p></div>`).join('')}</div>
+  <section class="proof rv" aria-label="Achievements" data-chap="proof">
+    <div>${PROJECTS.filter(p => p.award).map(p => `<div class="win"><h3>${p.name}</h3><span class="rank">${p.award[0]}</span>${bigOf(p) ? `<span class="big">${bigOf(p)}</span>` : ''}<p>${p.award[1]}.${bigOf(p) ? '' : ' ' + p.award[2] + '.'}</p></div>`).join('')}</div>
     <figure class="certbox"><button type="button" id="plainCert" aria-label="Open the certificate: first place in Social Impact, Rally Latinoamericano de Innovación 2026"><img src="assets/props/certificate.jpg" alt="" width="1100" height="850" loading="lazy"></button><figcaption>First place, Social Impact, with team Helix. Click to enlarge.</figcaption></figure>
   </section>
-  <section class="sec about rv" id="p-about"><h2>About</h2><div>${ABOUT.map(t => `<p>${t}</p>`).join('')}</div></section>
-  <section class="sec rv" id="p-skills"><h2>Skills</h2><ul class="skills">${SKILLS.map(k => `<li style="--c:rgb(${k.rgb})"><b>${k.name}</b>${k.what}</li>`).join('')}</ul></section>
-  <section class="sec rv" id="p-projects"><h2>Projects</h2><div>${PROJECTS.map(p => `<article class="proj${p.main ? ' main' : ''}"><div><h3>${p.name}</h3>${p.award ? `<span class="rank">${p.award[0]}</span>` : ''}</div><div>${p.award ? `<p class="win-line">${p.award[1]}. ${p.award[2]}.</p>` : ''}<p>${p.blurb}</p><p class="stack">${stackText(p)}</p>${p.links.length ? `<div class="links">${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join('')}</div>` : ''}</div></article>`).join('')}</div></section>
-  <section class="sec rv" id="p-guestbook"><h2>Guestbook</h2><div><p class="gbintro">Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><button type="button" class="gbopen ps2btn">Leave a save</button><ul id="gbList"></ul></div></section>
-  <section class="sec rv" id="p-contact"><h2>Contact</h2><ul class="contact">${CONTACT.map(c => `<li><a href="${c.url}"${c.url.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${c.label}<span>${c.text}</span></a></li>`).join('')}</ul></section>
-  <div class="back"><p>This is the plain version of the site.</p><button type="button" class="ps2btn" id="plainBack">Enter the 3D room</button></div>`;
+  <section class="sec about rv" id="p-about" data-chap="about"><h2>About</h2><div>${ABOUT.map(t => `<p>${t}</p>`).join('')}</div></section>
+  <section class="sec rv" id="p-skills" data-chap="skills"><h2>Skills</h2><ul class="skills">${SKILLS.map(k => `<li style="--c:rgb(${k.rgb})"><b>${k.name}</b>${k.what}</li>`).join('')}</ul></section>
+  <section class="sec rv" id="p-projects" data-chap="projects"><h2>Projects</h2><div>${PROJECTS.map(p => `<article class="proj${p.main ? ' main' : ''}"><div class="disc" style="--c1:${p.c1};--c2:${p.c2}" aria-hidden="true"></div><div><h3>${p.name}</h3>${p.award ? `<span class="rank">${p.award[0]}</span>` : ''}</div><div>${p.award ? `<p class="win-line">${p.award[1]}. ${p.award[2]}.</p>` : ''}<p>${p.blurb}</p><p class="stack">${stackText(p)}</p>${p.links.length ? `<div class="links">${p.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join('')}</div>` : ''}</div></article>`).join('')}</div></section>
+  <section class="sec rv" id="p-guestbook" data-chap="guestbook"><h2>Guestbook</h2><div><p class="gbintro">Visitors leave a short message on the memory card. Messages appear after a quick review and are deleted after 60 days.</p><button type="button" class="gbopen ps2btn">Leave a save</button><ul id="gbList"></ul></div></section>
+  <section class="sec rv" id="p-contact" data-chap="contact"><h2>Contact</h2><ul class="contact">${CONTACT.map(c => `<li><a href="${c.url}"${c.url.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${c.label}<span>${c.text}</span></a></li>`).join('')}</ul></section>
+  <section class="back rv" data-chap="back"><h2>Back to the room</h2><p>This is the plain version of the site.</p><button type="button" class="ps2btn" id="plainBack"><span class="x" aria-hidden="true">✕</span> Enter the 3D room</button></section>`;
 $('#plainBack').addEventListener('click', () => $('#plainBtn').click());
+
+/* ---- plainFx: the one driver of the plain landing. Inputs: scroll, pointer, current chapter. Outputs: big orb turn/offset, glow colour,
+   nav highlight, progress line, cube parallax, certificate tilt. No constant loop: rAF runs only while something is still moving; the idle life is the slow CSS spin. ---- */
+const plainFx = (() => {
+  const bg = $('#plainBg'), orbEl = bg.querySelector('.bigorb'), prog = $('#plainProg'), nav = $('#plainNav'), ind = nav.querySelector('.ind'), links = [...nav.querySelectorAll('a')];
+  const CH = ['hero', 'proof', 'about', 'skills', 'projects', 'guestbook', 'contact', 'back'], GLOW = { hero: 'rgba(110,140,255,.55)', proof: 'rgba(120,150,255,.5)', about: 'rgba(110,140,255,.5)', skills: 'rgba(90,210,255,.45)', projects: 'rgba(232,215,90,.42)', guestbook: 'rgba(150,130,255,.5)', contact: 'rgba(255,150,80,.5)', back: 'rgba(255,170,90,.5)' };
+  let on = false, raf = 0, chap = 'hero', snap = 0, rot = 0, rotT = 0, px = 0, py = 0, pxT = 0, pyT = 0, io = null, still = true;
+  const motion = () => !rm();
+  const setChap = c => { if (c === chap) return; chap = c; snap = CH.indexOf(c) * 30; bg.style.setProperty('--glow', GLOW[c] || GLOW.hero);
+    const a = links.find(l => l.getAttribute('href') === '#p-' + c); links.forEach(l => l.classList.toggle('on', l === a));
+    if (a) { nav.style.setProperty('--x', a.offsetLeft + 'px'); nav.style.setProperty('--w', (a.offsetWidth / 100).toFixed(3)); nav.style.setProperty('--o', 1); } else nav.style.setProperty('--o', 0); kick(); };
+  const frame = () => { raf = 0; const max = Math.max(1, document.documentElement.scrollHeight - innerHeight), y = scrollY;
+    prog.style.setProperty('--prog', (y / max).toFixed(4));
+    if (motion()) { rotT = y * .045 + snap; rot += (rotT - rot) * .08; px += (pxT - px) * .08; py += (pyT - py) * .08; bg.style.setProperty('--rot', rot.toFixed(2) + 'deg'); bg.style.setProperty('--px', px.toFixed(3)); bg.style.setProperty('--py', py.toFixed(3));
+      if (Math.abs(rotT - rot) > .05 || Math.abs(pxT - px) > .002 || Math.abs(pyT - py) > .002) raf = requestAnimationFrame(frame); } };
+  const kick = () => { if (on && !raf) raf = requestAnimationFrame(frame); };
+  const onPtr = e => { if (!motion() || e.pointerType === 'touch') return; pxT = e.clientX / innerWidth * 2 - 1; pyT = e.clientY / innerHeight * 2 - 1; kick(); };
+  const tilt = e => { const b = $('#plainCert'), r = b.getBoundingClientRect(); if (!motion() || e.pointerType === 'touch') return; b.style.setProperty('--rx', (((e.clientX - r.left) / r.width - .5) * 14).toFixed(1) + 'deg'); b.style.setProperty('--ry', (-((e.clientY - r.top) / r.height - .5) * 14).toFixed(1) + 'deg'); };
+  const untilt = () => { const b = $('#plainCert'); b.style.setProperty('--rx', '0deg'); b.style.setProperty('--ry', '0deg'); };
+  const place = () => { const a = links.find(l => l.classList.contains('on')); if (a) { nav.style.setProperty('--x', a.offsetLeft + 'px'); nav.style.setProperty('--w', (a.offsetWidth / 100).toFixed(3)); } };
+  function start() { if (on) return; on = true; chap = ''; setChap('hero');
+    io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) setChap(e.target.dataset.chap); }, { rootMargin: '-45% 0px -50% 0px' });
+    $('#plain').querySelectorAll('[data-chap]').forEach(el => io.observe(el));
+    addEventListener('scroll', kick, { passive: true }); addEventListener('pointermove', onPtr, { passive: true }); addEventListener('resize', place);
+    const cb = $('#plainCert'); cb.addEventListener('pointermove', tilt); cb.addEventListener('pointerleave', untilt); kick(); }
+  function stop() { if (!on) return; on = false; io && io.disconnect(); removeEventListener('scroll', kick); removeEventListener('pointermove', onPtr); removeEventListener('resize', place); if (raf) cancelAnimationFrame(raf); raf = 0; }
+  return { sync: () => (document.body.classList.contains('plain') ? start() : stop()) };
+})();
+$('#plainBtn').addEventListener('click', () => setTimeout(plainFx.sync, 0));
 const hintEl = $('#hint');
 
 function renderCredits(loaded) {
