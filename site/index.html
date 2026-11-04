@@ -1322,7 +1322,8 @@ function setHint() {
 async function dolly(to) {
   if (cam.busy) return; cam.busy = true; const from = cam.k; cam.mode = 'dolly'; setHint(); updateArrows(); kickShadow();
   await tween(to ? 2.6 : 1.8, e => { cam.k = from + (to - from) * e; applyCamK(cam.k); dirty = true; if (to && !cam.booted && cam.k > .6) { cam.booted = true; startBoot(); } }, ease.cubic);
-  cam.k = to; applyCamK(to); cam.mode = to ? 'close' : 'wide'; cam.busy = false; arrKey = ''; placeArrows(); updateArrows(); setHint(); redraw();
+  cam.k = to; applyCamK(to); camera.updateMatrixWorld(true); cam.mode = to ? 'close' : 'wide'; cam.busy = false; arrKey = ''; placeArrows();   // updateMatrixWorld: with reduced motion the tween ends at once and no frame has rendered, so the arrows were placed with the previous pose updateArrows(); setHint(); redraw();
+  requestAnimationFrame(() => requestAnimationFrame(() => { arrKey = ''; placeArrows(); }));   // again once a frame has rendered the final pose
   say(to ? 'Menu' : 'Wide view');
 }
 function approachTV() {                                                     // step 1 (the visitor's first click): the camera glides in to the TV, which is still off; step 2 is its power button
