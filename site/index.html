@@ -132,10 +132,10 @@
   body.plain .brand { color: #eef2ff; }
   body.plain .top { background: linear-gradient(180deg, rgba(5,8,50,.94) 55%, rgba(5,8,50,0)); padding-bottom: 14px; }
 
-  #plainBg { --px: 0; --py: 0; --glow: rgba(110,140,255,.55); display: none; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  #plainBg { --px: 0; --py: 0; --orbo: .6; --glow: rgba(110,140,255,.55); display: none; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
   body.plain #plainBg { display: block; }
   #plainBg .glow { position: absolute; inset: -20%; background: radial-gradient(circle at 72% 46%, var(--glow), transparent 46%); transition: background .9s ease; }
-  #plainBg .bigorb { position: absolute; width: min(118vmin, 1100px); aspect-ratio: 1; right: -30vmin; top: 50%; margin-top: calc(min(118vmin, 1100px) / -2); opacity: .45; will-change: transform; transform: translate3d(calc(var(--px) * -26px), calc(var(--py) * -20px), 0) rotate(var(--rot, 0deg)); }
+  #plainBg .bigorb { position: absolute; width: min(118vmin, 1100px); aspect-ratio: 1; right: -30vmin; top: 50%; margin-top: calc(min(118vmin, 1100px) / -2); opacity: var(--orbo, .55); transition: opacity .9s ease; will-change: transform; transform: translate3d(calc(var(--px) * -26px), calc(var(--py) * -20px), 0) rotate(var(--rot, 0deg)); }
   #plainBg .bigorb svg { width: 100%; height: 100%; display: block; overflow: visible; }
   #plainBg .bigorb .spin { transform-box: fill-box; transform-origin: center; animation: pspin 120s linear infinite; }
   #plainBg .bigorb .core { transform-box: fill-box; transform-origin: center; animation: pcore 6s ease-in-out infinite alternate; }
@@ -147,10 +147,10 @@
   body.plain #plainProg { display: block; }
 
   .pnav { display: none; --cyan: #86dcff; --line: rgba(168,196,255,.3); }
-  #plain, body.plain #foot { --text: #eef2ff; --soft: #b4c2ee; --line: rgba(168,196,255,.3); --gold: #e8e464; --cyan: #86dcff; color: var(--text); }
+  #plain, body.plain #foot { --text: #eef2ff; --soft: #c6d2f6; --line: rgba(168,196,255,.3); --gold: #e8e464; --cyan: #86dcff; color: var(--text); }
   #plain { position: relative; z-index: 1; display: none; max-width: 1120px; margin: 0 auto; padding: 0 24px 40px; font-family: "Quicksand","Nunito","Helvetica Neue",Arial,sans-serif; }
   body.plain #plain { display: block; }
-  body.plain #foot { position: relative; z-index: 1; }
+  body.plain #foot { position: relative; z-index: 1; font-size: 12.5px; line-height: 1.5; }
   #plain h1, #plain h2, #plain h3, #plain .dos { font-family: "Dosis","Trebuchet MS",sans-serif; }
   #plain p, #plain li { line-height: 1.65; font-size: 18px; text-shadow: 0 1px 14px rgba(4,7,48,.85); }
   #plain a { color: var(--cyan); text-decoration-thickness: 1px; text-underline-offset: 4px; }
@@ -162,7 +162,9 @@
   body.plain .pnav .ind { position: absolute; left: 0; top: 5px; bottom: 5px; width: 100px; transform-origin: 0 50%; border-radius: 999px; background: linear-gradient(180deg, rgba(110,150,255,.55), rgba(40,60,190,.5)); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 16px rgba(110,150,255,.4); transform: translateX(var(--x, 0px)) scaleX(var(--w, 0)); transition: transform .55s cubic-bezier(.16,1,.3,1), opacity .3s; opacity: var(--o, 0); }
   body.plain .pnav a { position: relative; padding: 8px 16px; border-radius: 999px; color: #dbe4ff; text-decoration: none; font: 600 17px "Dosis",sans-serif; letter-spacing: .06em; transition: color .3s; }
   body.plain .pnav a:hover, body.plain .pnav a.on { color: #fff; }
-  @media (min-width: 980px) { body.plain .pnav { display: flex; } }
+  body.plain .pnav { display: flex; }
+  @media (max-width: 979px) { body.plain .pnav { top: auto; bottom: 12px; max-width: calc(100vw - 24px); overflow-x: auto; scrollbar-width: none; background: rgba(8,14,80,.82); }
+    body.plain .pnav::-webkit-scrollbar { display: none; } body.plain .pnav a { padding: 10px 14px; font-size: 16px; white-space: nowrap; } body.plain #plain { padding-bottom: 96px; } }
 
   /* hero: the name is the poster */
   #plain .hero { display: flex; align-items: center; min-height: min(86vh, 760px); padding-top: 84px; }
@@ -177,11 +179,14 @@
   #plain .ps2btn { display: inline-flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 26px; border: 1px solid var(--ps2-edge); border-radius: 14px; background: linear-gradient(180deg, var(--ps2-a), var(--ps2-b)); color: #f2f5ff; font: 700 19px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,40,.45), inset 0 1px 0 rgba(255,255,255,.4); transition: transform .25s cubic-bezier(.16,1,.3,1), filter .2s; }
   #plain .ps2btn:hover { filter: brightness(1.2); transform: translateY(-3px); color: #fff; }
   #plain .ps2btn.ghost { background: rgba(10,16,90,.4); }
+  #plain .badges { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; padding: 0; list-style: none; animation: pfade 1s 1s cubic-bezier(.16,1,.3,1) both; }
+  #plain .badges li { padding: 6px 14px; border: 1px solid rgba(232,228,100,.55); border-radius: 999px; background: rgba(232,228,100,.1); font: 600 16px "Dosis",sans-serif; letter-spacing: .04em; color: #f2f0b0; text-shadow: none; line-height: 1.3; }
+  #plain .badges b { color: var(--gold); text-transform: uppercase; letter-spacing: .08em; margin-right: 4px; }
   #plain .hero .scrollcue { position: absolute; left: 24px; bottom: 28px; font: 600 14px "Dosis",sans-serif; letter-spacing: .24em; text-transform: uppercase; color: var(--soft); }
 
   /* chapters */
   #plain .sec { display: grid; grid-template-columns: 230px 1fr; gap: 12px 40px; padding: 84px 0 0; scroll-margin-top: 70px; }
-  #plain .sec > h2 { margin: 0; font-size: clamp(40px, 5.4vw, 60px); font-weight: 700; font-style: italic; line-height: 1; color: var(--gold); text-shadow: 0 0 18px rgba(232,228,100,.3); align-self: start; position: sticky; top: 76px; }
+  #plain .sec > h2 { margin: 0; font-size: clamp(40px, 5.4vw, 60px); font-weight: 700; font-style: italic; line-height: 1; color: var(--gold); text-shadow: 0 0 18px rgba(232,228,100,.3); align-self: start; position: sticky; top: 96px; }
   #plain .sec > :not(h2) { grid-column: 2; }
 
   /* proof */
@@ -229,7 +234,11 @@
   /* guestbook */
   #plain .gbintro { margin: 0 0 16px; max-width: 34em; color: #d3dcff; }
   #plain #gbList { padding: 0; margin: 22px 0 0; display: grid; gap: 10px; }
-  #plain #gbList li:not(.gbitem) { list-style: none; color: var(--soft); font-size: 16px; }
+  #plain #gbList li:not(.gbitem):not(.gbempty) { list-style: none; color: var(--soft); font-size: 16px; }
+  #plain .gbempty { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 16px 20px; border: 1px dashed rgba(168,196,255,.5); border-radius: 16px; background: rgba(8,12,64,.45); color: var(--soft); font-size: 16px; }
+  #plain .gbempty strong { font: 700 22px "Dosis",sans-serif; letter-spacing: .04em; color: #fff; }
+  #plain .gbretry { margin-left: auto; padding: 6px 18px; border: 1px solid var(--ps2-edge); border-radius: 999px; background: rgba(40,60,170,.4); color: #f2f5ff; font: 700 16px "Dosis",sans-serif; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+  #plain .gbretry:hover { background: rgba(110,150,255,.55); }
   #plain .gbitem { position: relative; list-style: none; margin: 0; padding: 14px 18px 14px 50px; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, rgba(34,48,150,.5), rgba(8,12,64,.65)); }
   #plain .gbitem::before { content: ""; position: absolute; left: 18px; top: 20px; width: 16px; height: 16px; border-radius: 4px; background: var(--c); box-shadow: 0 0 14px var(--c); }
   #plain .gbitem p { margin: 4px 0 0; font-size: 16px; }
@@ -245,7 +254,7 @@
   #plain .contact a:hover { transform: translateX(14px); color: var(--gold); }
 
   /* closing: the way back into the room, with the PS2 cross */
-  #plain .back { margin: 96px 0 0; padding: 56px 20px 64px; text-align: center; border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(180deg, rgba(34,48,150,.45), rgba(8,12,64,.6)); box-shadow: inset 0 1px 0 rgba(200,220,255,.25); }
+  #plain .back { margin: 88px 0 0; padding: 44px 20px 48px; text-align: center; border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(180deg, rgba(34,48,150,.45), rgba(8,12,64,.6)); box-shadow: inset 0 1px 0 rgba(200,220,255,.25); }
   #plain .back h2 { margin: 0 0 8px; font: italic 700 clamp(44px, 8vw, 84px)/1 "Dosis",sans-serif; color: var(--gold); text-shadow: 0 0 24px rgba(232,228,100,.35); }
   #plain .back p { margin: 0 0 26px; color: var(--soft); }
   #plain .back .ps2btn .x { font-size: 24px; line-height: 1; color: #9fc2ff; }
@@ -468,7 +477,10 @@ function gbChanged() {                                             // refresh wh
 }
 function renderGbPlain() {
   const ul = document.getElementById('gbList'); if (!ul) return; ul.textContent = '';
-  if (GB.status !== 'ok') { const li = document.createElement('li'); li.textContent = GB.status === 'error' ? 'The guestbook could not be loaded right now.' : 'Reading the memory card…'; ul.append(li); return; }
+  if (GB.status !== 'ok') { const li = document.createElement('li'); li.className = 'gbempty';
+    if (GB.status === 'error') { const t = document.createElement('strong'); t.textContent = 'Memory card not found'; const m = document.createElement('span'); m.textContent = 'The saves could not be read right now.'; const r = document.createElement('button'); r.type = 'button'; r.className = 'gbretry'; r.textContent = 'Try again'; r.addEventListener('click', () => loadSaves()); li.append(t, m, r); }
+    else li.textContent = 'Reading the memory card…';
+    ul.append(li); return; }
   if (!GB.saves.length) { const li = document.createElement('li'); li.textContent = 'No saves yet. Be the first.'; ul.append(li); return; }
   for (const sv of GB.saves) {
     const li = document.createElement('li'); li.className = 'gbitem'; li.style.setProperty('--c', GB_COLORS[sv.color] || '#999');
@@ -494,6 +506,7 @@ $('#plain').innerHTML = `
       <h1 aria-label="Matías">${[...'Matías'].map((c, k) => `<span aria-hidden="true" style="--i:${k}">${c}</span>`).join('')}</h1>
       <p class="tag">Computer Science Engineering student in Santiago. I learn <b>one technology at a time</b>, tied to a real project, and I check what AI writes for me.</p>
       <div class="cta"><a class="ps2btn" href="#p-projects">See my projects</a><a class="ps2btn ghost" href="#p-contact">Get in touch</a></div>
+      <ul class="badges" aria-label="Achievements">${PROJECTS.filter(p => p.award).map(p => `<li><b>${p.award[0]}</b> ${p.name}</li>`).join('')}</ul>
     </div>
   </header>
   <section class="proof rv" aria-label="Achievements" data-chap="proof">
@@ -515,8 +528,10 @@ const plainFx = (() => {
   const CH = ['hero', 'proof', 'about', 'skills', 'projects', 'guestbook', 'contact', 'back'], GLOW = { hero: 'rgba(110,140,255,.55)', proof: 'rgba(120,150,255,.5)', about: 'rgba(110,140,255,.5)', skills: 'rgba(90,210,255,.45)', projects: 'rgba(232,215,90,.42)', guestbook: 'rgba(150,130,255,.5)', contact: 'rgba(255,150,80,.5)', back: 'rgba(255,170,90,.5)' };
   let on = false, raf = 0, chap = 'hero', snap = 0, rot = 0, rotT = 0, px = 0, py = 0, pxT = 0, pyT = 0, io = null, still = true;
   const motion = () => !rm();
-  const setChap = c => { if (c === chap) return; chap = c; snap = CH.indexOf(c) * 30; bg.style.setProperty('--glow', GLOW[c] || GLOW.hero);
+  const ORBO = { hero: .6, proof: .3, about: .2, skills: .2, projects: .18, guestbook: .25, contact: .3, back: .6 };
+  const setChap = c => { if (c === chap) return; chap = c; snap = CH.indexOf(c) * 30; bg.style.setProperty('--glow', GLOW[c] || GLOW.hero); bg.style.setProperty('--orbo', ORBO[c] ?? .4);
     const a = links.find(l => l.getAttribute('href') === '#p-' + c); links.forEach(l => l.classList.toggle('on', l === a));
+    if (a && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: a.offsetLeft - (nav.clientWidth - a.offsetWidth) / 2, behavior: motion() ? 'smooth' : 'auto' });
     if (a) { nav.style.setProperty('--x', a.offsetLeft + 'px'); nav.style.setProperty('--w', (a.offsetWidth / 100).toFixed(3)); nav.style.setProperty('--o', 1); } else nav.style.setProperty('--o', 0); kick(); };
   const frame = () => { raf = 0; const max = Math.max(1, document.documentElement.scrollHeight - innerHeight), y = scrollY;
     prog.style.setProperty('--prog', (y / max).toFixed(4));
