@@ -459,7 +459,7 @@ const SKILLS = [
   { id: 'selfhosting', name: 'Self-hosting', abbr: 'Sh', rgb: [0, 110, 220], what: 'Servers I run myself: DigitalOcean, Railway and Uptime Kuma to watch them.' },
   { id: 'anthropic', name: 'Anthropic SDK / RAG', abbr: 'AI', rgb: [200, 105, 75], what: 'Assistants built on the Anthropic SDK, and a RAG pipeline of my own.' },
 ];
-const ABOUT = ['I\u2019m Mat\u00edas, a fourth-year Computer Science Engineering student at Universidad San Sebasti\u00e1n in Santiago, graduating in 2027. I\u2019m doing my internship at Lexinnova, a legal-tech company.', 'I learn one technology at a time, tied to a real project, and I want to understand why something works before I ship it. I also verify what AI writes for me.'];
+const ABOUT = ['I\u2019m Mat\u00edas, a fourth-year Computer Science Engineering student at Universidad San Sebasti\u00e1n in Santiago, graduating in 2027. I\u2019m doing my internship at Lexinnova, a legal-tech company.', 'I learn one technology at a time, tied to a real project, and I want to understand why something works before I ship it.'];
 const LINKEDIN_URL = 'https://www.linkedin.com/in/matias-rodr%C3%ADguez-gutierrez-07b365342';   // the row only appears when this is set
 const CONTACT = [
   { label: 'Email', text: 'matiasrodriguezgz@gmail.com', url: 'mailto:matiasrodriguezgz@gmail.com' },
@@ -538,7 +538,8 @@ const ICONS = {   // one stroke family, 24px grid
 };
 const SCREENS = [['home', 'Home'], ['about', 'About'], ['skills', 'Skills'], ['projects', 'Projects'], ['wins', 'Wins'], ['contact', 'Contact']];   // no Guestbook in the plain version: it lives in the 3D room (the TV menu)
 const abtSentences = ABOUT[1].split(/(?<=\.)\s+/);
-const ABOUT_MORE = ['I work mostly in Python and JavaScript: Node, Next.js, FastAPI and Supabase, with Jest, Cypress and Vitest for tests and GitHub Actions to ship. I also run my own services (Uptime Kuma on a DigitalOcean server, plus Railway) behind blastercl.dev, because I like knowing where my code lives.', 'Away from the keyboard I lift five days a week, read Camus and Dostoevsky, and make skins, stages and music mods for Dragon Ball Sparking! Zero.'];   // plain version only: the 3D TV panel has room for the two short paragraphs above
+const ABOUT_MORE = ['Most of what I know I learned by shipping something real: Minuto Cero, an ERP for corner shops; Rumbo a Casa, my entry for the AWS Zero to Shipped hackathon; a music bot for Discord; a server I host and monitor myself.', 'This site is a room with a PS2 in it because I would rather show you what I make than list it.'];   // after the two paragraphs of ABOUT; the plain version also adds a closing line (ABOUT_PLAIN_END)
+const ABOUT_PLAIN_END = ' The plain version is the same content without the 3D.';
 $('#plain').innerHTML = `
   <div class="xbar" role="tablist" aria-label="Sections">${SCREENS.map(([id, label]) => `<button class="xtab" role="tab" id="tab-${id}" data-go="${id}" aria-controls="scr-${id}" aria-selected="false" tabindex="-1"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[id]}</svg></span><span>${label}</span></button>`).join('')}</div>
   <div class="screens">
@@ -551,7 +552,7 @@ $('#plain').innerHTML = `
   </section>
   <section class="scr" id="scr-wins" role="tabpanel" aria-labelledby="tab-wins" hidden><h2>Wins</h2><div class="wins"><div>${PROJECTS.filter(p => p.award).map(p => `<div class="win"><h3>${p.name}</h3><span class="rank">${p.award[0]}</span>${bigOf(p) ? `<span class="big">${bigOf(p)}</span>` : ''}<p>${p.award[1]}.${bigOf(p) ? '' : ' ' + p.award[2] + '.'}</p></div>`).join('')}</div>
     <figure class="certbox"><button type="button" id="plainCert" aria-label="Open the certificate: first place in Social Impact, Rally Latinoamericano de Innovación 2026"><img src="assets/props/certificate.jpg" alt="" width="1100" height="850" loading="lazy"></button><figcaption>First place, Social Impact, with team Helix. Click to enlarge.</figcaption></figure></div></section>
-  <section class="scr" id="scr-about" role="tabpanel" aria-labelledby="tab-about" hidden><h2>About</h2><div class="about"><p class="pull">${abtSentences[0]}</p><div class="bio"><p>${ABOUT[0]}</p>${abtSentences.length > 1 ? `<p>${abtSentences.slice(1).join(' ')}</p>` : ''}${ABOUT_MORE.map(t => `<p>${t}</p>`).join('')}</div></div></section>
+  <section class="scr" id="scr-about" role="tabpanel" aria-labelledby="tab-about" hidden><h2>About</h2><div class="about"><p class="pull">${abtSentences[0]}</p><div class="bio"><p>${ABOUT[0]}</p>${abtSentences.length > 1 ? `<p>${abtSentences.slice(1).join(' ')}</p>` : ''}${ABOUT_MORE.map((t, i) => `<p>${t}${i === ABOUT_MORE.length - 1 ? ABOUT_PLAIN_END : ''}</p>`).join('')}</div></div></section>
   <section class="scr" id="scr-skills" role="tabpanel" aria-labelledby="tab-skills" hidden><h2>Skills</h2>
     <div class="sk"><div class="sklist" role="tablist" aria-orientation="vertical" aria-label="Skills">${SKILLS.map((k, n) => `<button class="skrow" role="tab" id="sk-${n}" data-skill="${n}" aria-controls="skdet" aria-selected="${n === 0}" tabindex="${n === 0 ? 0 : -1}" style="--c:rgb(${k.rgb})"><i aria-hidden="true"></i>${k.name}</button>`).join('')}</div>
     <div class="skdet" id="skdet" role="tabpanel" aria-live="polite" style="--c:rgb(${SKILLS[0].rgb})"><i class="skbig" aria-hidden="true"></i><h3>${SKILLS[0].name}</h3><p>${SKILLS[0].what}</p></div></div></section>
@@ -1242,7 +1243,7 @@ function drawBody(c, t) {
     const title = { about: 'About', projects: 'Projects', project: PROJECTS[ui.loaded] ? PROJECTS[ui.loaded].name : '', contact: 'Contact' }[s];
     c.textAlign = 'right'; c.fillStyle = YEL; c.font = FONT(26, 700); c.fillText(title, SW - 26, 72); c.textAlign = 'left';
     const panel = () => { roundRect(c, 24, 88, SW - 48, 196, 14); c.fillStyle = 'rgba(16,12,52,.55)'; c.fill(); c.strokeStyle = 'rgba(160,215,245,.3)'; c.lineWidth = 1; c.stroke(); };
-    if (s === 'about') { panel(); c.fillStyle = '#fff'; c.font = FONT(16, 500); let y = 122; ABOUT.forEach(tx => { y = wrap(c, tx, 44, y, 424, 23) + 10; }); }
+    if (s === 'about') { roundRect(c, 24, 88, SW - 48, 244, 14); c.fillStyle = 'rgba(16,12,52,.55)'; c.fill(); c.strokeStyle = 'rgba(160,215,245,.3)'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#fff'; c.font = FONT(13.5, 500); let y = 112; ABOUT.concat(ABOUT_MORE).forEach(tx => { y = wrap(c, tx, 44, y, 424, 18.5) + 8; }); }
     else if (s === 'contact') { panel(); CONTACT.forEach((ct, i) => { const sel = ui.contact === i, y = 104 + i * 56; roundRect(c, 36, y, SW - 72, 46, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.1)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : CYAN; c.font = FONT(13, 700); c.fillText(ct.label.toUpperCase(), 52, y + 19); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(17, 500); c.fillText(ct.text + ' \u2197', 52, y + 38); hit(36, y, SW - 72, 46, { kind: 'contact', i }); }); }
     else if (s === 'projects') {
       const sp = 132;
