@@ -443,8 +443,9 @@ const PROJECTS = [
     blurb: 'Workouts and nutrition in one app, on your phone or in the browser. Describe a meal by text, photo or voice and Claude estimates the macros.',
     stack: 'Expo \u00b7 FastAPI \u00b7 Supabase \u00b7 Claude API',
     links: [{ label: 'Code', url: 'https://github.com/BlasterLc/fittrack' }] },
-  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026', 'Organised by ANFEI, ACOFI and CONFEDI \u00b7 platform Sirli'], blurb: 'Decision support for Chile’s emergency committees after a disaster. From minute zero, before the first field report, it scores each zone from 0 to 100, proposes which to attend first and cites the norm behind every recommendation. A zone that goes silent rises in priority, and a person always makes the final call.', stack: 'Designed as an MCP server with fixed, citable rules (Ley 21.364) · proposal and prototypes, not implemented', links: [{ label: 'Video', url: 'https://www.youtube.com/watch?v=IWBO8NThL7A' }] },
+  { name: 'Minuto Cero', c1: '#a99aa8', c2: '#8c9fb3', award: ['1st place \u00b7 Social Impact', 'Rally Latinoamericano de Innovaci\u00f3n 2026', 'Organised by ANFEI, ACOFI and CONFEDI \u00b7 platform Sirli'], tv: 'Decision support for Chile’s emergency committees after a disaster. It scores each zone from 0 to 100, proposes which to attend first and cites the norm behind every recommendation. A person always makes the final call.', blurb: 'Decision support for Chile’s emergency committees after a disaster. From minute zero, before the first field report, it scores each zone from 0 to 100, proposes which to attend first and cites the norm behind every recommendation. A zone that goes silent rises in priority, and a person always makes the final call.', stack: 'Designed as an MCP server with fixed, citable rules (Ley 21.364) · proposal and prototypes, not implemented', links: [{ label: 'Video', url: 'https://www.youtube.com/watch?v=IWBO8NThL7A' }] },
   { name: 'Alexa-PC', c1: '#9a9fbd', c2: '#a9a28f',
+    tv: 'Control your PC and YouTube Music by voice from an Amazon Echo. Alexa Cloud calls a FastAPI server on my own PC through an outbound Cloudflare tunnel, so no ports are open.',   // tv: shorter text for the TV screen (the plain version uses blurb)
     blurb: 'Control your PC and YouTube Music by voice from an Amazon Echo. Alexa Cloud calls a FastAPI server on my own PC through an outbound Cloudflare tunnel, so no ports are open. Handlers press media keys, drive the open YouTube Music window through the Chrome DevTools Protocol, open apps and lock the screen; shutdown asks for a spoken confirmation.',
     stack: 'Python \u00b7 FastAPI \u00b7 Alexa Skills Kit \u00b7 Cloudflare Tunnel \u00b7 pytest', links: [] },
 ];
@@ -1258,8 +1259,9 @@ function drawBody(c, t) {
         c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = FONT(20, 700); c.fillText('Reading disc…', SW / 2, 252); c.textAlign = 'left';
         c.fillStyle = 'rgba(16,12,52,.7)'; roundRect(c, 116, 266, 280, 12, 6); c.fill(); c.fillStyle = CYAN; roundRect(c, 116, 266, Math.max(12, 280 * ui.prog), 12, 6); c.fill();
       } else {
-        panel(); discIcon(c, p, 74, 130, 30, 1); c.fillStyle = '#fff'; c.font = FONT(15, 500); let y = wrap(c, p.blurb, 122, 118, 350, 22) + 2;
-        c.fillStyle = CYAN; c.font = FONT(13, 500); wrap(c, p.stack, 122, y, 350, 18);
+        panel(); discIcon(c, p, 74, 130, 30, 1); c.fillStyle = '#fff';
+        const txt = p.tv || p.blurb; let fs = 15, lh = 22; for (const f of [15, 14, 13, 12]) { fs = f; lh = f + 7; c.font = FONT(f, 500); let n = 1, ln = ''; for (const w of txt.split(' ')) { const t = ln ? ln + ' ' + w : w; if (c.measureText(t).width > 350 && ln) { n++; ln = w; } else ln = t; } if (118 + (n - 1) * lh <= 226) break; }   // the longest size that stays above the link buttons (y 240)
+        c.font = FONT(fs, 500); wrap(c, txt, 122, 118, 350, lh);
         p.links.forEach((l, n) => { const x = 122 + n * 118, sel = ui.pmenu === n; roundRect(c, x, 240, 106, 32, 9); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.14)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(15, 700); c.textAlign = 'center'; c.fillText(l.label + ' \u2197', x + 53, 261); c.textAlign = 'left'; hit(x, 236, 106, 40, { kind: 'plink', i: n }); });
       }
     }
@@ -1789,6 +1791,8 @@ async function tryLoadConsole() {
       const pw = cfg.trayPlate.w, pd = cfg.trayPlate.d, frontZ0 = Math.max(tl.z, th.z); plate = new THREE.Group(); conG.add(plate);
       rbox(pw, .004, pd, .002, plastic('#2a2c31', 15, { roughness: .5, env: .5 }), 0, 0, 0, plate); cyl(.054, .0015, P(0x0d0e10, { roughness: .7 }), 0, .0022, 0, plate, 40);
       pBase = new THREE.Vector3(c0.x, c0.y - .006, frontZ0 - .008 - pd / 2); plate.position.copy(pBase);
+      const hw = Math.abs(th.x - tl.x), hh = Math.abs(th.y - tl.y), fill = new THREE.Mesh(new THREE.BoxGeometry(hw * .96, hh * .9, .16), new THREE.MeshStandardMaterial({ color: 0x0c0c0e, roughness: .9, metalness: 0 }));   // the model's door slot is an open hole in the chassis: a dark block behind it so the open tray shows the console's inside, not the furniture
+      fill.position.set(c0.x, c0.y, frontZ0 - .006 - .08); conG.add(fill);
     }
     const baseWorld = trayNode.getWorldPosition(new THREE.Vector3()), baseLocal = toLocal(baseWorld);
     const ride = []; for (const nm of cfg.trayRide || []) holder.traverse(o => { if (o.name === nm && o !== trayNode) ride.push({ o, l0: toLocal(o.getWorldPosition(new THREE.Vector3())) }); });   // nodes that travel with the door (the emblem)
