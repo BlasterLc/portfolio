@@ -13,7 +13,11 @@
 
 ## The idea
 
-A flat list of projects does not say much about the person who built them. A room does: the plant, the controller on the rug, the certificates on the wall. So my portfolio is a small bedroom with a CRT TV and a PlayStation 2, and moving through it works like using a console: switch the TV on, pick a disc, read a save.
+Some of us grew up in front of a CRT TV. The ritual was always the same: press the power button, wait for the startup chord, slide a disc into the tray and move through the menus with a controller that was too big for our hands. Nothing about it was efficient, and that was the point: you had to walk in to get anywhere.
+
+[YOUR OWN MEMORY: one or two sentences about your PlayStation 2 or your TV, such as what you played, who you played with, or the sound you remember. Delete this line if you prefer not to.]
+
+A flat list of projects cannot do that, and it says little about the person who built them. A room does: the plant, the controller on the rug, the certificates on the wall. So my portfolio is a small bedroom with a CRT TV and a PlayStation 2, and moving through it works like using a console: switch the TV on, pick a disc, read a save.
 
 ## The creative feature: the portfolio is a console
 

@@ -15,6 +15,8 @@ Upload the images in numeric order. Alt text is the caption to paste under each 
 
 `01-hero-room-tv-off.png` is the clean source of the cover; it is no longer uploaded.
 
+Cover candidates (all 1600×900, pick one for the cover field): `00-cover.png` (the room), `00-cover-option-tv.png` (the TV menu), `00-cover-option-poster.png` (title poster on the boot background), `00-cover-option-split.png` (room and TV, "Switch it on"), `00-cover-option-power.png` ("Press the glowing button"), `00-cover-option-memorycard.png` (Skills as a memory card).
+
 The rest (menu, guestbook, Options, plain desktop, phone room and menu, the other console pages) stay in the repo (`docs/evidence/screens/` and `images/more/`). Do not upload them.
 
 ## Full list (in `images/more/`, with captions; file names here are the ones inside `more/`)
