@@ -69,7 +69,7 @@ Browser ──► AWS Amplify Hosting (CDN): the static site
 | **AWS CloudTrail** | The audit trail of every deploy call. |
 | **AWS CDK (TypeScript)** | The backend as code, with tests. |
 
-[SCREENSHOT (one, four panels in a grid): `03-aws-console-grid.png`, made from the console pages Amplify app, CloudFormation stack, API Gateway routes and DynamoDB items. Redact the account id.]
+[SCREENSHOT (one, four panels in a grid): `03-aws-evidence-grid.png`: the CDK stack, the tests passing before a deploy, the live smoke test against the API, and the Amplify job that succeeded. The account id is masked.]
 
 ## Guardrails
 
