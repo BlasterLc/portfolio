@@ -27,9 +27,11 @@ When you open the site, the TV is off and a glowing ring marks its power button 
 4. **Guestbook**: visitors leave a save of their own on the memory card (a name, a short message, a colour).
 5. **Contact**: plain links.
 
+The **Options** screen (triangle button on Skills, or the O key) has a sound switch, a volume slider and a 12/24-hour clock; the volume is remembered between visits.
+
 The two certificates I won hang on the wall of the room and open when clicked: *Hackathon Winner, AWS Zero to Shipped 2026* (Rumbo a Casa) and *1st place, Social Impact, Rally Latinoamericano de Innovación 2026* (Minuto Cero).
 
-[SCREENSHOTS: `02-tv-home-menu.png`, `03-tv-skills-memory-card.png`, `04-tv-project-disc.png`, `05-tv-guestbook.png`]
+[SCREENSHOTS: `02-tv-home-menu.png`, `03-tv-skills-memory-card.png`, `04-tv-project-disc.png`, `05-tv-guestbook.png`, `10-tv-options-volume.png`]
 
 It never gets in the way of reading the site. The **Plain version** (button at the top right) shows exactly the same content as a normal page, in the style of the PS2 browser, and **phones start there** because the 3D room is heavy; the 3D models are only downloaded when you press "Enter the 3D room".
 
