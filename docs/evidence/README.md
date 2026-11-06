@@ -9,7 +9,7 @@ Running record of how the site was put on AWS, so the Builder Center write-up (s
 - Service: **AWS Amplify Hosting** (manual deployment of a zip; S3 + CloudFront underneath, managed by Amplify)
 - App id: `d5w3zjhtyz0vy` (name `ps2-room-portfolio`), branch `main` (stage PRODUCTION), region `us-east-1`
 - First deploy: 2026-10-31 22:24-22:25 (-03) = 2026-11-01 01:24 UTC, job `1`: steps `DEPLOY` and `VERIFY` both `SUCCEED`.
-- Status of the site: **prototype** (placeholder text, no backend yet). It proves the hosting path; content and the AWS backend come next.
+- Status of the site: **live**. The text and the AWS backend (guestbook API) that were still to come when this log started are now in; see the services table below and the deploy logs in this folder.
 
 ## How it was deployed
 
@@ -27,9 +27,8 @@ Running record of how the site was put on AWS, so the Builder Center write-up (s
 | Service | What for | Status |
 |---|---|---|
 | AWS Amplify Hosting | Hosts the site (HTTPS, CDN) | **Live** |
-| API Gateway (HTTP API) + Lambda + DynamoDB | Guestbook: visitors leave a "save" on the memory card (`GET/POST /saves`), with usage limits, input validation and TTL | Code + tests done (35 tests); stack `PortfolioApi` defined in `infra/`; deploy with `bash deploy/api-deploy.sh` |
-| CloudWatch + SNS | Alarms for Lambda errors and for unusual call volume | Defined in the stack |
-| SES | Contact form email | Not built yet |
+| API Gateway (HTTP API) + Lambda + DynamoDB | Guestbook: visitors leave a "save" on the memory card (`GET/POST /saves`), with usage limits, input validation and TTL | **Live**: stack `PortfolioApi` (CDK, `infra/`), 40 backend tests + 6 stack tests, deployed with `bash deploy/api-deploy.sh` |
+| CloudWatch + SNS | Alarms for Lambda errors and for unusual call volume | **Live** (defined in the stack) |
 | CloudTrail | Audit trail of every call above | On (default 90-day event history) |
 
 ## Evidence to collect for the Builder Center project ("your project")

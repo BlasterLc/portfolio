@@ -1,0 +1,53 @@
+
+[02:44:17Z] Amplify Hosting deploy  app=d5w3zjhtyz0vy branch=main region=us-east-1 profile=blaster
+
+[02:44:17Z] 1/6  who am I (account id masked)
+{
+    "UserArn": "arn:aws:iam::************:user/blaster"
+}
+
+[02:44:19Z] 2/6  build + licence check
+  model assets/playstation_2GRANDE2.glb: PlayStation 2 / Artem P (https://sketchfab.com/temp0.crazy) / CC-BY-4.0
+  model assets/playstation_2GRANDE2_512.glb: PlayStation 2 / Artem P (https://sketchfab.com/temp0.crazy) / CC-BY-4.0
+  model assets/crt_tvCC3.glb: Crt_tv / teacherap123 (https://sketchfab.com/teacherap123) / CC-BY-4.0
+  prop  potted_plant_04: CC0 1.0
+  prop  throw_pillows_01: CC0 1.0
+  prop  rubber_duck_toy: CC0 1.0
+  prop  alarm_clock_01: CC0 1.0
+  prop  standing_picture_frame_02: CC0 1.0
+
+Built 46 files, 15.5 MB -> deploy/dist.zip
+
+[02:44:20Z] 3/6  create-deployment (the upload URL is not printed)
+jobId=27
+
+[02:44:21Z] 4/6  upload deploy/dist.zip
+upload HTTP 200
+
+[02:44:25Z] 5/6  start-deployment and wait
+$ aws amplify start-deployment --app-id d5w3zjhtyz0vy --branch-name main --job-id 27 --query jobSummary.{jobId:jobId,status:status} --output json
+{
+    "jobId": "27",
+    "status": "PENDING"
+}
+status: RUNNING
+status: SUCCEED
+$ aws amplify get-job --app-id d5w3zjhtyz0vy --branch-name main --job-id 27 --query job.steps[].{step:stepName,status:status} --output table
+-----------------------
+|       GetJob        |
++----------+----------+
+|  status  |  step    |
++----------+----------+
+|  SUCCEED |  DEPLOY  |
+|  SUCCEED |  VERIFY  |
++----------+----------+
+
+[02:44:38Z] 6/6  verify the public URL
+SiteUrl: https://main.d5w3zjhtyz0vy.amplifyapp.com
+/                                                          200 text/html
+/assets/intro/intro.webm                                   200 video/webm
+/assets/playstation_2GRANDE2.glb                           200 model/gltf-binary
+/assets/crt_tvCC3.glb                                      200 model/gltf-binary
+/assets/props/potted_plant_04/potted_plant_04_1k.gltf      200 model/gltf+json
+
+[02:44:40Z] DONE
