@@ -53,7 +53,7 @@ Folder `screens/`, headless Chromium against https://main.d5w3zjhtyz0vy.amplifya
 | `03-tv-skills-memory-card.png` | Skills as a memory card with 3D icons (Options button) |
 | `04-tv-project-disc.png` | A project disc read by the console: text and links |
 | `05-tv-guestbook.png` | The guestbook (live data from the API) |
-| `06-tv-options.png` | The Options screen (sound, clock). **Outdated:** it predates the volume slider; use `docs/builder-center/images/10-tv-options-volume.png` |
+| `06-tv-options.png` | The Options screen (sound, clock). **Outdated:** it predates the volume slider; use `docs/builder-center/images/more/10-tv-options-volume.png` |
 | `07`-`09-plain-*.png` | The plain version: home, projects, wins |
 | `10`, `11-phone-plain-*.png` | Phone (390 px): plain version |
 | `12`, `13-phone-*.png` | Phone (390 px): the 3D room and the TV menu |

@@ -1245,7 +1245,7 @@ function drawBody(c, t) {
     legend(c, [{ sym: 'sq', label: 'Display', act: 'display' }, { sym: 'x', label: 'Enter', act: 'enter' }, { sym: 'o', label: 'Back', act: 'back' }]);
   } else if (s === 'skills') {
     bgWarm(c); header(c, true);
-    c.save(); c.fillStyle = '#fff'; c.font = FONT(24, 700); otext(c, 'Skills', 26, 64); c.font = FONT(14, 500); otext(c, `${SKILLS.length} saves · ${10 - SKILLS.length} items free`, 26, 84);
+    c.save(); c.fillStyle = '#fff'; c.font = FONT(24, 700); otext(c, 'Skills', 26, 64); c.font = FONT(14, 500); otext(c, `${SKILLS.length} saves · ${10 - SKILLS.length} ${10 - SKILLS.length === 1 ? 'item' : 'items'} free`, 26, 84);
     c.fillStyle = YEL; c.font = FONT(22, 700); c.textAlign = 'right'; otext(c, SKILLS[ui.skill].name, SW - 26, 64); c.font = FONT(14, 500); c.fillStyle = '#fff'; otext(c, 'Memory card', SW - 26, 84); c.restore();
     for (let i = 0; i < 10; i++) {
       const col = i % 5, row = (i / 5) | 0, cx = 62 + col * 97, cy = 150 + row * 100;

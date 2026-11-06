@@ -9,9 +9,13 @@ Screenshots: the site ones are in docs/evidence/screens/; the AWS console ones a
 **Matías Rodríguez** · Computer Science Engineering student, Universidad San Sebastián, Santiago, Chile
 **Live site:** https://main.d5w3zjhtyz0vy.amplifyapp.com/ · **Code:** https://github.com/BlasterLc/portfolio
 
+**Challenge:** AWS Student Builder Challenge: Build Your Tech Superpower · built between 27 October and 6 November 2026, by one person
+
 > I would rather show you than list it.
 
-[SCREENSHOT: `01-room-tv-off-desktop.png`, the room with the TV off. Optional: a 20 to 30 second video of switching the TV on, the boot, and opening a project disc.]
+▶ [VIDEO LINK: the short video of the room, once uploaded]
+
+[SCREENSHOT (cover): `01-hero-room-tv-off.png`, the room with the TV off. Optional: a 20 to 30 second video of switching the TV on, the boot, and opening a project disc.]
 
 ## The idea
 
@@ -29,13 +33,13 @@ When you open the site, the TV is off and a glowing ring marks its power button 
 
 The **Options** screen (triangle button on Skills, or the O key) has a sound switch, a volume slider and a 12/24-hour clock; the volume is remembered between visits.
 
-The two certificates I won hang on the wall of the room and open when clicked: *Hackathon Winner, AWS Zero to Shipped 2026* (Rumbo a Casa) and *1st place, Social Impact, Rally Latinoamericano de Innovación 2026* (Minuto Cero).
+About, Skills and Projects are the three core sections the challenge asks for; Guestbook and Contact are extras. The two certificates I won hang on the wall of the room and open when clicked: *Hackathon Winner, AWS Zero to Shipped 2026* (Rumbo a Casa) and *1st place, Social Impact, Rally Latinoamericano de Innovación 2026* (Minuto Cero).
 
-[SCREENSHOTS: `02-tv-home-menu.png`, `03-tv-skills-memory-card.png`, `04-tv-project-disc.png`, `05-tv-guestbook.png`, `10-tv-options-volume.png`]
+[SCREENSHOT (one, two panels side by side): `02-tv-skills-and-disc.png`]
 
 It never gets in the way of reading the site. The **Plain version** (button at the top right) shows exactly the same content as a normal page, in the style of the PS2 browser, and **phones start there** because the 3D room is heavy; the 3D models are only downloaded when you press "Enter the 3D room".
 
-[SCREENSHOTS: `09-plain-wins-desktop.png`, `10-phone-plain-home.png`, `13-phone-tv-menu.png`]
+[SCREENSHOT (one): `04-plain-version-phone.png`]
 
 ## Technical decisions
 
@@ -65,7 +69,7 @@ Browser ──► AWS Amplify Hosting (CDN): the static site
 | **AWS CloudTrail** | The audit trail of every deploy call. |
 | **AWS CDK (TypeScript)** | The backend as code, with tests. |
 
-[SCREENSHOTS from the console: Amplify app and its deployments, the CloudFormation stack, API Gateway routes, the Lambda function, the DynamoDB table, the CloudWatch alarms. Redact the account id.]
+[SCREENSHOT (one, four panels in a grid): `03-aws-console-grid.png`, made from the console pages Amplify app, CloudFormation stack, API Gateway routes and DynamoDB items. Redact the account id.]
 
 ## Guardrails
 
@@ -96,7 +100,7 @@ You do not need to write anything to see everything: there is no login, no form,
 
 ## How I built it with a coding agent connected to AWS
 
-I built the site with Claude Code. The first deployment to Amplify was done by the agent through the official AWS MCP server, and those calls are recorded in CloudTrail (an extract is in the repository). Some of the real problems along the way:
+I built the site with Claude Code, as a one-person project. The repository has more than 80 commits and 46 automated tests (40 for the backend, 6 for the CDK stack). The first deployment to Amplify was done by the agent through the official AWS MCP server, and those calls are recorded in CloudTrail (an extract is in the repository). Some of the real problems along the way:
 
 - **The 3D room lagged.** Instead of guessing, I added a diagnostics panel that measured it: drawing the TV cost half a millisecond, the GPU was the real cost. That led to dynamic resolution and later to the phone profile.
 - **My first boot sound was wrong** (a low hum). Measuring the reference clips, their spectrum and volume curve, showed a dense chord between 200 and 1,300 Hz. Lesson: measure before you tune.
@@ -105,9 +109,33 @@ I built the site with Claude Code. The first deployment to Amplify was done by t
 - **The room stayed stuck on the loading screen on a real device** while it worked in my tests: the last warm-up step could throw without anyone noticing. It now skips the failing step and has a time limit.
 - **An expired `aws login` session** looks like a broken deploy; it is not.
 
+## Proof of the agent connection
+
+Claude Code was connected to my AWS account in two ways, and both leave a trail in AWS CloudTrail:
+
+- **The official AWS MCP server (`aws-mcp`).** The agent made the first deployment to Amplify through it (`CreateApp`, `CreateBranch`, `CreateDeployment`, `StartDeployment`). CloudTrail records those calls under my IAM user with the user agent `aws-mcp.amazonaws.com`.
+- **The AWS CLI and CDK**, from my terminal, for the repeatable deploys (`deploy/amplify-deploy.sh`) and for the backend stack.
+
+A redacted CloudTrail extract and the deploy logs are in the repository under `docs/evidence/`.
+
+## AWS services and coding agent
+
+- **AWS:** Amplify Hosting, API Gateway (HTTP API), Lambda, DynamoDB, CloudWatch and SNS, CloudTrail, IAM, and CloudFormation through the CDK. The site was deployed to Amplify Hosting, as the challenge requires.
+- **Coding agent:** Claude Code, working against the account through the official AWS MCP server, the AWS CLI and the CDK.
+
 ## Evidence
 
-Deploy logs (the account id is masked), screenshots of the terminal and of the site, and a CloudTrail extract are in the repository: https://github.com/BlasterLc/portfolio/tree/main/docs/evidence
+[SCREENSHOT (one): `05-cloudtrail-extract.png`]
+
+More screenshots (the menu, the guestbook, Options, the plain version, the phone) are in `docs/evidence/screens/`. Deploy logs (the account id is masked), screenshots of the terminal and of the site, and a CloudTrail extract are in the repository: https://github.com/BlasterLc/portfolio/tree/main/docs/evidence
+
+## Limitations
+
+- The usage limits are global, not per person (300 saves a day for the whole site): at a very busy moment a visitor may be told to try again later.
+- Guestbook moderation is manual (a script); there is no admin page yet.
+- The 3D room is about 14 MB and needs WebGL. Low-end phones are better served by the plain version, which is the default on phones. Sound starts after the first click or key press, as browsers require.
+- The guestbook API only accepts requests from the deployed site, so it shows an error when the page is opened from `localhost`.
+- Deploys are manual (a zip uploaded by a script), not continuous deployment.
 
 ## What I would do next
 

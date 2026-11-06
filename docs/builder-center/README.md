@@ -3,7 +3,19 @@
 Text to paste: `../builder-center-project.md`. How the *Rumbo a Casa* text was structured (the mould): `../builder-center-esquema.md`.
 Upload the images in numeric order. Alt text is the caption to paste under each one.
 
-## Ready (in `images/`)
+## Upload these 5 (one image per idea)
+
+| Order | File | Section | Status |
+|---|---|---|---|
+| 1 | `01-hero-room-tv-off.png` | Cover, under the title | ready |
+| 2 | `02-tv-skills-and-disc.png` | The creative feature (Skills and a disc, side by side) | ready |
+| 3 | `04-plain-version-phone.png` | Plain version / phone | ready (copy of `more/07-plain-version-phone.png`) |
+| 4 | `03-aws-console-grid.png` | Architecture on AWS: four console pages in a grid (Amplify app, CloudFormation stack, API Gateway routes, DynamoDB items) | **to make** once the four captures are in `images/` as `aws-01-amplify-app.png`, `aws-03-cloudformation-stack.png`, `aws-04-apigateway-routes.png`, `aws-06-dynamodb-items.png` |
+| 5 | `05-cloudtrail-extract.png` | Evidence | ready (copy of `more/09-cloudtrail-extract.png`) |
+
+The rest (menu, guestbook, Options, plain desktop, phone room and menu, the other console pages) stay in the repo (`docs/evidence/screens/` and `images/more/`). Do not upload them.
+
+## Full list (in `images/more/`, with captions; file names here are the ones inside `more/`)
 
 | File | Section of the text | Caption / alt text |
 |---|---|---|
