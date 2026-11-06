@@ -485,7 +485,7 @@ const PROJECTS = [
   { name: 'Alexa-PC', c1: '#9a9fbd', c2: '#a9a28f',
     tv: 'Control your PC and YouTube Music by voice from an Amazon Echo. Alexa Cloud calls a FastAPI server on my own PC through an outbound Cloudflare tunnel, so no ports are open.',   // tv: shorter text for the TV screen (the plain version uses blurb)
     blurb: 'Control your PC and YouTube Music by voice from an Amazon Echo. Alexa Cloud calls a FastAPI server on my own PC through an outbound Cloudflare tunnel, so no ports are open. Handlers press media keys, drive the open YouTube Music window through the Chrome DevTools Protocol, open apps and lock the screen; shutdown asks for a spoken confirmation.',
-    stack: 'Python \u00b7 FastAPI \u00b7 Alexa Skills Kit \u00b7 Cloudflare Tunnel \u00b7 pytest', links: [] },
+    stack: 'Python \u00b7 FastAPI \u00b7 Alexa Skills Kit \u00b7 Cloudflare Tunnel \u00b7 pytest', links: [{ label: 'Code', url: 'https://github.com/BlasterLc/Alexa-PC' }] },
 ];
 const SKILLS = [
   { id: 'python', name: 'Python', abbr: 'Py', rgb: [55, 118, 171], what: 'Backend, scripts and automation: FastAPI services, and an Alexa skill that controls my PC by voice.' },
