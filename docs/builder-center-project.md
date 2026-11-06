@@ -13,7 +13,7 @@
 
 Some of us grew up in front of a CRT TV. The ritual was always the same: press the power button, wait for the startup chord, slide a disc into the tray and move through the menus with a controller that was too big for our hands. Nothing about it was efficient, and that was the point: you had to walk in to get anywhere.
 
-[YOUR OWN MEMORY: one or two sentences about your PlayStation 2 or your TV, such as what you played, who you played with, or the sound you remember. Delete this line if you prefer not to.]
+I can still remember the nervous hope that the game I had just bought would load, and the joy when it finally did.
 
 A flat list of projects cannot do that, and it says little about the person who built them. A room does: the plant, the controller on the rug, the certificates on the wall. So my portfolio is a small bedroom with a CRT TV and a PlayStation 2, and moving through it works like using a console: switch the TV on, pick a disc, read a save.
 
@@ -31,11 +31,11 @@ The **Options** screen (triangle button on Skills, or the O key) has a sound swi
 
 About, Skills and Projects are the three core sections the challenge asks for; Guestbook and Contact are extras. The two certificates I won hang on the wall of the room and open when clicked: *Hackathon Winner, AWS Zero to Shipped 2026* (Rumbo a Casa) and *1st place, Social Impact, Rally Latinoamericano de Innovación 2026* (Minuto Cero).
 
-[IMAGE 1 of 4 · upload `02-tv-skills-and-disc.png` · alt text: Skills as a memory card of 3D icons, and a project disc with its links]
+[IMAGE 1 of 5 · upload `02-tv-skills-and-disc.png` · alt text: Skills as a memory card of 3D icons, and a project disc with its links]
 
 It never gets in the way of reading the site. The **Plain version** (button at the top right) shows exactly the same content as a normal page, in the style of the PS2 browser, and **phones start there** because the 3D room is heavy; the 3D models are only downloaded when you press "Enter the 3D room".
 
-[IMAGE 2 of 4 · upload `04-plain-version-phone.png` · alt text: On a phone: the plain version (home and projects) and the 3D room's TV menu]
+[IMAGE 2 of 5 · upload `04-plain-version-phone.png` · alt text: On a phone: the plain version (home and projects) and the 3D room's TV menu]
 
 ## Technical decisions
 
@@ -46,14 +46,7 @@ It never gets in the way of reading the site. The **Plain version** (button at t
 
 ## Architecture on AWS
 
-```
-Browser ──► AWS Amplify Hosting (CDN): the static site
-   │
-   └─► API Gateway (HTTP API, throttled) ─► Lambda (Node.js 22) ─► DynamoDB
-                                                  │                 ├─ saves (approved / pending, TTL)
-                                                  │                 └─ usage counters (atomic, TTL)
-                                                  └─► CloudWatch alarms ─► SNS
-```
+[IMAGE 3 of 5 · upload `06-architecture.png` · alt text: Architecture diagram: the visitor reaches Amplify Hosting for the static site and API Gateway, Lambda and DynamoDB for the guestbook, with CloudWatch alarms, SNS, CDK and CloudTrail]
 
 | Service | What it does here |
 |---|---|
@@ -65,7 +58,7 @@ Browser ──► AWS Amplify Hosting (CDN): the static site
 | **AWS CloudTrail** | The audit trail of every deploy call. |
 | **AWS CDK (TypeScript)** | The backend as code, with tests. |
 
-[IMAGE 3 of 4 · upload `03-aws-evidence-grid.png` · alt text: The CDK stack, the tests passing, the live smoke test against the API, and the Amplify console showing deployment 35 succeeded]
+[IMAGE 4 of 5 · upload `03-aws-evidence-grid.png` · alt text: The CDK stack, the tests passing, the live smoke test against the API, and the Amplify console showing deployment 35 succeeded]
 
 ## Guardrails
 
@@ -121,7 +114,7 @@ A redacted CloudTrail extract and the deploy logs are in the repository under `d
 
 ## Evidence
 
-[IMAGE 4 of 4 · upload `05-cloudtrail-extract.png` · alt text: CloudTrail: the agent's Amplify deploy calls through the AWS MCP server]
+[IMAGE 5 of 5 · upload `05-cloudtrail-extract.png` · alt text: CloudTrail: the agent's Amplify deploy calls through the AWS MCP server]
 
 More screenshots (the menu, the guestbook, Options, the plain version, the phone) are in `docs/evidence/screens/`. Deploy logs (the account id is masked), screenshots of the terminal and of the site, and a CloudTrail extract are in the repository: https://github.com/BlasterLc/portfolio/tree/main/docs/evidence
 
