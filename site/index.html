@@ -670,7 +670,7 @@ const PROFILES = {
   high: { tvFps: 90, tvScale: 1.25, bars: 12, cubes: 5, shadows: true, film: false, budget: 1.5e6, prCap: 1.25 },
   low: { tvFps: 45, tvScale: 1.0, bars: 8, cubes: 3, shadows: false, film: false, budget: 1.2e6, prCap: 1 },
 };
-if (small) { Object.assign(PROFILES.high, { tvScale: 1.6, budget: 2.8e6, prCap: 2.25 }); Object.assign(PROFILES.low, { tvScale: 1.25, budget: 1.7e6, prCap: 1.5 }); }   // phones: the TV text was unreadable (canvas at 42% of the native pixels); a phone draws very few pixels per frame, so there is room
+if (small) { Object.assign(PROFILES.high, { tvScale: 1.6, tvFps: 30, budget: 2.2e6, prCap: 1.75 }); Object.assign(PROFILES.low, { tvScale: 1.25, tvFps: 30, budget: 1.6e6, prCap: 1.4 }); }   // phones: the TV text was unreadable (canvas at 42% of the native pixels); a phone draws very few pixels per frame, so there is room
 const Q = Object.assign({ name: 'high' }, PROFILES.high);
 if (QUALITY_PARAM === 'low') Object.assign(Q, PROFILES.low, { name: 'low' });
 let renderer = null;   // MSAA only on low-dpi screens (invisible and costly at high dpi)
@@ -2095,22 +2095,22 @@ function setProfile(name) {
   renderer.shadowMap.enabled = Q.shadows; key.castShadow = Q.shadows; scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); });
   document.querySelector('.film').style.display = Q.film ? '' : 'none';
   PR = computePR(); renderer.setPixelRatio(PR); renderer.setSize(innerWidth, innerHeight, false);
-  TVS = Q.tvScale; tvCanvas.width = SW * TVS | 0; tvCanvas.height = SH * TVS | 0; tvTex.dispose(); redraw(); kickShadow(); dirty = true;
+  TVS = Q.tvScale; tvCanvas.width = SW * TVS | 0; tvCanvas.height = SH * TVS | 0; tvTex.dispose(); redraw(); kickShadow(); renderer.render(scene, camera); dirty = true;
 }
 if (Q.name === 'low') document.querySelector('.film').style.display = 'none';
 
 /* ---- dynamic resolution: if back-to-back frames take > 20 ms, lower the pixel ratio a step; if they are comfortably fast, raise it again (never above the cap). Works on any GPU without a quality menu. ---- */
-let prevRendered = false; const ADA = { iv: [], lastChange: 0, lastDrop: 0, min: .55 };
+let prevRendered = false; const ADA = { iv: [], lastChange: 0, lastDrop: 0, min: small ? 1.1 : .55, noRaise: false };   // phones: never below 1.1 (below that the text pixelates) and never raise again after a drop (raising and dropping made the picture flicker)
 function adaptRes(ivl, consecutive) {
   if (!warm.done || document.hidden || !consecutive || ivl < 4 || ivl > 500 || params.get('pr')) return;
   ADA.iv.push(ivl); if (ADA.iv.length < 36) return;
   const a = ADA.iv.slice().sort((x, y) => x - y), med = a[a.length >> 1]; ADA.iv.length = 0;
   const now = performance.now(); if (now - ADA.lastChange < 800) return;
   const cap = computePR(); let next = PR;
-  if (med > 20 && PR > ADA.min) next = Math.max(ADA.min, +(PR * .85).toFixed(2));
-  else if (med < 11 && PR < cap && now - ADA.lastDrop > 10000) next = Math.min(cap, +(PR * 1.1).toFixed(2));
-  if (next < PR) ADA.lastDrop = now;
-  if (next !== PR) { PR = next; ADA.lastChange = now; renderer.setPixelRatio(PR); renderer.setSize(innerWidth, innerHeight, false); dirty = true; }
+  if (med > (small ? 24 : 20) && PR > ADA.min) next = Math.max(ADA.min, +(PR * (small ? .92 : .85)).toFixed(2));
+  else if (med < 11 && PR < cap && now - ADA.lastDrop > 10000 && !ADA.noRaise) next = Math.min(cap, +(PR * 1.1).toFixed(2));
+  if (next < PR) { ADA.lastDrop = now; if (small) ADA.noRaise = true; }
+  if (next !== PR) { PR = next; ADA.lastChange = now; renderer.setPixelRatio(PR); renderer.setSize(innerWidth, innerHeight, false); renderer.render(scene, camera); dirty = true; }   // render at once: resizing clears the canvas and one empty frame is what flickered
 }
 
 function frame() {
