@@ -1223,7 +1223,7 @@ function legend(c, items, light) {                                   // bottom r
   const w = SW / items.length;
   items.forEach((it, i) => {
     const x = w * i + w / 2 - 38; c.save(); sym(c, it.sym, x, 352, 7); c.font = FONT(16, 500); c.fillStyle = '#fff'; c.textAlign = 'left'; light ? otext(c, it.label, x + 16, 358) : c.fillText(it.label, x + 16, 358); c.restore();
-    hit(w * i, 278, w, 106, { kind: 'legend', act: it.act });   // tall zone: >= 44 px on a phone
+    hits.unshift({ x: w * i, y: 278, w, h: 106, kind: 'legend', act: it.act });   // tall zone: >= 44 px on a phone
   });
 }
 function header(c, light) {                                          // date top left, time top right (the visitor's own clock)
@@ -1249,7 +1249,7 @@ function drawBody(c, t) {
     c.fillStyle = YEL; c.font = FONT(22, 700); c.textAlign = 'right'; otext(c, SKILLS[ui.skill].name, SW - 26, 64); c.font = FONT(14, 500); c.fillStyle = '#fff'; otext(c, 'Memory card', SW - 26, 84); c.restore();
     for (let i = 0; i < 10; i++) {
       const col = i % 5, row = (i / 5) | 0, cx = 62 + col * 97, cy = 150 + row * 100;
-      if (i < SKILLS.length) { skillIcon(c, SKILLS[i], i, cx, cy, 44, rm() ? 0 : t, i === ui.skill); hit(cx - 48, cy - 50, 96, 100, { kind: 'skill', i }); }
+      if (i < SKILLS.length) { skillIcon(c, SKILLS[i], i, cx, cy, 44, rm() ? 0 : t, i === ui.skill); hit(cx - 48, cy - 50, 96, Math.min(100, 276 - (cy - 50)), { kind: 'skill', i }); }
       else { c.strokeStyle = 'rgba(255,255,255,.55)'; c.setLineDash([4, 4]); c.lineWidth = 1.5; roundRect(c, cx - 22, cy - 22, 44, 44, 8); c.stroke(); c.setLineDash([]); }
     }
     legend(c, [{ sym: 'x', label: 'Enter', act: 'enter' }, { sym: 'o', label: 'Back', act: 'back' }, { sym: 'tri', label: 'Options', act: 'options' }], true);
@@ -1296,7 +1296,9 @@ function drawBody(c, t) {
     const panel = () => { roundRect(c, 24, 88, SW - 48, 196, 14); c.fillStyle = 'rgba(16,12,52,.55)'; c.fill(); c.strokeStyle = 'rgba(160,215,245,.3)'; c.lineWidth = 1; c.stroke(); };
     if (s === 'about') { roundRect(c, 24, 88, SW - 48, 244, 14); c.fillStyle = 'rgba(16,12,52,.55)'; c.fill(); c.strokeStyle = 'rgba(160,215,245,.3)'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#fff'; c.font = FONT(13.5, 500); let y = 112; ABOUT.concat(ABOUT_MORE).forEach(tx => { y = wrap(c, tx, 44, y, 424, 18.5) + 8; }); }
     else if (s === 'contact') { panel(); CONTACT.forEach((ct, i) => { const sel = ui.contact === i, y = 104 + i * 56; roundRect(c, 36, y, SW - 72, 46, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.1)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : CYAN; c.font = FONT(13, 700); c.fillText(ct.label.toUpperCase(), 52, y + 19); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(17, 500); c.fillText(ct.text + ' \u2197', 52, y + 38); hit(36, y, SW - 72, 46, { kind: 'contact', i }); }); }
-    else if (s === 'options') { panel(); [['SOUND', snd.on ? 'On' : 'Off'], ['CLOCK', ui.h24 ? '24 hours' : '12 hours']].forEach(([lb, v], i) => { const sel = ui.opt === i, y = 104 + i * 56; roundRect(c, 36, y, SW - 72, 46, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.1)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : CYAN; c.font = FONT(13, 700); c.fillText(lb, 52, y + 19); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(17, 500); c.fillText(v, 52, y + 38); hit(36, y, SW - 72, 46, { kind: 'opt', i }); }); }
+    else if (s === 'options') { panel(); [['SOUND', snd.on ? 'On' : 'Off'], ['VOLUME', Math.round(snd.vol * 100) + '%'], ['CLOCK', ui.h24 ? '24 hours' : '12 hours']].forEach(([lb, v], i) => { const sel = ui.opt === i, y = 100 + i * 52; roundRect(c, 36, y, SW - 72, 44, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.1)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : CYAN; c.font = FONT(13, 700); c.fillText(lb, 52, y + 18); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(17, 500); c.fillText(v, 52, y + 37);
+      if (i === 1) { const tx = VOL_X0, tw = VOL_X1 - VOL_X0, ty = y + 22; roundRect(c, tx, ty - 4, tw, 8, 4); c.fillStyle = sel ? 'rgba(28,24,64,.25)' : 'rgba(255,255,255,.25)'; c.fill(); roundRect(c, tx, ty - 4, Math.max(8, tw * snd.vol), 8, 4); c.fillStyle = sel ? '#3b5bdb' : CYAN; c.fill(); c.beginPath(); c.arc(tx + tw * snd.vol, ty, 9, 0, 7); c.fillStyle = '#fff'; c.fill(); c.strokeStyle = sel ? '#3b5bdb' : 'rgba(255,255,255,.7)'; c.lineWidth = 2; c.stroke(); hit(tx - 14, y, tw + 28, 44, { kind: 'vol', i }); }
+      else hit(36, y, SW - 72, 44, { kind: 'opt', i }); }); }
     else if (s === 'projects') {
       const sp = 132;
       PROJECTS.forEach((p, i) => { const dx = i - ui.dpos, cx = SW / 2 + dx * sp; if (cx < -70 || cx > SW + 70) return; const k = Math.max(0, 1 - Math.abs(dx)); discIcon(c, p, cx, 168 - 4 * k, 38 + 24 * k, .55 + .45 * k); hit(cx - sp / 2, 90, sp, 190, { kind: 'proj', i }); });
@@ -1378,11 +1380,18 @@ function skipBoot() { if (ui.screen === 'boot' && ui.on) { ui.skipT = performanc
 
 /* ================= sound: synthesized with WebAudio (no samples, nothing copied), tuned with measurements of the reference clips in spike/sound/ (see lab-v2.html).
    Browsers only allow audio after a user gesture, so everything is silent until the first click / key / tap; after that it is on (the Sound button turns it off). ================= */
-const snd = { on: true, ctx: null, master: null, bootBus: null, bootPlaying: false };
+const snd = { on: true, vol: .6, ctx: null, master: null, bootBus: null, bootPlaying: false };
+try { const v = parseFloat(localStorage.getItem('ps2vol')); if (v >= 0 && v <= 1) snd.vol = v; } catch (_) {}
+const VOL_X0 = 214, VOL_X1 = SW - 62;
+function setVol(v, quiet) {                                          // 0..1 in 5 % steps; the master gain follows, the choice is remembered
+  v = Math.round(Math.max(0, Math.min(1, v)) * 20) / 20; if (v === snd.vol) return; snd.vol = v;
+  if (snd.master) snd.master.gain.value = .75 * v; try { localStorage.setItem('ps2vol', String(v)); } catch (_) {}
+  if (!quiet) sfx.nav(); redraw();
+}
 function audioCtx() {
   if (!snd.ctx) {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; snd.ctx = new AC();
-    snd.master = snd.ctx.createGain(); snd.master.gain.value = .75; const comp = snd.ctx.createDynamicsCompressor(); comp.threshold.value = -6; comp.ratio.value = 3; snd.master.connect(comp); comp.connect(snd.ctx.destination);
+    snd.master = snd.ctx.createGain(); snd.master.gain.value = .75 * snd.vol; const comp = snd.ctx.createDynamicsCompressor(); comp.threshold.value = -6; comp.ratio.value = 3; snd.master.connect(comp); comp.connect(snd.ctx.destination);
   }
   if (snd.ctx.state === 'suspended') snd.ctx.resume(); return snd.ctx;
 }
@@ -1511,7 +1520,7 @@ function nav(d) {
   else if (ui.screen === 'skill') { const n = Math.max(0, Math.min(1, ui.skillMenu + d)); if (n === ui.skillMenu) return; ui.skillMenu = n; }
   else if (ui.screen === 'guestbook') { const n = Math.max(0, Math.min(gbCount() - 1, ui.save + d)); if (n === ui.save) return; ui.save = n; }
   else if (ui.screen === 'contact') { const n = Math.max(0, Math.min(CONTACT.length - 1, ui.contact + d)); if (n === ui.contact) return; ui.contact = n; }
-  else if (ui.screen === 'options') { const n = Math.max(0, Math.min(1, ui.opt + d)); if (n === ui.opt) return; ui.opt = n; }
+  else if (ui.screen === 'options') { if (ui.opt === 1) { setVol(snd.vol + d * .1); return; } confirm(); return; }   // left/right change the selected setting; up/down choose the row
   else return; mark('menu change'); sfx.nav(); redraw();
 }
 async function confirm() {
@@ -1522,7 +1531,7 @@ async function confirm() {
   else if (ui.screen === 'skills') { ui.screen = 'skill'; ui.skillMenu = 0; sfx.ok(); redraw(); say(SKILLS[ui.skill].name); }
   else if (ui.screen === 'skill') { sfx.ok(); if (ui.skillMenu === 0) { ui.screen = 'projects'; redraw(); say('Projects'); } else { ui.screen = 'skills'; redraw(); say('Skills'); } }
   else if (ui.screen === 'guestbook') { if (ui.save === 0) { sfx.ok(); openGbForm(); } else sfx.nav(); }
-  else if (ui.screen === 'options') { if (ui.opt === 0) { soundBtn.click(); } else { ui.h24 = !ui.h24; sfx.nav(); } redraw(); }
+  else if (ui.screen === 'options') { if (ui.opt === 0) { soundBtn.click(); } else if (ui.opt === 1) { setVol(snd.vol >= 1 ? 0 : snd.vol + .25); } else { ui.h24 = !ui.h24; sfx.nav(); } redraw(); }
   else if (ui.screen === 'contact') { const ct = CONTACT[ui.contact]; if (ct) { sfx.ok(); if (ct.url.startsWith('mailto:')) location.href = ct.url; else window.open(ct.url, '_blank', 'noopener'); } }
 }
 async function back() {
@@ -1564,6 +1573,7 @@ function pickScreen(e) {                                           // -> hit rec
   const cx = h.uv.x * SW, cy = (1 - h.uv.y) * SH;
   return hits.find(r => cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h) || null;
 }
+function screenXY(e) { if (!ui.on || !screenMesh) return null; setRay(e); const h = ray.intersectObject(screenMesh, false)[0]; return h && h.uv ? { x: h.uv.x * SW, y: (1 - h.uv.y) * SH } : null; }
 function tvUnder(e) { if (!screenMesh) return false; setRay(e); if (ray.intersectObject(screenMesh, false)[0]) return true;
   return ray.ray.intersectsBox(new THREE.Box3().setFromObject(tvHolder).expandByScalar(.03)); }   // the whole TV (casing, bezel, a little margin), not just the glass   // wide shot, TV off: the TV body is what a click approaches, so the cursor says so
 function pickCert(e) { if (!certMeshes.length) return -1; setRay(e); for (const [k, m] of certMeshes.entries()) if (ray.intersectObject(m, false)[0]) return k; return -1; }   // the framed certificate on the left wall
@@ -1577,12 +1587,14 @@ function pickButton(e) {
   for (const [n, b] of Object.entries(btns)) { if (b.split) continue; b.mesh.getWorldPosition(tmp).project(camera); const d = Math.hypot((tmp.x * .5 + .5) * r.width - (e.clientX - r.left), (-tmp.y * .5 + .5) * r.height - (e.clientY - r.top)); if (d < bd) { bd = d; best = n; } }
   return best;
 }
+function openOptions() { if (!['home', 'skills'].includes(ui.screen) || ui.busy || !ui.on) return; ui.optFrom = ui.screen; ui.screen = 'options'; ui.opt = 0; sfx.ok(); redraw(); say('Options'); }
 function activate(h, touch) {
-  if (h.kind === 'legend') { if (h.act === 'enter') return confirm(); if (h.act === 'back') return back(); if (h.act === 'display') { ui.h24 = !ui.h24; sfx.nav(); return redraw(); } if (h.act === 'options') { if (!['home', 'skills'].includes(ui.screen) || ui.busy) return; ui.optFrom = ui.screen; ui.screen = 'options'; ui.opt = 0; sfx.ok(); redraw(); say('Options'); return; } }
+  if (h.kind === 'legend') { if (h.act === 'enter') return confirm(); if (h.act === 'back') return back(); if (h.act === 'display') { ui.h24 = !ui.h24; sfx.nav(); return redraw(); } if (h.act === 'options') return openOptions(); }
   if (h.kind === 'open') return confirm();
   if (h.kind === 'step') return nav(h.d);
   if (h.kind === 'gb') { if (ui.save === h.i && h.i === 0) return confirm(); ui.save = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'plink') { ui.pmenu = h.i; return confirm(); }
+  if (h.kind === 'vol') { ui.opt = h.i; return redraw(); }
   if (h.kind === 'opt') { if (touch && ui.opt !== h.i) { ui.opt = h.i; sfx.nav(); return redraw(); } ui.opt = h.i; return confirm(); }
   if (h.kind === 'contact') { if (touch && ui.contact !== h.i) { ui.contact = h.i; sfx.nav(); return redraw(); } ui.contact = h.i; return confirm(); }
   if (h.kind === 'skmenu') { ui.skillMenu = h.i; return confirm(); }
@@ -1646,9 +1658,11 @@ canvas.addEventListener('pointerdown', e => {
   const h = pickScreen(e), onScreen = !!(ui.on && screenMesh && (setRay(e), ray.intersectObject(screenMesh, false)[0]));
   pdown = { x: e.clientX, y: e.clientY, h, touch: e.pointerType !== 'mouse', onScreen, base: curPos(), dragging: false, vx: 0, lx: e.clientX, lt: performance.now(), sc: 0 };
   if (h || onScreen) { canvas.focus({ preventScroll: true }); }
+  if (h && h.kind === 'vol') { ui.opt = h.i; const q = screenXY(e); if (q) setVol((q.x - VOL_X0) / (VOL_X1 - VOL_X0)); else redraw(); try { canvas.setPointerCapture(e.pointerId); } catch (_) {} }
 });
 canvas.addEventListener('pointermove', e => {
   markActive(); pendingMove = e;
+  if (pdown && pdown.h && pdown.h.kind === 'vol' && ui.screen === 'options') { const q = screenXY(e); if (q) setVol((q.x - VOL_X0) / (VOL_X1 - VOL_X0)); return; }
   if (!pdown || !pdown.onScreen || !dragScreen()) return;
   const dx = e.clientX - pdown.x, dy = e.clientY - pdown.y;
   if (!pdown.dragging && Math.abs(dx) > 8 && Math.abs(dx) > 1.2 * Math.abs(dy)) { pdown.dragging = true; ui.dragging = true; pdown.sc = (pxPerLogical() || .4) * (small ? .6 : 1); /* phones: a shorter swipe moves further */ try { canvas.setPointerCapture(e.pointerId); } catch (_) {} }
@@ -1706,9 +1720,11 @@ addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') { e.preventDefault(); nav(-1); }                 // one horizontal axis only
   else if (e.key === 'ArrowRight') { e.preventDefault(); nav(1); }
   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {                    // vertical axis: the Contact rows move one at a time, the Skills and Guestbook grids one row (5 columns) at a time
-    const dn = e.key === 'ArrowDown', st = ui.screen === 'contact' ? 1 : (ui.screen === 'skills' || ui.screen === 'guestbook') ? 5 : 0;
+    const dn = e.key === 'ArrowDown'; if (ui.screen === 'options') { e.preventDefault(); const n = Math.max(0, Math.min(2, ui.opt + (dn ? 1 : -1))); if (n !== ui.opt) { ui.opt = n; sfx.nav(); redraw(); } return; }
+    const st = ui.screen === 'contact' ? 1 : (ui.screen === 'skills' || ui.screen === 'guestbook') ? 5 : 0;
     if (st) { e.preventDefault(); const cur = ui.screen === 'contact' ? ui.contact : ui.screen === 'skills' ? ui.skill : ui.save, max = ui.screen === 'contact' ? CONTACT.length - 1 : ui.screen === 'skills' ? SKILLS.length - 1 : gbCount() - 1; const tgt = Math.max(0, Math.min(max, cur + (dn ? st : -st))); nav(tgt - cur); }
   }
+  else if (e.key === 'o' || e.key === 'O') { if (['home', 'skills'].includes(ui.screen) && !ui.busy && ui.on) { e.preventDefault(); openOptions(); } }
   else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); confirm(); }
   else if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); back(); }   // at the top menu, Escape steps back to the wide shot
 });
