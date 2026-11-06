@@ -55,6 +55,7 @@ for iid in re.findall(r"id: '([a-z]+)', name: '[^']+', abbr:", html):          #
     shutil.copy(os.path.join(SRC, 'assets/icons', iid + '.png'), os.path.join(OUT, 'assets/icons', iid + '.png'))
 os.makedirs(os.path.join(OUT, 'assets/fonts')); shutil.copy(os.path.join(SRC, 'assets/fonts/Dosis.ttf'), os.path.join(OUT, 'assets/fonts/Dosis.ttf'))          # Dosis (SIL OFL) for the buttons
 shutil.copy(os.path.join(SRC, 'assets/props/certificate.jpg'), os.path.join(OUT, 'assets/props/certificate.jpg'))          # the framed Rally certificate on the wall
+shutil.copy(os.path.join(SRC, 'assets/og.jpg'), os.path.join(OUT, 'assets/og.jpg'))          # link-preview image (Open Graph)
 shutil.copy(os.path.join(SRC, 'assets/props/certificate-zts.jpg'), os.path.join(OUT, 'assets/props/certificate-zts.jpg'))          # the framed Zero to Shipped certificate on the wall
 
 n = 0

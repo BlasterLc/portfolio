@@ -3,7 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Spike PS2 3D · Matías</title>
+<title>Matías Rodríguez · Portfolio</title>
+<meta name="description" content="Portfolio of Matías Rodríguez, Computer Science Engineering student in Santiago. A little room with a PS2: pick a disc to see Rumbo a Casa (AWS Zero to Shipped winner) and Minuto Cero (Rally Latinoamericano winner). Use the arrow keys and Enter, or tap and swipe.">
+<meta name="theme-color" content="#0d1468">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Matías Rodríguez">
+<meta property="og:title" content="Matías Rodríguez · Portfolio in a PS2 room">
+<meta property="og:description" content="Portfolio of Matías Rodríguez, Computer Science Engineering student in Santiago. A little room with a PS2: pick a disc to see Rumbo a Casa (AWS Zero to Shipped winner) and Minuto Cero (Rally Latinoamericano winner). Use the arrow keys and Enter, or tap and swipe.">
+<meta property="og:url" content="https://main.d5w3zjhtyz0vy.amplifyapp.com/">
+<meta property="og:image" content="https://main.d5w3zjhtyz0vy.amplifyapp.com/assets/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A small room with a CRT TV and a PlayStation 2, the portfolio of Matías Rodríguez">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Matías Rodríguez · Portfolio in a PS2 room">
+<meta name="twitter:description" content="Portfolio of Matías Rodríguez, Computer Science Engineering student in Santiago. A little room with a PS2: pick a disc to see Rumbo a Casa (AWS Zero to Shipped winner) and Minuto Cero (Rally Latinoamericano winner). Use the arrow keys and Enter, or tap and swipe.">
+<meta name="twitter:image" content="https://main.d5w3zjhtyz0vy.amplifyapp.com/assets/og.jpg">
 <!--
   THROWAWAY PROTOTYPE. One file, no build. Serve with: python3 -m http.server (from spike/ps2-3d)
 
@@ -141,6 +155,7 @@
   #loader .ldbar { width: min(320px, 70vw); height: 10px; border-radius: 6px; background: rgba(16,12,52,.7); border: 1px solid rgba(168,196,255,.45); overflow: hidden; }
   #loader .ldfill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #5f82e6, #86dcff); box-shadow: 0 0 14px rgba(134,220,255,.7); transform-origin: left; transform: scaleX(0); transition: transform .35s ease-out; }
   #loader .ldtxt { display: flex; justify-content: space-between; width: min(320px, 70vw); font-size: 15px; letter-spacing: .08em; color: #c6d2f6; font-variant-numeric: tabular-nums; }
+  #loader .ldtip { max-width: min(320px, 80vw); font-size: 14px; letter-spacing: .04em; color: #9fb4ee; }
   @keyframes ldspin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { #loader .lddisc { animation: none; } #loader { transition: none; } #loader .ldfill { transition: none; } }
 
@@ -349,7 +364,7 @@
 </style>
 </head>
 <body class="warming">
-<div id="loader" role="status" aria-live="polite"><div class="lddisc" aria-hidden="true"></div><div><div class="ldbar" aria-hidden="true"><div class="ldfill" id="ldFill"></div></div></div><div class="ldtxt"><span id="ldLabel">Loading the room…</span><span id="ldPct">0%</span></div></div>
+<div id="loader" role="status" aria-live="polite"><div class="lddisc" aria-hidden="true"></div><div><div class="ldbar" aria-hidden="true"><div class="ldfill" id="ldFill"></div></div></div><div class="ldtxt"><span id="ldLabel">Loading the room…</span><span id="ldPct">0%</span></div><div class="ldtip" id="ldTip"></div></div>
 <canvas id="gl" tabindex="0" role="application" aria-label="Interactive 3D console and TV. Click an item on the TV, or use the arrow keys, Enter and Escape. A plain version is available with the button at the top right."></canvas>
 <div class="film"></div>
 
@@ -633,6 +648,7 @@ const plainFx = (() => {
 $('#plainBtn').addEventListener('click', () => setTimeout(plainFx.sync, 0));
 const hintEl = $('#hint');
 /* loading screen: LOAD.p only ever grows (0..1); stages are weighted: console .02-.40, TV .40-.62, props .62-.78, warm-up .78-1 */
+$('#ldTip').textContent = matchMedia('(pointer: coarse)').matches ? 'Tip: tap the TV, then swipe or tap to move around.' : 'Tip: on the TV, use the arrow keys and Enter (Esc to go back).';
 const LOAD = { p: 0, fill: $('#ldFill'), pct: $('#ldPct'), label: $('#ldLabel') };
 function setLoad(p, label) { LOAD.p = Math.max(LOAD.p, Math.min(1, p)); LOAD.fill.style.transform = `scaleX(${LOAD.p.toFixed(3)})`; LOAD.pct.textContent = Math.round(LOAD.p * 100) + '%'; if (label) LOAD.label.textContent = label; }
 const stageP = (a, b, label) => e => { if (e && e.lengthComputable && e.total) setLoad(a + (b - a) * e.loaded / e.total, label); };
@@ -1512,6 +1528,7 @@ async function back() {
   if (!ui.on || ui.busy || ui.screen === 'boot') return; firstUse();
   if (ui.screen === 'project') { sfx.back(); await ejectDisc(); ui.screen = 'projects'; redraw(); say('Projects'); }
   else if (ui.screen === 'skill') { sfx.back(); ui.screen = 'skills'; redraw(); say('Skills'); }
+  else if (ui.screen === 'options') { sfx.back(); ui.screen = ui.optFrom || 'home'; redraw(); say(ui.screen === 'skills' ? 'Skills' : 'Menu'); }
   else if (ui.screen !== 'home') { sfx.back(); ui.screen = 'home'; ui.msg = ''; redraw(); say('Menu'); }
   else if (ui.screen === 'home') stepBack();
 }
@@ -1560,7 +1577,7 @@ function pickButton(e) {
   return best;
 }
 function activate(h, touch) {
-  if (h.kind === 'legend') { if (h.act === 'enter') return confirm(); if (h.act === 'back') return back(); if (h.act === 'display') { ui.h24 = !ui.h24; sfx.nav(); return redraw(); } if (h.act === 'options') { if (ui.screen !== 'home' || ui.busy) return; ui.screen = 'options'; ui.opt = 0; sfx.ok(); redraw(); say('Options'); return; } }
+  if (h.kind === 'legend') { if (h.act === 'enter') return confirm(); if (h.act === 'back') return back(); if (h.act === 'display') { ui.h24 = !ui.h24; sfx.nav(); return redraw(); } if (h.act === 'options') { if (!['home', 'skills'].includes(ui.screen) || ui.busy) return; ui.optFrom = ui.screen; ui.screen = 'options'; ui.opt = 0; sfx.ok(); redraw(); say('Options'); return; } }
   if (h.kind === 'open') return confirm();
   if (h.kind === 'step') return nav(h.d);
   if (h.kind === 'gb') { if (ui.save === h.i && h.i === 0) return confirm(); ui.save = h.i; sfx.nav(); return redraw(); }
