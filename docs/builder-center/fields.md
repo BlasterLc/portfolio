@@ -4,7 +4,11 @@
 A portfolio you walk into: a room with a PlayStation 2
 
 ## Description (max 512)
-My portfolio is a small bedroom with a CRT TV and a PlayStation 2: switch the TV on, pick a disc for each project, read a save for each skill. Hosted on AWS Amplify Hosting, with a moderated guestbook on API Gateway, Lambda and DynamoDB, and a plain version that phones start in.
+Option A (nostalgic, 318 chars):
+Some of us grew up with a CRT TV, a memory card and a stack of discs on the rug. I rebuilt that room and put my portfolio inside it: switch the TV on, hear the startup chord, pick a disc to open a project, read a save to see a skill. It runs on AWS, with a moderated guestbook where visitors leave a save of their own.
+
+Option B (shorter, names the services, 297 chars):
+Remember a CRT TV, a memory card and a stack of discs on the rug? I rebuilt that room and put my portfolio inside it. Switch the TV on, pick a disc to open a project, read a save to see a skill, and leave a save of your own in the guestbook. Built on AWS Amplify, API Gateway, Lambda and DynamoDB.
 
 ## Body
 Paste `docs/builder-center-project.md` with these changes:
