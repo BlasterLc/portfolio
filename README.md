@@ -1,5 +1,9 @@
 <h1 align="center">Matías Rodríguez · Portfolio</h1>
 
+<p align="center">
+  <img alt="A portfolio you walk into: a memory card labelled PORTFOLIO with the sections About, Skills, Projects and Contact" src="docs/builder-center/images/00-cover-option-drawn-card.png" width="820" />
+</p>
+
 <p align="center"><em>I would rather show you than list it: so the portfolio is a room with a PlayStation 2.</em></p>
 
 <p align="center">
