@@ -1546,7 +1546,8 @@ function pickScreen(e) {                                           // -> hit rec
   const cx = h.uv.x * SW, cy = (1 - h.uv.y) * SH;
   return hits.find(r => cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h) || null;
 }
-function tvUnder(e) { if (!screenMesh) return false; setRay(e); return !!ray.intersectObject(screenMesh, false)[0]; }   // wide shot, TV off: the TV body is what a click approaches, so the cursor says so
+function tvUnder(e) { if (!screenMesh) return false; setRay(e); if (ray.intersectObject(screenMesh, false)[0]) return true;
+  return ray.ray.intersectsBox(new THREE.Box3().setFromObject(tvHolder).expandByScalar(.03)); }   // the whole TV (casing, bezel, a little margin), not just the glass   // wide shot, TV off: the TV body is what a click approaches, so the cursor says so
 function pickCert(e) { if (!certMeshes.length) return -1; setRay(e); for (const [k, m] of certMeshes.entries()) if (ray.intersectObject(m, false)[0]) return k; return -1; }   // the framed certificate on the left wall
 const certDlg = document.getElementById('certDlg');
 function openCert(k = 0) { const c = CERTS[k] || CERTS[0], img = certDlg.querySelector('img'); img.src = c.src; img.alt = c.alt; img.width = c.w; img.height = c.h; certDlg.querySelector('figcaption').textContent = c.cap; if (!certDlg.open) certDlg.showModal(); }
@@ -1600,7 +1601,7 @@ hintEl.addEventListener('click', () => { if (cam.mode === 'close' && !ui.on) pow
 addEventListener('pointerdown', e => { if (document.body.classList.contains('plain') || certDlg.open || e.target.closest?.('#plainBtn,#soundBtn,#hint,#stepBack,#dbg')) return; if (cam.mode === 'wide') {
       { const ck = pickCert(e); if (ck >= 0) { e.preventDefault(); e.stopImmediatePropagation(); openCert(ck); return; } }
       if (ui.on) { if (tvUnder(e)) startSystem(); return; }   // TV already on: only the TV itself starts the system, not any spot of the room
-      const b = pickButton(e); let hitTv = b === 'tvpower'; if (!hitTv && screenMesh) { setRay(e); hitTv = !!ray.intersectObject(screenMesh, false)[0]; }
+      const b = pickButton(e); let hitTv = b === 'tvpower'; if (!hitTv) hitTv = tvUnder(e);
       if (hitTv) { e.preventDefault(); approachTV(); } return;
     }
     if (cam.mode === 'close' && !ui.on) return;                       // TV off: a click on the room does nothing (the power button handles itself)
