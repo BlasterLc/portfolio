@@ -35,7 +35,7 @@ About, Skills and Projects are the three core sections the challenge asks for; G
 
 It never gets in the way of reading the site. The **Plain version** (button at the top right) shows exactly the same content as a normal page, in the style of the PS2 browser, and **phones start there** because the 3D room is heavy; the 3D models are only downloaded when you press "Enter the 3D room".
 
-[IMAGE 3 of 5 · upload `04-plain-version-phone.png` · alt text: The plain version on a phone, the default there]
+[IMAGE 3 of 5 · upload `04-plain-version-phone.png` · alt text: On a phone: the plain version (home and projects) and the 3D room's TV menu]
 
 ## Technical decisions
 

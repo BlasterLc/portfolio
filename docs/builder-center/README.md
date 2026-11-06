@@ -9,7 +9,7 @@ Upload the images in numeric order. Alt text is the caption to paste under each 
 |---|---|---|---|
 | 1 | `01-hero-room-tv-off.png` | Cover, under the title | ready |
 | 2 | `02-tv-skills-and-disc.png` | The creative feature (Skills and a disc, side by side) | ready |
-| 3 | `04-plain-version-phone.png` | Plain version / phone | ready (copy of `more/07-plain-version-phone.png`) |
+| 3 | `04-plain-version-phone.png` | Plain version / phone: three phone captures side by side (plain home, plain projects, 3D room menu), 1440×900 | ready |
 | 4 | `03-aws-evidence-grid.png` | Architecture on AWS: four panels from the terminal captures (CDK stack, tests, live smoke test, and the Amplify console showing deployment 35 succeeded) | ready (built from `evidence/Screenshot 2026-11-01 …png`; account id already masked) |
 | 5 | `05-cloudtrail-extract.png` | Evidence | ready (copy of `more/09-cloudtrail-extract.png`) |
 
