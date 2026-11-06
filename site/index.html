@@ -125,6 +125,25 @@
     #foot details[open] { background: rgba(6,10,62,.97); margin: -8px calc(-1 * clamp(16px,3vw,32px)) 0; padding: 8px clamp(16px,3vw,32px); } }
   @media (prefers-reduced-motion: reduce) { #hint { animation: none; } }
 
+  /* loading screen: shown while body.warming; the bar is the real progress (models, props, shader/texture warm-up) */
+  #loader { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px; text-align: center; color: #eef2ff;
+    font-family: "Dosis","Trebuchet MS",sans-serif; background: radial-gradient(ellipse at 50% 38%, #1c2c9c 0%, #0d1468 40%, #060a3a 75%, #03051f 100%); transition: opacity .7s ease, visibility 0s linear .7s; }
+  body:not(.warming) #loader, body.plain #loader { opacity: 0; visibility: hidden; pointer-events: none; }
+  body.warming #hint { visibility: hidden; }
+  body:not(.plain) .brand { display: none; }   /* the name in the 3D view looked out of place; the plain version keeps it */
+  body:not(.plain) .topbtns { margin-left: auto; }
+  html:has(body.plain), body.plain { overflow-x: hidden; }   /* the 44 px slide of a panel widened the page on phones for a moment */
+  body.plain button, body.plain a { touch-action: manipulation; }   /* no double-tap zoom when tapping tabs quickly */
+  #loader .lddisc { position: relative; width: clamp(96px, 20vmin, 148px); aspect-ratio: 1; border-radius: 50%; animation: ldspin 2.4s linear infinite;
+    background: conic-gradient(from 30deg, #4a66c4, #86dcff, #4a66c4, #e8e464, #4a66c4); box-shadow: 0 14px 34px rgba(0,0,40,.6), 0 0 46px rgba(110,140,255,.5), inset 0 0 0 3px rgba(255,255,255,.35); }
+  #loader .lddisc::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,.55), transparent 42%, transparent 62%, rgba(255,255,255,.2)); }
+  #loader .lddisc::after { content: ""; position: absolute; inset: 36%; border-radius: 50%; background: radial-gradient(circle, #0a1050 38%, rgba(255,255,255,.75) 42%, rgba(255,255,255,.75) 55%, rgba(255,255,255,.12) 58%); }
+  #loader .ldbar { width: min(320px, 70vw); height: 10px; border-radius: 6px; background: rgba(16,12,52,.7); border: 1px solid rgba(168,196,255,.45); overflow: hidden; }
+  #loader .ldfill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #5f82e6, #86dcff); box-shadow: 0 0 14px rgba(134,220,255,.7); transform-origin: left; transform: scaleX(0); transition: transform .35s ease-out; }
+  #loader .ldtxt { display: flex; justify-content: space-between; width: min(320px, 70vw); font-size: 15px; letter-spacing: .08em; color: #c6d2f6; font-variant-numeric: tabular-nums; }
+  @keyframes ldspin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { #loader .lddisc { animation: none; } #loader { transition: none; } #loader .ldfill { transition: none; } }
+
   /* plain version = the PS2 browser: a cross-bar of icon tiles, one screen at a time, each with its own structure; a fixed orb behind it all is the compass (see plainFx). */
   body.plain { height: auto; min-height: 100%; background: radial-gradient(ellipse at 50% 12%, #1c2c9c 0%, #0d1468 36%, #060a3a 72%, #03051f 100%) fixed; }
   html:has(body.plain) { scrollbar-color: #5f82e6 #060a3a; }
@@ -200,6 +219,8 @@
   #plain .rank { display: inline-block; margin: 12px 0 10px; padding: 4px 14px; border-radius: 999px; background: linear-gradient(180deg, #f3ee7a, #c9a92b); color: #1b1650; font: 700 17px "Dosis",sans-serif; letter-spacing: .08em; text-transform: uppercase; text-shadow: none; }
   #plain .win p { margin: 0; font-size: 17px; color: #d3dcff; max-width: 34em; }
   #plain .win .big { display: block; margin-bottom: 6px; font: italic 700 clamp(24px, 3vw, 32px)/1.15 "Dosis",sans-serif; color: var(--gold); }
+  #plain .certcol { display: grid; gap: 30px; justify-items: center; }
+  #plain .certcol .certbox img { width: min(100%, 380px); }
   #plain .certbox { margin: 0; justify-self: center; text-align: center; perspective: 900px; }
   #plain .certbox button { display: block; padding: 0; border: 4px solid rgba(200,218,255,.85); border-radius: 6px; overflow: hidden; background: #fff; cursor: zoom-in; transform: rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg)) rotate(-2.5deg); box-shadow: 0 26px 46px rgba(0,0,30,.6), 0 0 34px rgba(120,164,255,.45); transition: transform .5s cubic-bezier(.16,1,.3,1); }
   #plain .certbox img { display: block; width: min(100%, 460px); height: auto; }
@@ -327,6 +348,7 @@
 </style>
 </head>
 <body class="warming">
+<div id="loader" role="status" aria-live="polite"><div class="lddisc" aria-hidden="true"></div><div><div class="ldbar" aria-hidden="true"><div class="ldfill" id="ldFill"></div></div></div><div class="ldtxt"><span id="ldLabel">Loading the room…</span><span id="ldPct">0%</span></div></div>
 <canvas id="gl" tabindex="0" role="application" aria-label="Interactive 3D console and TV. Click an item on the TV, or use the arrow keys, Enter and Escape. A plain version is available with the button at the top right."></canvas>
 <div class="film"></div>
 
@@ -552,7 +574,8 @@ $('#plain').innerHTML = `
     </div>
   </section>
   <section class="scr" id="scr-wins" role="tabpanel" aria-labelledby="tab-wins" hidden><h2>Wins</h2><div class="wins"><div>${PROJECTS.filter(p => p.award).map(p => `<div class="win"><h3>${p.name}</h3><span class="rank">${p.award[0]}</span>${bigOf(p) ? `<span class="big">${bigOf(p)}</span>` : ''}<p>${p.award[1]}.${bigOf(p) ? '' : ' ' + p.award[2] + '.'}</p></div>`).join('')}</div>
-    <figure class="certbox"><button type="button" id="plainCert" aria-label="Open the certificate: first place in Social Impact, Rally Latinoamericano de Innovación 2026"><img src="assets/props/certificate.jpg" alt="" width="1100" height="850" loading="lazy"></button><figcaption>First place, Social Impact, with team Helix. Click to enlarge.</figcaption></figure></div></section>
+    <div class="certcol"><figure class="certbox"><button type="button" id="plainCert" aria-label="Open the certificate: first place in Social Impact, Rally Latinoamericano de Innovación 2026"><img src="assets/props/certificate.jpg" alt="" width="1100" height="850" loading="lazy"></button><figcaption>First place, Social Impact, with team Helix. Click to enlarge.</figcaption></figure>
+    <figure class="certbox"><button type="button" id="plainCert2" aria-label="Open the certificate: Hackathon Winner, Zero to Shipped Hackathon 2026, Rumbo a Casa"><img src="assets/props/certificate-zts.jpg" alt="" width="1600" height="1236" loading="lazy"></button><figcaption>Hackathon Winner, Zero to Shipped 2026. Click to enlarge.</figcaption></figure></div></div></section>
   <section class="scr" id="scr-about" role="tabpanel" aria-labelledby="tab-about" hidden><h2>About</h2><div class="about"><p class="pull">${abtSentences[0]}</p><div class="bio"><p>${ABOUT[0]}</p>${abtSentences.length > 1 ? `<p>${abtSentences.slice(1).join(' ')}</p>` : ''}${ABOUT_MORE.map((t, i) => `<p>${t}${i === ABOUT_MORE.length - 1 ? ABOUT_PLAIN_END : ''}</p>`).join('')}</div></div></section>
   <section class="scr" id="scr-skills" role="tabpanel" aria-labelledby="tab-skills" hidden><h2>Skills</h2>
     <div class="sk"><div class="sklist" role="tablist" aria-orientation="vertical" aria-label="Skills">${SKILLS.map((k, n) => `<button class="skrow" role="tab" id="sk-${n}" data-skill="${n}" aria-controls="skdet" aria-selected="${n === 0}" tabindex="${n === 0 ? 0 : -1}" style="--c:rgb(${k.rgb})"><i aria-hidden="true"></i>${k.name}</button>`).join('')}</div>
@@ -608,6 +631,10 @@ const plainFx = (() => {
 })();
 $('#plainBtn').addEventListener('click', () => setTimeout(plainFx.sync, 0));
 const hintEl = $('#hint');
+/* loading screen: LOAD.p only ever grows (0..1); stages are weighted: console .02-.40, TV .40-.62, props .62-.78, warm-up .78-1 */
+const LOAD = { p: 0, fill: $('#ldFill'), pct: $('#ldPct'), label: $('#ldLabel') };
+function setLoad(p, label) { LOAD.p = Math.max(LOAD.p, Math.min(1, p)); LOAD.fill.style.transform = `scaleX(${LOAD.p.toFixed(3)})`; LOAD.pct.textContent = Math.round(LOAD.p * 100) + '%'; if (label) LOAD.label.textContent = label; }
+const stageP = (a, b, label) => e => { if (e && e.lengthComputable && e.total) setLoad(a + (b - a) * e.loaded / e.total, label); };
 
 function renderCredits(loaded) {
   const A = (h, t) => h ? `<a href="${h}" target="_blank" rel="noopener">${t}</a>` : t;
@@ -817,7 +844,11 @@ glow.position.set(0, .03, .12); glow.userData.blob = true; tvProc.add(glow);   /
 
 /* ================= the room: a low-cost procedural living room (carpet, wall with baseboard, window with curtains, shelving with generic game cases, floor lamp, cushions, loose discs, cables).
    Everything static is merged per material; contact shadows are fake blobs; no brands, no text. ================= */
-const roomG = new THREE.Group(); scene.add(roomG); let certMesh = null;
+const roomG = new THREE.Group(); scene.add(roomG); const certMeshes = [];
+const CERTS = [
+  { src: 'assets/props/certificate.jpg', w: 1100, h: 850, w3: .62, z: .42, alt: 'Certificate: first place in the Social Impact category, Rally Latinoamericano de Innovación 2026, team Helix, USS site in Chile, 20 October 2026', cap: 'First place, Social Impact category, with team Helix (USS site, Chile). Rally Latinoamericano de Innovación 2026, 16-17 October, held in 11 countries.' },
+  { src: 'assets/props/certificate-zts.jpg', w: 1600, h: 1236, w3: .5, z: -.4, alt: 'Certificate: Hackathon Winner, Zero to Shipped Hackathon 2026, awarded to Matias Rodríguez Gutierrez for the project Rumbo a Casa, AWS Builder Center', cap: 'Hackathon Winner, Zero to Shipped Hackathon 2026, for the project Rumbo a Casa. AWS Builder Center.' }
+];
 const FLOOR_Y = 0, BACK_Z = -1.05, SIDE_X = 2.7;
 function buildRoom() {
   const rr = rand(404);
@@ -924,15 +955,13 @@ function buildRoom() {
     props.add(new THREE.CylinderGeometry(.155, .155, .02, 14), matVC, PX, .27, PZ, 0, 0, 0, 0x8a4a30);
     const greens = [0x4f8a4a, 0x6aa05a, 0x3f7a4a, 0x7fb060];
     for (let i = 0; i < 9; i++) { const a = i * 2.4, tilt = .35 + (i % 3) * .22, h = .5 + (i % 4) * .12; props.add(new THREE.ConeGeometry(.07, h, 6).translate(0, h / 2, 0), matVC, PX, .27, PZ, Math.sin(a) * tilt, a, Math.cos(a) * tilt, greens[i % 4]); } }
-  { const poster = (z, y, w, h, c1, c2, c3) => { props.add(rbG(.03, h + .06, w + .06, .004, 1), matVC, -SIDE_X + .02, y, z, 0, 0, 0, 0xf2e3c4); props.add(rbG(.034, h, w, .003, 1), matVC, -SIDE_X + .024, y, z, 0, 0, 0, c1); props.add(new THREE.CylinderGeometry(w * .28, w * .28, .036, 20).rotateZ(Math.PI / 2), matVC, -SIDE_X + .03, y + h * .12, z, 0, 0, 0, c2); props.add(rbG(.036, h * .3, w * .86, .003, 1), matVC, -SIDE_X + .03, y - h * .32, z, 0, 0, 0, c3); };
-    poster(1.3, 1.5, .5, .7, 0x3f6670, 0xe27a4a, 0xd9a441); }
   props.build(roomG, false, false);
-  { const cw = .62, ch = cw * 850 / 1100, cy = 1.5, cz = .42;                          // the Rally certificate, framed on the left wall (takes the nearer poster spot)
+  for (const [k, c] of CERTS.entries()) { const cw = c.w3, ch = cw * c.h / c.w, cy = 1.5, cz = c.z;      // the two framed certificates on the left wall (Rally nearer the front, Zero to Shipped behind it)
     const frame = new THREE.Mesh(new THREE.BoxGeometry(.03, ch + .05, cw + .05), new THREE.MeshStandardMaterial({ color: 0x2b2118, roughness: .6 }));
     frame.position.set(-SIDE_X + .02, cy, cz); roomG.add(frame);
-    const certTex = new THREE.TextureLoader().load('assets/props/certificate.jpg'); certTex.colorSpace = THREE.SRGBColorSpace; certTex.anisotropy = aniso();
+    const certTex = new THREE.TextureLoader().load(c.src); certTex.colorSpace = THREE.SRGBColorSpace; certTex.anisotropy = aniso();
     const cert = new THREE.Mesh(new THREE.PlaneGeometry(cw, ch), new THREE.MeshStandardMaterial({ map: certTex, roughness: .7 }));
-    cert.rotation.y = Math.PI / 2; cert.position.set(-SIDE_X + .037, cy, cz); roomG.add(cert); certMesh = cert; } beads.build(roomG, false, false);
+    cert.rotation.y = Math.PI / 2; cert.position.set(-SIDE_X + .037, cy, cz); roomG.add(cert); certMeshes[k] = cert; } beads.build(roomG, false, false);
   walls.build(roomG, false, false); wood.build(roomG, false, false); cases.build(roomG, false, false); d.build(roomG, false, true); lamp.build(roomG, false, false); cab.build(roomG, false, true);
 
   // ---- lived-in clutter (generic, brandless): controller, toy robot, blocks, plush bear, magazines, cup with straw ----
@@ -1511,10 +1540,10 @@ function pickScreen(e) {                                           // -> hit rec
   return hits.find(r => cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h) || null;
 }
 function tvUnder(e) { if (!screenMesh) return false; setRay(e); return !!ray.intersectObject(screenMesh, false)[0]; }   // wide shot, TV off: the TV body is what a click approaches, so the cursor says so
-function pickCert(e) { if (!certMesh) return false; setRay(e); return !!ray.intersectObject(certMesh, false)[0]; }   // the framed certificate on the left wall
+function pickCert(e) { if (!certMeshes.length) return -1; setRay(e); for (const [k, m] of certMeshes.entries()) if (ray.intersectObject(m, false)[0]) return k; return -1; }   // the framed certificate on the left wall
 const certDlg = document.getElementById('certDlg');
-function openCert() { if (!certDlg.open) certDlg.showModal(); }
-document.getElementById('certClose').addEventListener('click', () => certDlg.close()); document.getElementById('plainCert').addEventListener('click', openCert);
+function openCert(k = 0) { const c = CERTS[k] || CERTS[0], img = certDlg.querySelector('img'); img.src = c.src; img.alt = c.alt; img.width = c.w; img.height = c.h; certDlg.querySelector('figcaption').textContent = c.cap; if (!certDlg.open) certDlg.showModal(); }
+document.getElementById('certClose').addEventListener('click', () => certDlg.close()); document.getElementById('plainCert').addEventListener('click', () => openCert(0)); document.getElementById('plainCert2').addEventListener('click', () => openCert(1));
 certDlg.addEventListener('click', e => { if (e.target === certDlg) certDlg.close(); });
 function pickButton(e) {
   const r = setRay(e); const hitObj = ray.intersectObjects(clickables, false)[0]; if (hitObj) { const f = hitObj.object.userData.btnFn; return f ? f(hitObj.point) : hitObj.object.userData.btn; }
@@ -1561,7 +1590,7 @@ function startSystem() { if (cam.mode !== 'wide' || cam.busy || !warm.done) retu
 function stepBack() { if (cam.mode !== 'close' || cam.busy) return; sfx.back(); dolly(0); }
 hintEl.addEventListener('click', () => { if (cam.mode === 'close' && !ui.on) power(); else wideAction(); }); stepBtn.addEventListener('click', stepBack);
 addEventListener('pointerdown', e => { if (document.body.classList.contains('plain') || certDlg.open || e.target.closest?.('#plainBtn,#soundBtn,#hint,#stepBack,#dbg')) return; if (cam.mode === 'wide') {
-      if (pickCert(e)) { e.preventDefault(); e.stopImmediatePropagation(); openCert(); return; }
+      { const ck = pickCert(e); if (ck >= 0) { e.preventDefault(); e.stopImmediatePropagation(); openCert(ck); return; } }
       if (ui.on) { startSystem(); return; }
       const b = pickButton(e); let hitTv = b === 'tvpower'; if (!hitTv && screenMesh) { setRay(e); hitTv = !!ray.intersectObject(screenMesh, false)[0]; }
       if (hitTv) { e.preventDefault(); approachTV(); } return;
@@ -1729,20 +1758,20 @@ function normalizeModel(model, widthTarget, extraRotYDeg = 0) {
   const c = b.getCenter(new THREE.Vector3()); model.position.set(-c.x, -b.min.y, -c.z); b = bbox();
   return { holder, size: b.getSize(new THREE.Vector3()), box: b };
 }
-async function loadGLB(url) {
+async function loadGLB(url, onProgress) {
   const head = await fetch(url, { method: 'HEAD' }).catch(() => null); if (!head || !head.ok) return null;   // not there: caller falls back
   const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
   const loader = new GLTFLoader();
   try { const { DRACOLoader } = await import('three/addons/loaders/DRACOLoader.js'); const d = new DRACOLoader(); d.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/'); loader.setDRACOLoader(d); } catch (e) { /* optional */ }
   try { const { KTX2Loader } = await import('three/addons/loaders/KTX2Loader.js'); const k = new KTX2Loader().setTranscoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/basis/').detectSupport(renderer); loader.setKTX2Loader(k); } catch (e) { /* optional */ }
-  const g = await loader.loadAsync(url); g.scene.userData.extras = g.asset && g.asset.extras; return g.scene;
+  const g = await loader.loadAsync(url, onProgress); g.scene.userData.extras = g.asset && g.asset.extras; return g.scene;
 }
 function prepMeshes(obj) { obj.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach(m => { if (m && 'envMapIntensity' in m) m.envMapIntensity = .5; }); } }); }
 
 async function tryLoadConsole() {
   const want = params.get('ps2glb'), urls = want ? [want] : (Q.name === 'low' ? ['assets/playstation_2GRANDE2_512.glb', MODEL_CFG.ps2.file] : [MODEL_CFG.ps2.file]);   // low quality: same model with 512 px textures
   let scene3 = null, url = urls[0];
-  for (url of urls) { try { scene3 = await loadGLB(url); } catch (e) { console.warn('[ps2.glb] failed to load ' + url, e); } if (scene3) break; }
+  for (url of urls) { try { scene3 = await loadGLB(url, stageP(.02, .40, 'Loading the console')); } catch (e) { console.warn('[ps2.glb] failed to load ' + url, e); } if (scene3) break; }
   const base = url.split('/').pop().split('?')[0].replace('_512.glb', '.glb'), cfg = Object.assign({}, MODEL_CFG.ps2, MODEL_CFG.presets[base] || {});
   con.file = url;
   if (!scene3) { console.info('[ps2.glb] no file at ' + url + ': using the procedural console'); return false; }
@@ -1823,6 +1852,7 @@ const PROPS = [
 const propGroup = new THREE.Group(); scene.add(propGroup); const propStats = { ok: [], fail: [] };
 async function loadProps() {
   if (!PROPS_GLB) return;
+  let propsDone = 0; const propTick = () => setLoad(.62 + .16 * (++propsDone / PROPS.length), 'Furnishing the room');
   await Promise.all(PROPS.map(async p => {
     try {
       const m = await loadGLB(`assets/props/${p.id}/${p.id}_1k.gltf`); if (!m) { propStats.fail.push(p.id); return; }
@@ -1833,12 +1863,13 @@ async function loadProps() {
       holder.position.set(p.x, p.y || 0, p.z); propGroup.add(holder); propStats.ok.push(p.id);
       if (!p.y) { const s2 = b.getSize(new THREE.Vector3()); blob(Math.max(s2.x, s2.z) * 1.35, Math.max(s2.x, s2.z) * 1.35, .38, propGroup, p.x, p.z, .005); }
     } catch (e) { console.warn('[props] failed ' + p.id, e); propStats.fail.push(p.id); }
+    propTick();
   }));
   console.info('[props] loaded', propStats.ok.join(','), 'failed', propStats.fail.join(','));
 }
 async function tryLoadTV() {
   const cfg = MODEL_CFG.tv, url = params.get('tvglb') || cfg.file, base = url.split('/').pop().split('?')[0], pre = MODEL_CFG.tvPresets[base] || {};
-  let m; try { m = await loadGLB(url); } catch (e) { console.warn('[tv.glb] failed:', e); return false; }
+  let m; try { m = await loadGLB(url, stageP(.40, .62, 'Plugging in the TV')); } catch (e) { console.warn('[tv.glb] failed:', e); return false; }
   if (!m) { console.info('[tv.glb] no file at ' + url + ': using the procedural TV'); return false; }
   console.info('[tv.glb] nodes:', nodeNames(m)); prepMeshes(m);
   const rot = params.get('tvrot') != null ? +params.get('tvrot') : (pre.rot || 0);
@@ -1884,6 +1915,7 @@ function featherTex(hex) {                                          // flat colo
 /* warm-up: compile every shader, upload every texture (including the TV canvas in each menu state) and create the disc objects BEFORE the scene is shown,
    so nothing has to be compiled or uploaded the first time it is used. The canvas stays hidden (opacity 0) meanwhile. */
 const tick = () => new Promise(res => setTimeout(res, 0));
+const paint = () => new Promise(res => { let d = false; const f = () => { if (!d) { d = true; res(); } }; requestAnimationFrame(() => setTimeout(f, 0)); setTimeout(f, 120); });   // let the bar actually paint before a heavy step (the timeout covers a hidden tab, where rAF is paused)
 const gpuDone = () => { try { renderer.getContext().finish(); } catch (e) {} };   // block until the GPU has really finished (so the first visible frame is the final state)
 async function warmup() {
   mark('warm-up'); ensureDiscPool();
@@ -1892,21 +1924,23 @@ async function warmup() {
   const texs = new Set(), keys = ['map', 'roughnessMap', 'bumpMap', 'normalMap', 'emissiveMap', 'alphaMap', 'metalnessMap', 'aoMap'];
   scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => keys.forEach(k => { if (m[k]) texs.add(m[k]); })); });
   if (scene.background && scene.background.isTexture) texs.add(scene.background);
-  renderer.compile(scene, camera); await tick();
-  let n = 0; for (const t of texs) { renderer.initTexture(t); if (++n % 6 === 0) await tick(); }
+  setLoad(.78, 'Warming up the lights'); await paint(); renderer.compile(scene, camera); await tick();
+  let n = 0; for (const t of texs) { renderer.initTexture(t); if (++n % 6 === 0) { setLoad(.78 + .10 * n / texs.size, 'Warming up the lights'); await paint(); } }
   const keep = { screen: ui.screen, loaded: ui.loaded, ready: ui.ready, prog: ui.prog, on: ui.on };
   ui.loaded = 0; ui.ready = true; ui.on = true;
-  for (const st of ['boot', 'home', 'skills', 'skill', 'guestbook', 'projects', 'project', 'about', 'contact', 'standby']) { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
+  let si = 0; for (const st of ['boot', 'home', 'skills', 'skill', 'guestbook', 'projects', 'project', 'about', 'contact', 'standby']) { setLoad(.88 + .11 * (si++ / 10), 'Switching the TV on'); await paint(); try { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); } catch (e) { console.error('[warm-up] state ' + st + ' failed', e); (window.WARM_ERR = window.WARM_ERR || []).push(st + ': ' + (e && e.message)); } await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
   Object.assign(ui, { screen: keep.screen, loaded: keep.loaded, ready: keep.ready, prog: keep.prog, on: keep.on, bootT: 0 }); drawTV(); tintTV();
   discPool.forEach(d => { d.visible = false; });
   kickShadow(); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick();
-  warm.done = true; warm.readyAt = performance.now(); document.body.classList.remove('warming'); setHint(); mark('warm-up done');
+  finishWarm();
 }
+function finishWarm() { if (warm.done) return; setLoad(1, 'Ready'); warm.done = true; warm.readyAt = performance.now(); document.body.classList.remove('warming'); setHint(); mark('warm-up done'); }
 (async () => {
-  const a = await tryLoadConsole(), b = await tryLoadTV(); await loadProps(); mark('models loaded');
+  const a = await tryLoadConsole(); setLoad(.40, 'Plugging in the TV'); const b = await tryLoadTV(); setLoad(.62, 'Furnishing the room'); await loadProps(); setLoad(.78, 'Warming up the lights'); mark('models loaded');
   if (a || b) { layout(); dirty = true; kickShadow(); }
-  await warmup();
-})();
+  const wd = setTimeout(() => { if (!warm.done) { console.warn('[warm-up] watchdog: still not done after 20 s, showing the room anyway'); finishWarm(); } }, 20000);   // never leave the loader stuck
+  try { await warmup(); } catch (e) { console.error('[warm-up] failed', e); (window.WARM_ERR = window.WARM_ERR || []).push(String(e && e.message)); finishWarm(); } finally { clearTimeout(wd); }
+})().catch(e => { console.error('[load] failed', e); try { finishWarm(); } catch (_) { document.body.classList.remove('warming'); } });
 
 /* ================= sound toggle ================= */
 const soundBtn = $('#soundBtn');
@@ -2055,7 +2089,7 @@ function frame() {
   if (AUTO.winStart && ivl > 0 && ivl < 1000) AUTO.iv.push(ivl);
   for (let i = tws.length - 1; i >= 0; i--) { const w = tws[i]; w.t += dt; const k = Math.min(1, w.t / w.d); w.fn(w.e(k)); if (k >= 1) { tws.splice(i, 1); w.res(); } }
   const active = tws.length > 0 || now < activeUntil || ui.dragging || ui.screen === 'boot';   // interactions and transitions: every frame; ambient motion: ~30 fps
-  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e) || (cam.mode === 'wide' && warm.done && (pickCert(e) || ui.on || tvUnder(e))))); }
+  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e) || (cam.mode === 'wide' && warm.done && (pickCert(e) >= 0 || ui.on || tvUnder(e))))); }
   let drewTV = false;
   if (!still && ui.on && !FL.noScreen) {                                  // the TV texture: Q.tvFps ambient, every frame while dragging
     scrAcc += Math.min(raw, .25);
