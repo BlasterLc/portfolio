@@ -3,15 +3,17 @@
 Text to paste: `../builder-center-project.md`. How the *Rumbo a Casa* text was structured (the mould): `../builder-center-esquema.md`.
 Upload the images in numeric order. Alt text is the caption to paste under each one.
 
-## Upload these 5 (one image per idea)
+## Cover + 4 images
 
-| Order | File | Section | Status |
+| Order | File | Where | Status |
 |---|---|---|---|
-| 1 | `01-hero-room-tv-off.png` | Cover, under the title | ready |
-| 2 | `02-tv-skills-and-disc.png` | The creative feature (Skills and a disc, side by side) | ready |
-| 3 | `04-plain-version-phone.png` | Plain version / phone: three phone captures side by side (plain home, plain projects, 3D room menu), 1440×900 | ready |
-| 4 | `03-aws-evidence-grid.png` | Architecture on AWS: four panels from the terminal captures (CDK stack, tests, live smoke test, and the Amplify console showing deployment 35 succeeded) | ready (built from `evidence/Screenshot 2026-11-01 …png`; account id already masked) |
-| 5 | `05-cloudtrail-extract.png` | Evidence | ready (copy of `more/09-cloudtrail-extract.png`) |
+| Cover | `00-cover.png` | The project's cover field (1600×900: the room, title, name, challenge) | ready |
+| 1 | `02-tv-skills-and-disc.png` | The creative feature (Skills and a disc, side by side) | ready |
+| 2 | `04-plain-version-phone.png` | Plain version / phone: three captures side by side, 1440×900 | ready |
+| 3 | `03-aws-evidence-grid.png` | Architecture on AWS: CDK stack, tests, live smoke test, and the Amplify console (deployment 35) | ready |
+| 4 | `05-cloudtrail-extract.png` | Evidence | ready |
+
+`01-hero-room-tv-off.png` is the clean source of the cover; it is no longer uploaded.
 
 The rest (menu, guestbook, Options, plain desktop, phone room and menu, the other console pages) stay in the repo (`docs/evidence/screens/` and `images/more/`). Do not upload them.
 

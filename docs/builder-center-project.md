@@ -1,4 +1,4 @@
-<!-- Paste section by section. Lines in [square brackets] are image/video slots; the images are in docs/builder-center/images/ (guide: docs/builder-center/README.md). Delete this comment. -->
+<!-- Paste section by section. Lines in [square brackets] are image/video slots; the images are in docs/builder-center/images/ (guide: docs/builder-center/README.md). The cover image (`00-cover.png`) goes in the project's cover field, not in the text. Delete this comment. -->
 
 # A portfolio you walk into: a room with a PlayStation 2
 
@@ -10,8 +10,6 @@
 > I would rather show you than list it.
 
 ▶ [VIDEO: paste the link to the short video here, or delete this line if there is none]
-
-[IMAGE 1 of 5 · cover · upload `01-hero-room-tv-off.png` · alt text: The room with the TV off and a glowing ring on its power button]
 
 ## The idea
 
@@ -31,11 +29,11 @@ The **Options** screen (triangle button on Skills, or the O key) has a sound swi
 
 About, Skills and Projects are the three core sections the challenge asks for; Guestbook and Contact are extras. The two certificates I won hang on the wall of the room and open when clicked: *Hackathon Winner, AWS Zero to Shipped 2026* (Rumbo a Casa) and *1st place, Social Impact, Rally Latinoamericano de Innovación 2026* (Minuto Cero).
 
-[IMAGE 2 of 5 · upload `02-tv-skills-and-disc.png` · alt text: Skills as a memory card of 3D icons, and a project disc with its links]
+[IMAGE 1 of 4 · upload `02-tv-skills-and-disc.png` · alt text: Skills as a memory card of 3D icons, and a project disc with its links]
 
 It never gets in the way of reading the site. The **Plain version** (button at the top right) shows exactly the same content as a normal page, in the style of the PS2 browser, and **phones start there** because the 3D room is heavy; the 3D models are only downloaded when you press "Enter the 3D room".
 
-[IMAGE 3 of 5 · upload `04-plain-version-phone.png` · alt text: On a phone: the plain version (home and projects) and the 3D room's TV menu]
+[IMAGE 2 of 4 · upload `04-plain-version-phone.png` · alt text: On a phone: the plain version (home and projects) and the 3D room's TV menu]
 
 ## Technical decisions
 
@@ -65,7 +63,7 @@ Browser ──► AWS Amplify Hosting (CDN): the static site
 | **AWS CloudTrail** | The audit trail of every deploy call. |
 | **AWS CDK (TypeScript)** | The backend as code, with tests. |
 
-[IMAGE 4 of 5 · upload `03-aws-evidence-grid.png` · alt text: The CDK stack, the tests passing, the live smoke test against the API, and the Amplify console showing deployment 35 succeeded]
+[IMAGE 3 of 4 · upload `03-aws-evidence-grid.png` · alt text: The CDK stack, the tests passing, the live smoke test against the API, and the Amplify console showing deployment 35 succeeded]
 
 ## Guardrails
 
@@ -121,7 +119,7 @@ A redacted CloudTrail extract and the deploy logs are in the repository under `d
 
 ## Evidence
 
-[IMAGE 5 of 5 · upload `05-cloudtrail-extract.png` · alt text: CloudTrail: the agent's Amplify deploy calls through the AWS MCP server]
+[IMAGE 4 of 4 · upload `05-cloudtrail-extract.png` · alt text: CloudTrail: the agent's Amplify deploy calls through the AWS MCP server]
 
 More screenshots (the menu, the guestbook, Options, the plain version, the phone) are in `docs/evidence/screens/`. Deploy logs (the account id is masked), screenshots of the terminal and of the site, and a CloudTrail extract are in the repository: https://github.com/BlasterLc/portfolio/tree/main/docs/evidence
 
