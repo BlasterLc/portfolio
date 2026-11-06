@@ -42,6 +42,37 @@ Capture these as they happen, redact the account id and any ARN with the account
 - [ ] Backend services (API Gateway / Lambda / DynamoDB / SES) once they exist: console pages + a working request
 - [ ] A short list of lessons and problems (see below), written while fresh
 
+## Screenshots of the live site (2026-11-06, taken from the public URL)
+
+Folder `screens/`, headless Chromium against https://main.d5w3zjhtyz0vy.amplifyapp.com/ (the TV screens were put into each state by script, so no boot animation is waited for):
+
+| File | Shows |
+|---|---|
+| `01-room-tv-off-desktop.png` | The room, TV off (first view, desktop) |
+| `02-tv-home-menu.png` | The PS2 menu on the TV (Projects) |
+| `03-tv-skills-memory-card.png` | Skills as a memory card with 3D icons (Options button) |
+| `04-tv-project-disc.png` | A project disc read by the console: text and links |
+| `05-tv-guestbook.png` | The guestbook (live data from the API) |
+| `06-tv-options.png` | The Options screen (sound, clock) |
+| `07`-`09-plain-*.png` | The plain version: home, projects, wins |
+| `10`, `11-phone-plain-*.png` | Phone (390 px): plain version |
+| `12`, `13-phone-*.png` | Phone (390 px): the 3D room and the TV menu |
+
+## AWS console captures (to be taken by the account owner)
+
+These are the pages that prove each service. All of them exist and were checked through the API on 2026-11-06; the console also lists resources of other projects in the same account, so filter by "Portfolio" or open the links below, and keep the account id (top-right menu) out of the frame.
+
+| # | Page | What to show |
+|---|---|---|
+| 1 | Amplify app `ps2-room-portfolio` (https://us-east-1.console.aws.amazon.com/amplify/apps/d5w3zjhtyz0vy) | App overview with the live URL |
+| 2 | Amplify, branch `main`, Deployments tab | Latest jobs with `Deploy` and `Verify` succeeded (the latest was job 32) |
+| 3 | CloudFormation, stack `PortfolioApi`, Resources tab | The guestbook stack: API, function, table, alarms (all created by CDK) |
+| 4 | API Gateway, API `portfolio-guestbook`, Routes | `GET /saves` and `POST /saves`, and the stage throttling (5 req/s, burst 10) |
+| 5 | Lambda, function `PortfolioApi-ApiFn...` | Runtime Node.js 22, environment (the table name only), the Monitor tab |
+| 6 | DynamoDB, table `PortfolioApi-GuestbookTable...`, Explore items | Approved saves, pending saves and the rate-limit counters, all with a TTL |
+| 7 | CloudWatch, Alarms | `PortfolioApi-ApiErrors` and `PortfolioApi-ApiVolume`, state OK |
+| 8 | CloudTrail, Event history | `CreateDeployment` / `StartDeployment` from `blaster` (an extract is already in this folder) |
+
 ## Notes for the "challenges and lessons" section
 
 - Manual (zip) deployment avoids needing the repository first; once the GitHub repo is public it can be connected in Amplify for CI/CD.
