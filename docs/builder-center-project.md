@@ -1,4 +1,4 @@
-<!-- Paste section by section. Lines in [square brackets] are image/video slots; the images are in docs/builder-center/images/ (guide: docs/builder-center/README.md). The cover image (`00-cover.png`) goes in the project's cover field, not in the text. Delete this comment. -->
+<!-- Paste section by section. Lines in [square brackets] are image/video slots; the images are in docs/builder-center/images/ (guide: docs/builder-center/README.md). The cover image (`00-cover-option-drawn-card.png`) goes in the project's cover field, not in the text. Delete this comment. -->
 
 # A portfolio you walk into: a room with a PlayStation 2
 
