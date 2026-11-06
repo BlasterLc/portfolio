@@ -844,7 +844,10 @@ glow.position.set(0, .03, .12); glow.userData.blob = true; tvProc.add(glow);   /
 
 /* ================= the room: a low-cost procedural living room (carpet, wall with baseboard, window with curtains, shelving with generic game cases, floor lamp, cushions, loose discs, cables).
    Everything static is merged per material; contact shadows are fake blobs; no brands, no text. ================= */
-const roomG = new THREE.Group(); scene.add(roomG); const certMeshes = [];
+const roomG = new THREE.Group(); scene.add(roomG); const certMeshes = [], certGroups = [];
+/* the frames hang on the left wall; a portrait phone cannot see that wall, so there they go on the back wall above the TV */
+function placeCerts() { if (!certGroups.length) return; const portrait = innerWidth / innerHeight < .85;
+  certGroups.forEach((g, k) => { if (!g) return; if (portrait) { g.position.set((k ? .34 : -.34), 1.78, BACK_Z + .02); g.rotation.y = -Math.PI / 2; g.scale.setScalar(.95); } else { g.position.set(-SIDE_X + .02, 1.5, CERTS[k].z); g.rotation.y = 0; g.scale.setScalar(1); } g.updateMatrixWorld(true); }); }
 const CERTS = [
   { src: 'assets/props/certificate.jpg', w: 1100, h: 850, w3: .62, z: .42, alt: 'Certificate: first place in the Social Impact category, Rally Latinoamericano de Innovación 2026, team Helix, USS site in Chile, 20 October 2026', cap: 'First place, Social Impact category, with team Helix (USS site, Chile). Rally Latinoamericano de Innovación 2026, 16-17 October, held in 11 countries.' },
   { src: 'assets/props/certificate-zts.jpg', w: 1600, h: 1236, w3: .5, z: -.4, alt: 'Certificate: Hackathon Winner, Zero to Shipped Hackathon 2026, awarded to Matias Rodríguez Gutierrez for the project Rumbo a Casa, AWS Builder Center', cap: 'Hackathon Winner, Zero to Shipped Hackathon 2026, for the project Rumbo a Casa. AWS Builder Center.' }
@@ -958,10 +961,10 @@ function buildRoom() {
   props.build(roomG, false, false);
   for (const [k, c] of CERTS.entries()) { const cw = c.w3, ch = cw * c.h / c.w, cy = 1.5, cz = c.z;      // the two framed certificates on the left wall (Rally nearer the front, Zero to Shipped behind it)
     const frame = new THREE.Mesh(new THREE.BoxGeometry(.03, ch + .05, cw + .05), new THREE.MeshStandardMaterial({ color: 0x2b2118, roughness: .6 }));
-    frame.position.set(-SIDE_X + .02, cy, cz); roomG.add(frame);
+    const cg = new THREE.Group(); roomG.add(cg); certGroups[k] = cg; cg.add(frame);
     const certTex = new THREE.TextureLoader().load(c.src); certTex.colorSpace = THREE.SRGBColorSpace; certTex.anisotropy = aniso();
     const cert = new THREE.Mesh(new THREE.PlaneGeometry(cw, ch), new THREE.MeshStandardMaterial({ map: certTex, roughness: .7 }));
-    cert.rotation.y = Math.PI / 2; cert.position.set(-SIDE_X + .037, cy, cz); roomG.add(cert); certMeshes[k] = cert; } beads.build(roomG, false, false);
+    cert.rotation.y = Math.PI / 2; cert.position.set(.017, 0, 0); cg.add(cert); certMeshes[k] = cert; } placeCerts(); beads.build(roomG, false, false);
   walls.build(roomG, false, false); wood.build(roomG, false, false); cases.build(roomG, false, false); d.build(roomG, false, true); lamp.build(roomG, false, false); cab.build(roomG, false, true);
 
   // ---- lived-in clutter (generic, brandless): controller, toy robot, blocks, plush bear, magazines, cup with straw ----
@@ -1734,7 +1737,7 @@ function fit() {
   fitState.close = { T: Tc, dir: dirC, d: dC, fov: fovC }; fitState.wide = { T: Tw, dir: dirW, d: dW, fov: fovW };
   bayLight.position.set(0, PL + .3, RD / 2 + .42); bayLight.distance = 1.05; tvLight.position.copy(tvHolder.localToWorld(tmp.set(0, .32, .6)));
 }
-function resize() { const w = innerWidth, h = innerHeight; VP.width = w; VP.height = h; drawTV(); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); layout(); kickShadow(); dirty = true; arrKey = ''; placeArrows(); updateArrows(); }
+function resize() { const w = innerWidth, h = innerHeight; VP.width = w; VP.height = h; drawTV(); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); placeCerts(); layout(); kickShadow(); dirty = true; arrKey = ''; placeArrows(); updateArrows(); }
 let resizeT = 0; addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(resize, 120); });   // debounced: no re-layout on every pixel of a window drag
 
 /* ================= GLB loading (optional): normalize, find parts, fall back to procedural ================= */
