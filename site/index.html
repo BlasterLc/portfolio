@@ -163,6 +163,7 @@
   @keyframes pspin { to { transform: rotate(360deg); } }
   @keyframes pcore { to { transform: scale(1.06); } }
   body.plain::after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 70px; z-index: 12; pointer-events: none; background: linear-gradient(180deg, rgba(3,5,31,0), rgba(3,5,31,.85)); }
+  body.plain #soundBtn { display: none; }   /* the plain version has no sound */
   body.plain #soundBtn, body.plain #plainBtn { min-height: 38px; font-size: 14px; padding: 0 12px; }
   #plainProg { display: none; position: fixed; z-index: 22; left: 0; top: 0; height: 3px; width: 100%; background: linear-gradient(90deg, #86dcff, #e8e464); transform-origin: 0 50%; transform: scaleX(var(--prog, 0)); transition: transform .6s cubic-bezier(.16,1,.3,1); }
   body.plain #plainProg { display: block; }
@@ -569,7 +570,7 @@ $('#plain').innerHTML = `
   <section class="scr home" id="scr-home" role="tabpanel" aria-labelledby="tab-home">
     <div>
       <h1 aria-label="Matías Rodríguez">${(() => { let k = 0; return ['Matías', 'Rodríguez'].map(w => `<span class="w" aria-hidden="true">${[...w].map(c => `<span style="--i:${k++}">${c}</span>`).join('')}</span>`).join(' '); })()}</h1>
-      <p class="tag">Computer Science Engineering student in Santiago. I learn <b>one technology at a time</b>, tied to a real project, and I check what AI writes for me.</p>
+      <p class="tag">Computer Science Engineering student in Santiago. I learn <b>one technology at a time</b>, tied to a real project.</p>
       <div class="cta"><button type="button" class="ps2btn" data-go="projects">See my projects</button><button type="button" class="ps2btn ghost" data-go="contact">Get in touch</button><button type="button" class="ps2btn ghost" id="plainBack"><svg class="cube" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg> Enter the 3D room</button></div>
     </div>
   </section>
@@ -1077,7 +1078,7 @@ Promise.all([300, 500, 700].map(w => new FontFace('Quicksand', `url(${FONT_BASE}
   .then(() => { redraw(); }).catch(e => console.warn('[font] Quicksand failed to load, using the fallback stack', e));
 
 const YEL = '#E6E04A', CYAN = '#4FD0E8';
-const ui = { screen: 'boot', sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, contact: 0, save: 0, skillMenu: 0, pmenu: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
+const ui = { screen: 'boot', opt: 0, sel: 0, pos: 0, disc: 0, dpos: 0, skill: 0, contact: 0, save: 0, skillMenu: 0, pmenu: 0, loaded: -1, ready: false, prog: 0, on: false, started: false, busy: false, msg: '', bootT: 0, t: 0, skipT: -1e9, h24: true };
 let hits = [];
 const hit = (x, y, w, h, o) => hits.push({ x, y, w, h, ...o });
 function wrap(c, text, x, y, maxW, lh) {
@@ -1273,11 +1274,12 @@ function drawBody(c, t) {
     legend(c, [{ sym: 'x', label: ui.save === 0 ? 'New save' : 'Read', act: 'enter' }, { sym: 'o', label: 'Back', act: 'back' }], true);
   } else {
     bgMain(c, t, ringAng * .5, .5); header(c, false);
-    const title = { about: 'About', projects: 'Projects', project: PROJECTS[ui.loaded] ? PROJECTS[ui.loaded].name : '', contact: 'Contact' }[s];
+    const title = { about: 'About', projects: 'Projects', project: PROJECTS[ui.loaded] ? PROJECTS[ui.loaded].name : '', contact: 'Contact', options: 'Options' }[s];
     c.textAlign = 'right'; c.fillStyle = YEL; c.font = FONT(26, 700); c.fillText(title, SW - 26, 72); c.textAlign = 'left';
     const panel = () => { roundRect(c, 24, 88, SW - 48, 196, 14); c.fillStyle = 'rgba(16,12,52,.55)'; c.fill(); c.strokeStyle = 'rgba(160,215,245,.3)'; c.lineWidth = 1; c.stroke(); };
     if (s === 'about') { roundRect(c, 24, 88, SW - 48, 244, 14); c.fillStyle = 'rgba(16,12,52,.55)'; c.fill(); c.strokeStyle = 'rgba(160,215,245,.3)'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#fff'; c.font = FONT(13.5, 500); let y = 112; ABOUT.concat(ABOUT_MORE).forEach(tx => { y = wrap(c, tx, 44, y, 424, 18.5) + 8; }); }
     else if (s === 'contact') { panel(); CONTACT.forEach((ct, i) => { const sel = ui.contact === i, y = 104 + i * 56; roundRect(c, 36, y, SW - 72, 46, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.1)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : CYAN; c.font = FONT(13, 700); c.fillText(ct.label.toUpperCase(), 52, y + 19); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(17, 500); c.fillText(ct.text + ' \u2197', 52, y + 38); hit(36, y, SW - 72, 46, { kind: 'contact', i }); }); }
+    else if (s === 'options') { panel(); [['SOUND', snd.on ? 'On' : 'Off'], ['CLOCK', ui.h24 ? '24 hours' : '12 hours']].forEach(([lb, v], i) => { const sel = ui.opt === i, y = 104 + i * 56; roundRect(c, 36, y, SW - 72, 46, 10); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.1)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : CYAN; c.font = FONT(13, 700); c.fillText(lb, 52, y + 19); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(17, 500); c.fillText(v, 52, y + 38); hit(36, y, SW - 72, 46, { kind: 'opt', i }); }); }
     else if (s === 'projects') {
       const sp = 132;
       PROJECTS.forEach((p, i) => { const dx = i - ui.dpos, cx = SW / 2 + dx * sp; if (cx < -70 || cx > SW + 70) return; const k = Math.max(0, 1 - Math.abs(dx)); discIcon(c, p, cx, 168 - 4 * k, 38 + 24 * k, .55 + .45 * k); hit(cx - sp / 2, 90, sp, 190, { kind: 'proj', i }); });
@@ -1297,7 +1299,7 @@ function drawBody(c, t) {
         p.links.forEach((l, n) => { const x = 122 + n * 118, sel = ui.pmenu === n; roundRect(c, x, 240, 106, 32, 9); c.fillStyle = sel ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.14)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = sel ? 2.5 : 1; c.stroke(); c.fillStyle = sel ? '#1c1840' : '#fff'; c.font = FONT(15, 700); c.textAlign = 'center'; c.fillText(l.label + ' \u2197', x + 53, 261); c.textAlign = 'left'; hit(x, 236, 106, 40, { kind: 'plink', i: n }); });
       }
     }
-    legend(c, [{ sym: 'x', label: s === 'projects' ? 'Insert' : s === 'contact' ? 'Open' : 'Enter', act: 'enter' }, { sym: 'o', label: s === 'project' ? 'Eject' : 'Back', act: 'back' }]);
+    legend(c, [{ sym: 'x', label: s === 'projects' ? 'Insert' : s === 'contact' ? 'Open' : s === 'options' ? 'Change' : 'Enter', act: 'enter' }, { sym: 'o', label: s === 'project' ? 'Eject' : 'Back', act: 'back' }]);
   }
 }
 const drawLog = [];
@@ -1492,6 +1494,7 @@ function nav(d) {
   else if (ui.screen === 'skill') { const n = Math.max(0, Math.min(1, ui.skillMenu + d)); if (n === ui.skillMenu) return; ui.skillMenu = n; }
   else if (ui.screen === 'guestbook') { const n = Math.max(0, Math.min(gbCount() - 1, ui.save + d)); if (n === ui.save) return; ui.save = n; }
   else if (ui.screen === 'contact') { const n = Math.max(0, Math.min(CONTACT.length - 1, ui.contact + d)); if (n === ui.contact) return; ui.contact = n; }
+  else if (ui.screen === 'options') { const n = Math.max(0, Math.min(1, ui.opt + d)); if (n === ui.opt) return; ui.opt = n; }
   else return; mark('menu change'); sfx.nav(); redraw();
 }
 async function confirm() {
@@ -1502,6 +1505,7 @@ async function confirm() {
   else if (ui.screen === 'skills') { ui.screen = 'skill'; ui.skillMenu = 0; sfx.ok(); redraw(); say(SKILLS[ui.skill].name); }
   else if (ui.screen === 'skill') { sfx.ok(); if (ui.skillMenu === 0) { ui.screen = 'projects'; redraw(); say('Projects'); } else { ui.screen = 'skills'; redraw(); say('Skills'); } }
   else if (ui.screen === 'guestbook') { if (ui.save === 0) { sfx.ok(); openGbForm(); } else sfx.nav(); }
+  else if (ui.screen === 'options') { if (ui.opt === 0) { soundBtn.click(); } else { ui.h24 = !ui.h24; sfx.nav(); } redraw(); }
   else if (ui.screen === 'contact') { const ct = CONTACT[ui.contact]; if (ct) { sfx.ok(); if (ct.url.startsWith('mailto:')) location.href = ct.url; else window.open(ct.url, '_blank', 'noopener'); } }
 }
 async function back() {
@@ -1555,11 +1559,12 @@ function pickButton(e) {
   return best;
 }
 function activate(h, touch) {
-  if (h.kind === 'legend') { if (h.act === 'enter') return confirm(); if (h.act === 'back') return back(); if (h.act === 'display') { ui.h24 = !ui.h24; sfx.nav(); return redraw(); } if (h.act === 'options') { sfx.nav(); return; } }
+  if (h.kind === 'legend') { if (h.act === 'enter') return confirm(); if (h.act === 'back') return back(); if (h.act === 'display') { ui.h24 = !ui.h24; sfx.nav(); return redraw(); } if (h.act === 'options') { if (ui.screen !== 'home' || ui.busy) return; ui.screen = 'options'; ui.opt = 0; sfx.ok(); redraw(); say('Options'); return; } }
   if (h.kind === 'open') return confirm();
   if (h.kind === 'step') return nav(h.d);
   if (h.kind === 'gb') { if (ui.save === h.i && h.i === 0) return confirm(); ui.save = h.i; sfx.nav(); return redraw(); }
   if (h.kind === 'plink') { ui.pmenu = h.i; return confirm(); }
+  if (h.kind === 'opt') { if (touch && ui.opt !== h.i) { ui.opt = h.i; sfx.nav(); return redraw(); } ui.opt = h.i; return confirm(); }
   if (h.kind === 'contact') { if (touch && ui.contact !== h.i) { ui.contact = h.i; sfx.nav(); return redraw(); } ui.contact = h.i; return confirm(); }
   if (h.kind === 'skmenu') { ui.skillMenu = h.i; return confirm(); }
   if (h.kind === 'skill') { if (ui.skill === h.i) return confirm(); ui.skill = h.i; sfx.nav(); return redraw(); }
@@ -1594,7 +1599,7 @@ function stepBack() { if (cam.mode !== 'close' || cam.busy) return; sfx.back(); 
 hintEl.addEventListener('click', () => { if (cam.mode === 'close' && !ui.on) power(); else wideAction(); }); stepBtn.addEventListener('click', stepBack);
 addEventListener('pointerdown', e => { if (document.body.classList.contains('plain') || certDlg.open || e.target.closest?.('#plainBtn,#soundBtn,#hint,#stepBack,#dbg')) return; if (cam.mode === 'wide') {
       { const ck = pickCert(e); if (ck >= 0) { e.preventDefault(); e.stopImmediatePropagation(); openCert(ck); return; } }
-      if (ui.on) { startSystem(); return; }
+      if (ui.on) { if (tvUnder(e)) startSystem(); return; }   // TV already on: only the TV itself starts the system, not any spot of the room
       const b = pickButton(e); let hitTv = b === 'tvpower'; if (!hitTv && screenMesh) { setRay(e); hitTv = !!ray.intersectObject(screenMesh, false)[0]; }
       if (hitTv) { e.preventDefault(); approachTV(); } return;
     }
@@ -1931,19 +1936,20 @@ async function warmup() {
   let n = 0; for (const t of texs) { renderer.initTexture(t); if (++n % 6 === 0) { setLoad(.78 + .10 * n / texs.size, 'Warming up the lights'); await paint(); } }
   const keep = { screen: ui.screen, loaded: ui.loaded, ready: ui.ready, prog: ui.prog, on: ui.on };
   ui.loaded = 0; ui.ready = true; ui.on = true;
-  let si = 0; for (const st of ['boot', 'home', 'skills', 'skill', 'guestbook', 'projects', 'project', 'about', 'contact', 'standby']) { setLoad(.88 + .11 * (si++ / 10), 'Switching the TV on'); await paint(); try { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); } catch (e) { console.error('[warm-up] state ' + st + ' failed', e); (window.WARM_ERR = window.WARM_ERR || []).push(st + ': ' + (e && e.message)); } await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
+  let si = 0; for (const st of ['boot', 'home', 'skills', 'skill', 'guestbook', 'projects', 'project', 'about', 'contact', 'options', 'standby']) { setLoad(.88 + .11 * (si++ / 11), 'Switching the TV on'); await paint(); try { ui.screen = st; ui.bootT = st === 'boot' ? 2 : 0; drawTV(); tintTV(); renderer.initTexture(tvTex); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); } catch (e) { console.error('[warm-up] state ' + st + ' failed', e); (window.WARM_ERR = window.WARM_ERR || []).push(st + ': ' + (e && e.message)); } await tick(); }   // the 1-pixel readback forces the 2D canvas queue to drain (a backlog showed up on software GL)
   Object.assign(ui, { screen: keep.screen, loaded: keep.loaded, ready: keep.ready, prog: keep.prog, on: keep.on, bootT: 0 }); drawTV(); tintTV();
   discPool.forEach(d => { d.visible = false; });
   kickShadow(); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); renderer.render(scene, camera); gpuDone(); tc.getImageData(0, 0, 1, 1); await tick();
   finishWarm();
 }
 function finishWarm() { if (warm.done) return; setLoad(1, 'Ready'); warm.done = true; warm.readyAt = performance.now(); document.body.classList.remove('warming'); setHint(); mark('warm-up done'); }
-(async () => {
+let loadStarted = false;
+function startLoad() { if (loadStarted) return; loadStarted = true; (async () => {
   const a = await tryLoadConsole(); setLoad(.40, 'Plugging in the TV'); const b = await tryLoadTV(); setLoad(.62, 'Furnishing the room'); await loadProps(); setLoad(.78, 'Warming up the lights'); mark('models loaded');
   if (a || b) { layout(); dirty = true; kickShadow(); }
   const wd = setTimeout(() => { if (!warm.done) { console.warn('[warm-up] watchdog: still not done after 20 s, showing the room anyway'); finishWarm(); } }, 20000);   // never leave the loader stuck
   try { await warmup(); } catch (e) { console.error('[warm-up] failed', e); (window.WARM_ERR = window.WARM_ERR || []).push(String(e && e.message)); finishWarm(); } finally { clearTimeout(wd); }
-})().catch(e => { console.error('[load] failed', e); try { finishWarm(); } catch (_) { document.body.classList.remove('warming'); } });
+})().catch(e => { console.error('[load] failed', e); try { finishWarm(); } catch (_) { document.body.classList.remove('warming'); } }); }
 
 /* ================= sound toggle ================= */
 const soundBtn = $('#soundBtn');
@@ -1999,9 +2005,17 @@ const plainBtn = $('#plainBtn');
 plainBtn.addEventListener('click', () => {
   const on = document.body.classList.toggle('plain');
   plainBtn.textContent = on ? '3D room' : 'Plain version'; plainBtn.setAttribute('aria-pressed', String(on));
-  if (on) scrollTo(0, 0); else dirty = true; setHint(); syncCredits();
+  if (on) scrollTo(0, 0); else { dirty = true; startLoad(); } setHint(); syncCredits();
+  if (!autoPlain) { try { localStorage.setItem('ps2view', on ? '2d' : '3d'); } catch (e) {} }
   say(on ? 'Plain version' : 'Console view');
 });
+
+/* phone default: the plain version (the 3D room is ~14 MB and heavy to warm up); the 3D models are not even fetched until 'Enter the 3D room'.
+   ?view=3d|2d overrides; otherwise the last choice made on this device is remembered. Desktop always starts in 3D. */
+let autoPlain = false;
+{ let pref = null; try { pref = localStorage.getItem('ps2view'); } catch (e) {} const q = params.get('view'); if (q === '3d' || q === '2d') pref = q;
+  const phone = matchMedia('(pointer: coarse) and (max-width: 760px)').matches;
+  if ((phone && pref !== '3d') || q === '2d') { autoPlain = true; if (!document.body.classList.contains('plain')) plainBtn.click(); autoPlain = false; } else startLoad(); }
 
 /* ================= loop ================= */
 const PERF = params.has('perf') ? { frame: [], js: [], screen: [], render: [] } : null;   // ?perf=1: per-frame JS timings (ms), used by my automated measurements
@@ -2092,7 +2106,7 @@ function frame() {
   if (AUTO.winStart && ivl > 0 && ivl < 1000) AUTO.iv.push(ivl);
   for (let i = tws.length - 1; i >= 0; i--) { const w = tws[i]; w.t += dt; const k = Math.min(1, w.t / w.d); w.fn(w.e(k)); if (k >= 1) { tws.splice(i, 1); w.res(); } }
   const active = tws.length > 0 || now < activeUntil || ui.dragging || ui.screen === 'boot';   // interactions and transitions: every frame; ambient motion: ~30 fps
-  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e) || (cam.mode === 'wide' && warm.done && (pickCert(e) >= 0 || ui.on || tvUnder(e))))); }
+  if (pendingMove) { const e = pendingMove; pendingMove = null; if (e.pointerType === 'mouse' && !pdown) canvas.classList.toggle('hover', !!(pickButton(e) || pickScreen(e) || (cam.mode === 'wide' && warm.done && (pickCert(e) >= 0 || tvUnder(e))))); }
   let drewTV = false;
   if (!still && ui.on && !FL.noScreen) {                                  // the TV texture: Q.tvFps ambient, every frame while dragging
     scrAcc += Math.min(raw, .25);
@@ -2193,7 +2207,7 @@ function pxFor(cx, cy) {                                           // client px 
     const d = Math.hypot(h.uv.x * SW - cx, (1 - h.uv.y) * SH - cy); if (d < bd) { bd = d; best = [sx + r.left, sy + r.top]; }
   } return best;
 }
-window.__ps2 = { propStats, cam, dolly, snd, sfx, drawLog, tc, drawTV: () => drawTV(), tcState: () => ({ ga: tc.globalAlpha, op: tc.globalCompositeOperation, fill: tc.fillStyle }), tvPixel: () => Array.from(tc.getImageData(tvCanvas.width / 2 | 0, tvCanvas.height / 2 | 0, 1, 1).data), tvSize: () => tvModelSize, ui, press, PERF, FL, renderer, scene, Q, STAT, setProfile, debugData, cam, warm, LONG, LONGSUM, AUTO, mark, startSystem, stepBack, camera0: camera, fitState, dragState: () => ({ pdown: pdown && { ...pdown, h: !!pdown.h }, dragging: ui.dragging, pos: ui.pos, sel: ui.sel }), model: () => conProc, conG, PRnow: () => PR, arrows: () => [arrL, arrR], snd, fontOK: () => document.fonts.check('500 20px Quicksand'), fitState, camera, root, THREE, con, tvHolder, conG, mode: () => con.mode, trayOpen: () => con.openTrayK, hasDisc: () => !!curDisc, pxFor, hits: () => hits,
+window.__ps2 = { ui, activate, propStats, cam, dolly, snd, sfx, drawLog, tc, drawTV: () => drawTV(), tcState: () => ({ ga: tc.globalAlpha, op: tc.globalCompositeOperation, fill: tc.fillStyle }), tvPixel: () => Array.from(tc.getImageData(tvCanvas.width / 2 | 0, tvCanvas.height / 2 | 0, 1, 1).data), tvSize: () => tvModelSize, ui, press, PERF, FL, renderer, scene, Q, STAT, setProfile, debugData, cam, warm, LONG, LONGSUM, AUTO, mark, startSystem, stepBack, camera0: camera, fitState, dragState: () => ({ pdown: pdown && { ...pdown, h: !!pdown.h }, dragging: ui.dragging, pos: ui.pos, sel: ui.sel }), model: () => conProc, conG, PRnow: () => PR, arrows: () => [arrL, arrR], snd, fontOK: () => document.fonts.check('500 20px Quicksand'), fitState, camera, root, THREE, con, tvHolder, conG, mode: () => con.mode, trayOpen: () => con.openTrayK, hasDisc: () => !!curDisc, pxFor, hits: () => hits,
   btnScreen(n) { const r = VP; btns[n].mesh.getWorldPosition(tmp).project(camera); return [(tmp.x * .5 + .5) * r.width + r.left, (-tmp.y * .5 + .5) * r.height + r.top]; } };
 
 ui.screen = 'standby'; resize(); setHint(); tintTV();
