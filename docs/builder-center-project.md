@@ -9,8 +9,6 @@
 
 > I would rather show you than list it.
 
-▶ [VIDEO: paste the link to the short video here, or delete this line if there is none]
-
 ## The idea
 
 Some of us grew up in front of a CRT TV. The ritual was always the same: press the power button, wait for the startup chord, slide a disc into the tray and move through the menus with a controller that was too big for our hands. Nothing about it was efficient, and that was the point: you had to walk in to get anywhere.

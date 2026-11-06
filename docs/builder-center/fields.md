@@ -14,5 +14,5 @@ Remember a CRT TV, a memory card and a stack of discs on the rug? I rebuilt that
 Paste `docs/builder-center-project.md` with these changes:
 1. Delete the HTML comment at the top and the line `# A portfolio you walk into...` (it is the title field).
 2. Start at the line `**Matías Rodríguez** · ...`.
-3. Replace each `[IMAGE n of 4 ...]` line with the image it names (see `README.md`), and the `▶ [VIDEO ...]` line with the video link, or delete it.
+3. Replace each `[IMAGE n of 4 ...]` line with the image it names (see `README.md`).
 4. The cover image `00-cover.png` goes in the cover field, not in the body.
