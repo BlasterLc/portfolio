@@ -1,4 +1,4 @@
-# build-your-tech
+# portfolio
 
 My portfolio, built as a room you walk into: a small bedroom with a CRT TV and a PlayStation 2. Switch the TV on, hear the console boot, and the menu on the screen is the portfolio: About, Skills (a "memory card" of saves), Projects (discs you insert into the console), Guestbook and Contact. Made for the **AWS Student Builder Challenge: Build Your Tech Superpower**.
 
