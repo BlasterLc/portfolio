@@ -4,10 +4,10 @@
   <img alt="A portfolio you walk into: a memory card labelled PORTFOLIO with the sections About, Skills, Projects and Contact" src="docs/builder-center/images/00-cover-option-drawn-card.png" width="820" />
 </p>
 
-<p align="center"><em>I would rather show you than list it: so the portfolio is a room with a PlayStation 2.</em></p>
+<p align="center"><em>Some of us grew up with a CRT TV, a memory card and a stack of discs on the rug. I rebuilt that room and put my portfolio inside it.</em></p>
 
 <p align="center">
-  <strong>A small bedroom with a CRT TV and a PS2. Switch the TV on, hear the console boot, and the menu on the screen is the portfolio.</strong><br />
+  <strong>Switch the TV on, hear the startup chord, pick a disc to open a project, read a save to see a skill. The menu on the screen is the portfolio.</strong><br />
   Built for the AWS Student Builder Challenge: Build Your Tech Superpower.
 </p>
 
@@ -45,7 +45,11 @@
 
 ## The idea
 
-A flat list of projects does not say much about the person who made them. A room does: the plant, the controller on the rug, the certificates on the wall. So the portfolio is a bedroom, and the way you move through it is the way you would use a console: switch the TV on, pick a disc, read a save.
+Some of us grew up in front of a CRT TV. The ritual was always the same: press the power button, wait for the startup chord, slide a disc into the tray and move through the menus with a controller that was too big for our hands. Nothing about it was efficient, and that was the point: you had to walk in to get anywhere.
+
+I can still remember the nervous hope that the game I had just bought would load, and the joy when it finally did.
+
+A flat list of projects cannot do that, and it says little about the person who built them. A room does: the plant, the controller on the rug, the certificates on the wall. So my portfolio is a small bedroom with a CRT TV and a PlayStation 2, and moving through it works like using a console: switch the TV on, pick a disc, read a save.
 
 ## What it does
 
