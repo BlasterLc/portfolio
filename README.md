@@ -72,14 +72,9 @@ A flat list of projects does not say much about the person who made them. A room
 
 ## Architecture
 
-```
-Browser ──► AWS Amplify Hosting (CDN) ── static site: index.html + assets
-   │
-   └─► API Gateway (HTTP API, throttled) ─► Lambda (Node.js 22) ─► DynamoDB
-                                                  │                 ├─ saves (approved / pending, with TTL)
-                                                  │                 └─ usage counters (atomic, with TTL)
-                                                  └─► CloudWatch alarms ─► SNS
-```
+<p align="center">
+  <img alt="Architecture on AWS: the visitor reaches Amplify Hosting for the static site, and API Gateway, Lambda and DynamoDB for the guestbook; CloudWatch alarms notify through SNS, the backend is defined with the CDK, and CloudTrail records the deploy calls" src="docs/architecture.png" width="900" />
+</p>
 
 | Service | Role |
 |---|---|
