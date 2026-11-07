@@ -3,16 +3,17 @@
 Text to paste: `../builder-center-project.md`. How the *Rumbo a Casa* text was structured (the mould): `../builder-center-esquema.md`.
 Upload the images in numeric order. Alt text is the caption to paste under each one.
 
-## Cover + 5 images
+## Cover + 6 images
 
 | Order | File | Where | Status |
 |---|---|---|---|
-| Cover | `00-cover-option-drawn-card.png` | The project's cover field (1600×900: the chosen one, the memory card) | ready |
-| 1 | `02-tv-skills-and-disc.png` | The creative feature (Skills and a disc, side by side) | ready |
-| 2 | `04-plain-version-phone.png` | Plain version / phone: three captures side by side, 1440×900 | ready |
-| 3 | `06-architecture.png` | Architecture on AWS: the diagram (visitor, Amplify, API Gateway, Lambda, DynamoDB, CloudWatch, SNS, CDK, CloudTrail) | ready |
-| 4 | `03-aws-evidence-grid.png` | Architecture on AWS: CDK stack, tests, live smoke test, and the Amplify console (deployment 35) | ready |
-| 5 | `05-cloudtrail-extract.png` | Evidence | ready |
+| Cover | `00-cover-option-drawn-card.png` | The project's cover field (the memory card) | ready |
+| 1 | `01-room-clean.png` | Right under the quote, before "The idea" (the room, no buttons or credits) | ready |
+| 2 | `02-tv-skills-and-disc.png` | The creative feature (Skills and a disc, side by side) | ready |
+| 3 | `04-plain-version-phone.png` | Right after the Plain version paragraph, before "Technical decisions" | ready |
+| 4 | `06-architecture.png` | Architecture on AWS: under the heading, before the services table (the diagram) | ready |
+| 5 | `03-aws-evidence-grid.png` | Architecture on AWS: after the services table (the four capture panels) | ready |
+| 6 | `05-cloudtrail-extract.png` | Evidence | ready |
 
 `01-hero-room-tv-off.png` is the clean source of the cover; it is no longer uploaded.
 
